@@ -1,0 +1,377 @@
+---
+title: "Como não ser enganado por uma pesquisa eleitoral"
+author: "Daniel Ferreira"
+date: "07/09/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+
+source('../theme.R')
+load('pesquisas_bob.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+É óbvio, para quase todo mundo, que algumas pesquisas eleitorais acertam mais do
+que outras. Menos óbvio é saber em quais pesquisas confiar. É justamente essa
+pergunta que o _Pindograma_ vem buscando responder desde a sua concepção -- e
+aqui, trazemos o que você precisa saber para identificar o que torna algumas
+pesquisas mais distantes da realidade do que outras.
+
+##### Erros são esperados
+
+Antes de tudo, é importante entender que toda pesquisa eleitoral erra quando
+comparamos seus percentuais com o resultado das eleições. Isso é natural.
+Afinal, o eleitor sempre pode mudar de ideia entre o dia da pesquisa e a hora de
+digitar o voto. Também existe a chance de um instituto ter entrevistado, por
+puro azar, um grupo de pessoas que não representa o eleitorado (a maioria dos
+estatísticos assume que há uma chance de 5% disso acontecer em toda pesquisa).
+
+Por isso, a pergunta certa a se fazer sobre uma pesquisa eleitoral não é _se_
+ela erra, mas _quanto_ ela erra. Pesquisas mais próximas da eleição tendem a ser
+mais exatas que pesquisas feitas muito antes do pleito, dado que a incerteza do
+eleitor é menor. Da mesma forma, quanto maior o número de pessoas entrevistadas
+aleatoriamente, menor a chance da pesquisa selecionar um grupo que não
+representa o eleitorado.
+
+Além disso, certos pleitos são mais incertos do que outros: eleições para
+prefeito, por exemplo, são mais incertas do que eleições para governador. E dado
+que as pesquisas não conseguem prever reviravoltas eleitorais, elas tendem a
+errar mais nos pleitos municipais.
+
+No entanto, apenas esses fatores não explicam por que algumas pesquisas acertam
+mais do que outras. Embora todas as empresas de pesquisa estejam sujeitas à
+incerteza e ao azar, ainda há uma diferença grande entre os desempenhos de cada
+instituto:
+
+```{r}
+sr = simple_rating %>%
+  group_by(grade) %>%
+  filter(row_number() <= 3)
+
+ggplot(sr, aes(x = reorder(factor(pretty_name), -avg), y = avg)) +
+  ggtitle('Erro Médio de Institutos de Pesquisa, 2012-2018') +
+  geom_col(fill = pg_green) +
+  coord_flip() +
+  scale_y_continuous(labels = function(x) paste0(x, 'p.p.')) +
+  xlab('') +
+  ylab('Erro Médio') +
+  theme_pindograma() +
+  theme(plot.title.position = 'plot') +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+A razão dessa discrepância está em razões pouco discutidas no Brasil: **amostras
+mal feitas; entrevistas sem supervisão; e resultados divulgados com erros por
+quem contratou a pesquisa**.
+
+Há também **muitas pesquisas de qualidade que nunca chegam ao eleitor no
+Brasil**. Políticos podem divulgar seletivamente as pesquisas contratadas por
+suas campanhas, e lançar mão de processos judiciais para impedir que pesquisas
+inconvenientes circulem. Tudo indica que essa prática aumenta o erro médio das
+pesquisas no Brasil.
+
+Para esclarecer como esses fenômenos afetam a qualidade das sondagens eleitorais
+-- e como você deve pesá-los ao ler uma pesquisa --, é necessário entender como
+é confeccionada uma pesquisa eleitoral no Brasil, da contratação à publicação.
+
+##### I) A Contratação
+
+Toda pesquisa eleitoral começa quando um cliente pede a um instituto que faça
+uma pesquisa.
+
+O primeiro passo é escolher entre uma **pesquisa para divulgação** e uma
+**pesquisa para uso interno**. A diferença é simples: pesquisas para divulgação
+podem ser publicadas, mas exigem o cumprimento de vários entraves burocráticos
+impostos pela Justiça Eleitoral. Já as pesquisas para uso interno não são
+regulamentadas pelo governo, mas quem divulgá-las pode ter de pagar entre
+cinquenta e cem mil reais de multa. Dado que pesquisas para uso interno não
+aparecem na imprensa, trataremos apenas das pesquisas para divulgação.
+
+Do lado da demanda, quem mais movimenta o mercado de pesquisas para divulgação
+são as campanhas políticas, com pelo menos 3.000 pesquisas nas últimas quatro
+eleições. Em segundo lugar, vem a imprensa, com aproximadamente 1.000 pesquisas
+encomendadas -- um terço das quais pela Rede Globo ou suas afiliadas.
+Finalmente, algumas dezenas de pesquisas são encomendadas por entidades como a
+XP Investimentos e a Confederação Nacional do Transporte (CNT).
+
+```{r}
+pollster_number = all_polls %>%
+  filter(year == 2018) %>%
+  distinct(company_id) %>%
+  nrow()
+
+national_pollster_number = all_polls %>%
+  filter(year == 2018 & polled_UE == 'BR') %>%
+  distinct(company_id) %>%
+  nrow()
+```
+
+
+Já do lado da oferta, cerca de `r pn(pollster_number)` empresas conduziram
+pesquisas para divulgação em 2018. Destas, somente
+`r pn(national_pollster_number)` fizeram pesquisas para presidente que
+abrangeram todo o território brasileiro; e apenas dois institutos -- Ibope e
+Veritá -- conduziram pesquisas para governador em todos os estados. Quase todas
+as outras empresas de pesquisa brasileiras têm escopo regional. Só no Maranhão,
+por exemplo, competem entre si os institutos Escutec, Data M, Datailha, MBO,
+Econométrica, e Exata -- embora esses nomes possam parecer completamente
+estranhos para quem não mora no estado.
+
+```{r}
+ibope_go_cost = df_for_merge %>%
+  filter(NR_CNPJ_EMPRESA == '68802370000186' & AA_ELEICAO == 2018 & startsWith(NR_IDENTIFICACAO_PESQUISA, 'GO')) %>%
+  pull(VR_PESQUISA) %>%
+  mean()
+
+ibope_go_entr = df_for_merge %>%
+  filter(NR_CNPJ_EMPRESA == '68802370000186' & AA_ELEICAO == 2018 & startsWith(NR_IDENTIFICACAO_PESQUISA, 'GO')) %>%
+  pull(QT_ENTREVISTADOS) %>%
+  mean()
+
+serpes_go_cost = df_for_merge %>%
+  filter(NR_CNPJ_EMPRESA == '02678167000131' & AA_ELEICAO == 2018 & startsWith(NR_IDENTIFICACAO_PESQUISA, 'GO')) %>%
+  pull(VR_PESQUISA) %>%
+  mean()
+
+serpes_go_entr = df_for_merge %>%
+  filter(NR_CNPJ_EMPRESA == '02678167000131' & AA_ELEICAO == 2018 & startsWith(NR_IDENTIFICACAO_PESQUISA, 'GO')) %>%
+  pull(QT_ENTREVISTADOS) %>%
+  mean()
+
+datafolha_bh_cost = df_for_merge %>%
+  filter(NR_CNPJ_EMPRESA == '07630546000175' & SG_UE == '41238' & AA_ELEICAO == 2016) %>%
+  pull(VR_PESQUISA) %>%
+  mean()
+
+cp2_bh_cost = df_for_merge %>%
+  filter(NR_CNPJ_EMPRESA == '22642565000105' & SG_UE == '41238' & AA_ELEICAO == 2016) %>%
+  filter(VR_PESQUISA < 1000000) %>% # obviously a data input error
+  pull(VR_PESQUISA) %>%
+  mean()
+```
+
+Uma vantagem dos institutos locais é que eles são mais baratos. Em 2018, a
+pesquisa média do Ibope em Goiás teve `r pn(ibope_go_entr)` participantes e
+custou em média R\$ `r pn(ibope_go_cost)`; já a Serpes cobrou em média R\$
+`r pn(serpes_go_cost)` para entrevistar `r pn(serpes_go_entr)` pessoas no mesmo
+estado. Em 2016, o Datafolha cobrou em média R\$ `r pn(datafolha_bh_cost)` por
+uma pesquisa para prefeito em Belo Horizonte, enquanto a CP2 Pesquisa cobrou
+apenas um décimo do valor: R\$ `r pn(cp2_bh_cost)`.
+
+Mas preços menores não implicam em pesquisas necessariamente piores: o Ranking
+de Empresas de Pesquisa do _Pindograma_ mostra que dezenas de institutos menos
+conhecidos têm performance similar às do Ibope ou Datafolha. Até o
+lançamento do _Pindograma_, não havia nenhuma medição objetiva e independente da
+qualidade dos institutos de pesquisa, fazendo com que o prestígio vinculado a um
+nome conhecido valesse mais no mercado do que a qualidade das pesquisas da
+empresa.
+
+##### II) A Amostra
+
+Feita a contratação, a empresa de pesquisas parte para a amostragem -- a
+definição de quais pessoas serão entrevistadas, para garantir que elas sejam
+representativas da população como um todo. Se a amostragem for boa, é possível
+presumir como votariam 150 milhões de brasileiros com somente 2.000 entrevistas;
+mas se a amostragem for ruim, o erro pode ser imenso. Basta pensar nos seguintes
+cenários:
+
+* Imagine que uma pesquisadora quer saber como pretendem votar os eleitores de
+São Paulo. Para isso, ela vai à Avenida Faria Lima e tenta entrevistar todos que
+passam por lá, até completar 500 entrevistas. Mas a amostra dela não representa
+o que pensa a cidade como um todo: afinal, é muito mais fácil encontrar pessoas
+de alta renda caminhando pela Faria Lima do que pessoas da periferia.
+
+* A pesquisadora decide, então, distribuir as 500 entrevistas por bairros
+diferentes da cidade -- balanceando bairros ricos e bairros pobres. Dessa forma,
+ela evita o excesso de pessoas de alta renda na amostra dela. Mas ainda restam
+complicações: muito provavelmente, quem vai parar para responder o questionário
+dela serão pessoas sem pressa -- como idosos que foram ao Centro fazer compras,
+ou pessoas que não trabalham e saíram para caminhar. Quem está no caminho ao
+trabalho provavelmente vai ignorar a pesquisadora, gerando outra amostra
+distorcida.
+
+* A pesquisadora decide, por fim, fazer as suas perguntas por telefone. Ela
+escolhe 500 números aleatórios na cidade de São Paulo e liga para todos eles
+-- só para descobrir que a amostra ainda tem problemas. Nos domicílios mais
+ricos, quem atende é a trabalhadora doméstica; e nos domicílios mais pobres,
+quem atende são as crianças ou os mais velhos, que não saíram para trabalhar.
+
+```{r eval=FALSE}
+# Para a afirmação abaixo sobre pesquisas telefônicas, ver:
+
+fit = lm(mm3 ~ undecided + days_apart + election_type_3 + election_type_2 + n_adj +
+           state_AC + state_AL + state_AP + state_BA + state_CE + state_DF + state_ES +
+           state_GO + state_MA + state_MG + state_MS + state_MT + state_PA + state_PB +
+           state_PE + state_PI + state_PR + state_RJ + state_RN + state_RO + state_RR +
+           state_RS + state_SC + state_SE + state_SP + state_TO + first_round +
+           is_phone + is_fluxo,
+         data = model_polls %>% filter(year == 2018))
+
+summary(fit)
+
+# Note que is_phone e is_fluxo não são significantes. (Usamos 2018 porque
+# o número de pesquisas telefônicas nos anos anteriores era desprezível.
+# No entanto, o mesmo efeito é visível considerando os anos anteriores.)
+```
+
+O trabalho de cada instituto é superar esse tipo de dificuldade e produzir
+amostras que representem a população em geral. E invariavelmente, alguns
+institutos são melhores nisso do que outros -- seja pela qualidade de seus
+profissionais, seja pelo uso de alguma metodologia de amostragem mais
+sofisticada. O meio de coletar entrevistas -- a domicílio, em ponto de fluxo, ou
+por telefone -- pouco afeta a performance dos institutos, a despeito das
+[discussões que a questão vem
+causando](https://brasil.elpais.com/brasil/2018/06/08/politica/1528474524_403841.html)
+nos últimos anos.
+
+##### III) As Entrevistas
+
+Feita a amostra, os institutos partem para as entrevistas. Na teoria, as
+empresas contratam funcionários temporários; treinam esses funcionários para
+abordar pessoas; e os distribuem para aplicar questionários de acordo com o
+plano amostral.
+
+No entanto, conduzir entrevistas é mais difícil do que parece. O comportamento
+dos entrevistadores pode afetar a resposta dos entrevistados -- e para evitar
+esse problema, quem aplica questionários tem que ser bem treinado. Mesmo o
+perfil de uma entrevistadora pode fazer a diferença: pessoas tendem a dar
+respostas mais honestas para alguém que pareça mais com elas -- seja em termos
+de classe, escolaridade, ou raça. Por isso, mesmo a seleção dos entrevistadores
+pode afetar a qualidade de uma pesquisa.
+
+Muitos institutos são negligentes com essa etapa. Fontes ligadas ao mercado de
+pesquisas afirmam que algumas empresas fazem um plano amostral somente para
+cumprir os requisitos legais; na realidade, conduzem entrevistas sem muito
+critério. Há também instâncias de entrevistadores que, sem o devido controle do
+instituto, acabam se [desviando do roteiro da pesquisa][1]. Nesse sentido, o
+_Pindograma_ ouviu relatos criticando entrevistadores que aplicavam
+questionários em rodoviárias, embora a pesquisa em questão previsse entrevistas
+em domicílios.
+
+##### IV) A Justiça Eleitoral
+
+Enquanto ocorrem as entrevistas, os institutos também têm que se preocupar com
+processos vindos de campanhas eleitorais. Isso ocorre porque partidos políticos
+podem denunciar irregularidades em pesquisas à Justiça Eleitoral. Caso o juiz
+aceite a denúncia, a pesquisa pode ser impedida de circular. O Tribunal Superior
+Eleitoral chama essa censura prévia de "impugnação de pesquisa".
+
+A Justiça Eleitoral tem boas intenções por trás das impugnações -- afinal, quem
+não é a favor de impedir pesquisas fraudulentas de circularem? O problema é que
+as impugnações são frequentemente abusadas por advogados de partidos, que buscam
+impedir que pesquisas desfavoráveis a seus candidatos sejam publicadas.
+
+O caso mais simbólico dessa prática aconteceu nas eleições de 2010, no Paraná. O
+então candidato a governador Beto Richa (PSDB) [conseguiu impugnar dez
+pesquisas](https://oglobo.globo.com/brasil/eleicoes-2010/censura-ja-atinge-dez-pesquisas-no-parana-4987242)
+de seis institutos distintos -- inclusive Ibope e Datafolha -- alegando que
+todas elas apresentavam irregularidades no plano amostral. Dessa forma, Richa
+evitou a publicação de pesquisas que supostamente apontavam sua queda nas
+intenções de voto, deixando os eleitores do Paraná sem acesso a informações
+sobre a corrida eleitoral por quinze dias inteiros.
+
+As táticas de Richa chamaram a atenção da imprensa por conta da escala dos
+institutos censurados -- mas não é incomum que pesquisas eleitorais sejam
+impugnadas injustamente pelo Brasil inteiro. Com uma advogada competente, sempre
+há a possibilidade de uma campanha conseguir silenciar pesquisas inconvenientes
+para ela -- ainda mais se a campanha tiver dinheiro para bancar esses processos.
+E as pesquisas que sobram tendem a ser mais imprecisas que as da média do
+mercado.
+
+##### V) A Divulgação
+
+Quando um instituto conclui as entrevistas -- e se a pesquisa não é impugnada
+pela Justiça Eleitoral -- os resultados estão finalmente prontos para serem
+divulgados. Entretanto, **nem toda pesquisa que pode ser divulgada é
+efetivamente publicada**.
+
+É incomum que institutos no Brasil divulguem suas próprias pesquisas. Quase
+sempre, a pesquisa é simplesmente remetida ao contratante, que pode fazer o
+que quiser com o relatório -- seja divulgá-lo ou não.
+
+A imprensa geralmente divulga as pesquisas que contrata, mas quando o
+contratante é uma campanha política, pesquisas inconvenientes para o candidato
+raramente são publicadas. E essa dinâmica faz toda a diferença quando uma
+eleitora analisa uma pesquisa: **pouco importa que uma pesquisa venha de um
+instituto confiável, se o cliente pré-seleciona quais pesquisas divulgar ou
+não**.
+
+Uma candidata pode, por exemplo, publicar uma única pesquisa excepcional que
+sugira sua vitória sobre os concorrentes, e deixar de divulgar uma dezena de
+pesquisas que apontem exatamente o contrário. Isso gera um _viés de seleção_ que
+pode aumentar o erro médio das pesquisas que chegam ao público.
+
+Outro problema é a **falta de transparência dos institutos** com os relatórios
+de pesquisa. A maioria deles não publica os documentos originais nos quais
+saíram os resultados. E não adianta pedir -- dos aproximadamente 150 institutos
+que o _Pindograma_ contatou, apenas dois enviaram as informações requisitadas.
+
+A impossibilidade de conseguir os relatórios "direto da fonte" força o leitor a
+confiar no meio de comunicação que veiculou a pesquisa – o que não é um problema
+quando os dados são publicados pela imprensa independente. No entanto, não
+faltam pesquisas que só são encontradas em jornais partidários, blogs que
+dependem de anúncios do Poder Público, ou mesmo em comunicados de imprensa de
+candidatos -- o que adiciona mais uma possibilidade de distorção à pesquisa.
+
+---
+
+Há, portanto, algumas perguntas que todos deveriam se fazer ao ver uma pesquisa
+que acabou de ser divulgada:
+
+_Quanto o instituto acertou no passado?_ O desempenho de um instituto no passado
+é um indicador melhor de seu desempenho no futuro do que o seu tamanho,
+prestígio, ou metodologia declarada ao TSE.
+
+_Quem contratou a pesquisa foi um político ou a imprensa independente?_ Caso a
+pesquisa tenha sido paga por um candidato, partido ou campanha, pense duas vezes
+antes de comprar o resultado -- principalmente se esse resultado divergir das
+intenções de voto reportadas por pesquisas independentes. É possível que o
+candidato tenha acesso a outras pesquisas que não lhe sejam convenientes; e que
+ele esteja divulgando uma pesquisa que, excepcionalmente, tenha dado um bom
+resultado para sua campanha.
+
+_Para cada pesquisa publicada, quantas não foram?_ Caso haja muito mais
+pesquisas registradas que publicadas, é possível que algumas delas estejam sendo
+omitidas -- seja por campanhas políticas, seja por censura da Justiça Eleitoral.
+Isso pode indicar que as pesquisas disponíveis têm um viés para certo candidato.
+
+_A pesquisa é excepcional?_ Sempre vai haver uma ou outra pesquisa que diverge
+muito dos levantamentos imediatamente anteriores. Em alguns casos, isso indica
+de fato uma mudança na intenção de votos; mas em outros casos, a pesquisa pode
+simplesmente ter errado por azar ou por algum problema na amostragem. Como regra
+geral, o melhor a se fazer é interpretar pesquisas excepcionais com parcimônia,
+e esperar outros resultados que confirmem ou sobrepujem os resultados
+excepcionais.
+
+O _Pindograma_ espera lhe ajudar a responder essas perguntas com o seu [Ranking
+de Institutos de Pesquisa][2] e o seu [Agregador de Pesquisas Eleitorais][3]. Com
+essas ferramentas, você pode analisar corridas eleitorais pelo Brasil todo,
+sabendo quais pesquisas merecem mais confiança.
+
+---
+
+**Dados usados na matéria:** Registro de Pesquisas Eleitorais (Tribunal Superior
+Eleitoral); Resultados de Pesquisas Eleitorais (_Pindograma_); Resultados de
+Pesquisas Eleitorais (Poder360).
+
+**Contribuíram com Dados:** Pedro Fonseca, Maricélia Antonieto, Maria Clara
+Rodrigues, Raquel Fernandes, Natália Costard, Rodrigo Adinolfi, Fabrício
+Donnangelo, Yasmin Bom.
+
+**Para reproduzir os números citados**, o código pode ser consultado [aqui][4].
+
+[1]: https://piaui.folha.uol.com.br/materia/contadores-de-votos/
+
+[2]: 
+
+[3]: 
+
+[4]: self

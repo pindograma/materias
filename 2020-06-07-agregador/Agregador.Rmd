@@ -1,0 +1,245 @@
+---
+title: "Como Funciona o Agregador de Pesquisas do Pindograma"
+author: "Daniel Ferreira"
+date: "14/08/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(gt)
+library(ggplot2)
+
+source('../theme.R')
+
+load('rio_polls.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+O princípio de um agregador de pesquisas eleitorais é simples: o consenso de
+várias pesquisas sobre as intenções de voto vale mais do que os resultados de
+uma única pesquisa. Ao invés de se orientar por um único instituto -- que pode
+ter viezes metodológicos ou produzir pesquisas de baixa qualidade -- um
+agregador de pesquisas acumula o maior número de pesquisas eleitorais; coloca
+os resultados em um gráfico; e desenha uma linha de tendência que mostra, em
+média, o que dizem as diferentes pesquisas em conjunto.
+
+Parece simples, mas o diabo está nos detalhes. Como selecionar as pesquisas que
+são mostradas no agregador? Devemos dar mais peso às pesquisas mais recentes,
+ou aos institutos com maior histórico de acertos? Devemos calibrar os viezes das
+empresas de pesquisa? Como exatamente calculamos a linha de tendência?
+
+São perguntas que cada agregador de pesquisa no Brasil -- seja o do
+[Poder360][1], do [JOTA][2], ou da [Gazeta do Povo][3] -- respondem de forma
+diferente. No entanto, essas ferramentas têm uma série de limitações:
+
+* **Âmbito restrito**. O agregador da Gazeta do Povo cobriu apenas a última
+  eleição presidencial e algumas eleições para governador daquele ano; já o
+  JOTA se limitou à eleição presidencial de 2018.
+
+* **Metodologia pouco transparente**. Segundo o JOTA, o seu agregador aplica
+  pesos às pesquisas com base no "número de dias para a eleição, tamanho da
+  amostra da pesquisa, e histórico do instituto de pesquisa". No entanto, não é
+  claro como exatamente esses pesos são aplicados. Enquanto isso, o Poder360
+  diz que sua média móvel "considera os resultados de levantamentos...
+  realizados num período de 60 dias (antes e após o ponto específico)" -- mas
+  não esclarece como essa média é calculada caso ainda não tenhamos dias "após o
+  ponto específico".
+
+* **Falta de critérios objetivos e transparentes na inclusão de pesquisas**.
+  Nenhum dos três agregadores de pesquisa explica os critérios que usaram para
+  incluir ou não uma pesquisa nas suas médias. O JOTA e a Gazeta do Povo, por
+  exemplo, deixaram de incluir o Vox Populi nas suas agregações. Já o Poder360
+  deixou de incluir cerca de 3.000 pesquisas na sua base de dados que o
+  _Pindograma_ conseguiu encontrar em seu levantamento.
+
+Além desses pontos mais gerais, **nenhum desses agregadores parece estar
+comprometido com a cobertura das eleições de 2020**. Os esforços do JOTA e da
+Gazeta do Povo parecem ter se concentrado nas eleições presidenciais de 2018.
+Enquanto isso, a última pesquisa para prefeito de São Paulo publicada no
+agregador do Poder360 saiu em julho, embora já estejamos no começo de setembro.
+
+Foi por isso que o _Pindograma_ decidiu desenvolver seu próprio agregador de
+pesquisas -- cuja metodologia é descrita a seguir.
+
+## Passo 1: Coleta de Dados
+
+A forma com a qual o _Pindograma_ consolidou sua base de pesquisas eleitorais
+está [amplamente documentada][4] em nosso artigo sobre como desenvolvemos nosso
+Ranking de Institutos de Pesquisa. Nós buscamos incluir todas as pesquisas
+eleitorais que constavam no registro de pesquisas do Tribunal Superior Eleitoral
+-- o que resultou em um banco com cerca de 6.000 sondagens conduzidas entre 2012
+e 2018. Algumas delas foram retiradas automaticamente de relatórios publicados
+pelos próprios institutos; e outras foram transcritas de milhares de sites de
+notícias pelo Brasil todo.
+
+Para adicionar as pesquisas de 2020, aplicamos o mesmo processo. A única
+diferença foi que obtivemos dados do registro de pesquisas através de um
+[_scraper_ de HTML][5], já que o TSE não divulga dados do registro em
+formato aberto até o final das eleições. A cada dois dias, repetiremos esse
+processo para adicionar novas pesquisas ao agregador.
+
+Por fim, aplicamos o seguinte filtro para adicionar pesquisas ao agregador:
+usamos pesquisas _espontâneas_ antes da data-limite para registro de
+candidaturas, e pesquisas _estimuladas_ depois dessa data. Pesquisas espontâneas
+são as que perguntam em quem o entrevistado votaria; e perguntas estimuladas
+são as que perguntam em quem o entrevistado votaria dada uma lista de
+candidatos. Assim, evitamos sobrecarregar o leitor com mais de um "cenário" para
+a eleição antes da definição de candidatos.
+
+## Passo 2: A Média
+
+O coração de todo agregador de pesquisas é a média. Sem ela, tudo que vemos é
+uma série de pontos que confundem o leitor ou a leitora:
+
+```{r}
+ggplot(rio_polls, aes(x = DT_FIM_PESQUISA, y = result, color = factor(NUMERO_CANDIDATO))) +
+  ggtitle('Intenção de Voto para Governador do Rio de Janeiro, 2018') +
+  geom_point() +
+  scale_y_continuous(labels = function(x) paste0(x, '%')) +
+  theme_pindograma() +
+  theme(legend.position = 'none') +
+  xlab('Data') +
+  ylab('')
+```
+
+Mas essa média não pode ser calculada de qualquer maneira. Idealmente, ela não
+deve ser sensível demais a mudanças nas pesquisas -- não queremos, por
+exemplo, a média de um candidato pulando de 50% para 60% de volta para 50% em
+menos de uma semana. No entanto, o agregador não pode ignorar mudanças súbitas
+no quadro eleitoral -- principalmente quando ocorrem poucos dias antes de uma
+eleição.
+
+O _Pindograma_ pesou todas essas considerações ao planejar o seu agregador de
+pesquisas, e chegou à seguinte metodologia para implementá-lo:
+
+##### 1) Imputação de Médias Diárias
+
+Idealmente, um agregador de pesquisas deveria informar como estão as intenções
+de voto _hoje_ para o leitor. Mas pesquisas eleitorais não são publicadas todo
+dia. Ou seja, precisamos estimar as intenções de voto mesmo para os dias para
+os quais não temos pesquisas publicadas.
+
+O primeiro passo é calcular a _média simples de intenções de voto_ para os dias
+em que foram feitas pesquisas. Por exemplo, caso tenham sido publicadas duas
+pesquisas no mesmo dia -- uma dando 50% dos votos ao candidato João, e outra
+dando 45% -- João teria uma média simples de 47,5% das intenções de voto
+naquele dia. Assim, passamos a ter um único valor para as intenções de voto de
+cada dia.
+
+O segundo passo é estimar as intenções de voto nos dias imediatamente seguintes
+a dias com pesquisas publicadas. Para isso, pegamos uma **média das intenções
+de voto nos cinco dias anteriores**. O terceiro passo é copiar essa média
+para todos os dias seguintes, até uma pesquisa nova ser publicada. Por exemplo,
+caso haja 15 dias entre a publicação de duas pesquisas em um pleito, nós
+assumimos que todos esses 15 dias terão o mesmo valor. A aplicação desses dois
+passos é mostrada no exemplo a seguir:
+
+```{r}
+tibble(
+  `15/set` = c(50, 50),
+  `16/set` = c(42, 42),
+  `17/set` = c(43, 43),
+  `18/set` = c(41, 41),
+  `19/set` = c(60, 60),
+  `20/set` = c(NA, mean(c(50, 42, 43, 41, 60))),
+  `21/set` = c(NA, mean(c(50, 42, 43, 41, 60))),
+  `22/set` = c(NA, mean(c(50, 42, 43, 41, 60))),
+  `23/set` = c(54, 54),
+  name = c('Sem Estimativas', 'Com Estimativas')
+) %>%
+  gt(rowname_col = 'name') %>%
+  theme_pindograma_table() %>%
+  theme_pindograma_table_stub() %>%
+  fmt_missing(everything())
+```
+
+##### 2) Definição de Pesos Temporais
+
+Em seguida, nós damos um **peso** para cada dia no nosso agregador. Esses pesos
+influenciam quais pesquisas afetam mais a média final do agregador. O
+_Pindograma_ aplica três categorias de peso:
+
+* **Peso por número de pesquisas**. Se duas pesquisas foram publicadas em um
+único dia, esse dia recebe peso 2. Se forem três pesquisas, o dia recebe peso 3,
+e assim por diante. Para os dias cujos resultados são imputados segundo o
+procedimento descrito acima, o peso é a média dos pesos por número de pesquisa
+dos últimos cinco dias.
+
+* **Peso temporal**. Pesquisas mais atuais tendem a refletir melhor a realidade
+do que pesquisas passadas. Por isso, dias mais recentes recebem pesos maiores no
+agregador.
+
+* **Peso por estimativa**. Nossas estimativas de intenção de voto para os dias
+sem pesquisas publicadas valem pouco quando comparadas a uma pesquisa real. Por
+isso, damos um peso menor aos dias cujos resultados foram estimados.
+
+O _Pindograma_ experimentou dar pesos maiores a pesquisas com maior número de
+entrevistados e a pesquisas feitas por institutos com histórico melhor.
+Entretanto, essas intervenções surtiram pouco efeito em praticamente todos os
+pleitos que analisamos. Por isso, preferimos deixar de aplicar esses critérios,
+em nome da simplicidade do agregador.
+
+##### 3) Cálculo da Média Móvel
+
+Por fim, calculamos a _média_ do agregador de pesquisas através de uma média
+móvel ponderada:
+
+* Na maioria dos casos, a média móvel em um dado dia é a média de intenções de
+  voto dos cinco dias anteriores.
+
+* Mas quando faltam quatro dias ou menos para a eleição, o número de dias
+  usados para calcular a média móvel diminui. A quatro dias da eleição, é
+  tomada a média das intenções de voto dos quatro dias anteriores; a três dias
+  da eleição, é tomada a média das intenções de voto dos três dias anteriores;
+  e assim por diante. Isso torna o agregador mais sensível a mudanças de última
+  hora nas pesquisas eleitorais -- muito frequentes nos pleitos brasileiros.
+
+Para finalizar, a média de intenções de voto dos dias anteriores é ponderada de
+acordo com os pesos descritos acima. O algoritmo de aplicação dos pesos pode ser
+encontrado no [código][6].
+
+## Resultados
+
+Não há por que passar muito tempo descrevendo os resultados do agregador.
+Afinal, você pode acessá-lo [aqui][7], e usá-lo para consultar pesquisas em
+centenas de pleitos pelo Brasil todo.
+
+Dito isso, não pretendemos que nosso agregador se limite a algumas consultas
+pontuais. O _Pindograma_ espera publicar várias reportagens em torno das
+corridas eleitorais de 2020 usando esses dados. E você, leitor, também pode
+usar o agregador para os seus projetos. Sinta-se à vontade para consultar os
+[dados][9] e o [código][10], disponíveis na íntegra para qualquer pessoa.
+Aproveite para deixar um comentário ou uma contribuição.
+
+---
+
+**Dados utilizados na matéria**: Resultados de Pesquisas Eleitorais
+(_Pindograma_); Resultados de Pesquisas Eleitorais (Poder360).
+
+**Contribuíram com Dados**: Pedro Fonseca, Maricélia Antonieto, Maria Clara
+Rodrigues, Raquel Fernandes, Natália Costard, Rodrigo Adinolfi, Fabrício
+Donnangelo, Yasmin Bom.
+
+Para reproduzir os números citados, o código pode ser consultado [aqui][8].
+
+[1]: https://www.poder360.com.br/pesquisas-de-opiniao/
+
+[2]: https://data.jota.info/agregador/
+
+[3]: https://especiais.gazetadopovo.com.br/eleicoes/2018/pesquisas-eleitorais/todos/todas-as-pesquisas-eleitorais/
+
+[4]: /2020/09/07/como-o-pindograma-calcula-o-ranking-de-pesquisas-eleitorais/
+
+[5]: https://github.com/pindograma/pesqEle
+
+[6]: https://github.com/pindograma/agregador/blob/master/average_app/polling_average.cpp
+
+[7]: http://agregador.pindograma.com.br
+
+[9]: https://github.com/pindograma/pesquisas
+
+[10]: https://github.com/pindograma/agregador
