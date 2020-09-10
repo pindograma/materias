@@ -184,9 +184,11 @@ da cidade não demonstraram forte oposição ao PT nas eleições de 2014. No
 entanto, apoiaram Bolsonaro com força em 2018:
 
 ```{r}
-title <- ggdraw() +
-  draw_label('Evangélicos e o voto presidencial nas favelas do Rio, 2014-2018',
-             fontfamily = 'Fantasque', color = pg_dark_gray)
+titles = ggplot() +
+  labs(title = 'Evangélicos e o voto presidencial nas favelas do Rio, 2014-2018',
+       subtitle = '(cada ponto do gráfico é uma favela)') +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque', color = pg_dark_gray))
 
 plot14 = ggplot(favelas_grouped_ev, aes(x = evangelicos, y = pt_2014)) +
   geom_point(color = pg_blue) +
@@ -206,7 +208,7 @@ plot18 = ggplot(favelas_grouped_ev, aes(x = evangelicos, y = pt_2018)) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   xlab('População Evangélica') + ylab('Votos em Fernando Haddad')
 
-plot_grid(title, plot_grid(plot14, plot18, labels = c('2014', '2018')), ncol = 1, rel_heights = c(0.1, 1)) +
+plot_grid(titles, plot_grid(plot14, plot18, labels = c('2014', '2018')), ncol = 1, rel_heights = c(0.1, 1)) +
   labs(caption = 'Fonte: IBGE/Censo 2010, TSE') +
   theme(plot.caption = element_text(hjust = 0, size = 10)) +
   theme(text = element_text(family = 'Fantasque', color = pg_dark_gray))
@@ -330,6 +332,7 @@ evangélicos:
 ```{r}
 ggplot(tr_mil %>% mutate(mil = milicia > 0.7) %>% filter(!is.na(mil)), aes(x = evangelicos, y = pt_2018, color = factor(mil))) +
   ggtitle('Evangélicos, milícias, e o voto presidencial nas favelas do Rio, 2018') +
+  labs(subtitle = '(cada ponto no gráfico é uma favela)') +
   geom_point() +
   geom_smooth(method = 'loess', se = F) +
   scale_color_manual(labels = c('Sem Milícia', 'Com Milícia'), values = c(pg_orange, pg_blue)) +
