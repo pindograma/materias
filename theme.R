@@ -23,7 +23,10 @@ theme_pindograma = function() {
     theme(text = element_text(family = 'Fantasque')) +
     theme(axis.text = element_text(size = 12)) +
     theme(axis.title = element_text(size = 14, color = pg_dark_gray)) +
-    theme(plot.title = element_text(size = 14, color = pg_dark_gray))
+    theme(plot.title = element_text(size = 14, color = pg_dark_gray, hjust = 0.5)) +
+    theme(plot.title.position = 'plot') +
+    theme(plot.caption.position = 'plot') +
+    theme(plot.caption = element_text(hjust = 0, size = 10, color = pg_dark_gray))
 }
 
 theme_pindograma_table = function(gt_table) {
@@ -72,12 +75,5 @@ theme_pindograma_table_stub = function(gt_table) {
     tab_style(cell_text(font = 'Fantasque Sans Mono', size = px(15)), cells_stub())
 }
 
-theme_pindograma_table_grand_summary = function(gt_table) {
-  gt_table %>%
-    tab_style(cell_text(font = 'Fantasque Sans Mono', size = px(15)), cells_grand_summary()) %>%
-    tab_style(cell_text(font = 'Fantasque Sans Mono', size = px(15)), cells_row_groups())
-}
-
 pg_dot_palette = c(pg_orange, pg_green, pg_blue, pg_yellow)
-
 pg_column_palette = c(pg_orange, pg_green, pg_blue, pg_yellow, pg_dark_gray)

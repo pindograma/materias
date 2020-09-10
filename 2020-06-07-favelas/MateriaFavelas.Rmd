@@ -11,7 +11,7 @@ library(ggplot2)
 library(cowplot)
 library(sf)
 
-source('../polling/theme.R')
+source('../theme.R')
 
 load('geocoded_secoes_all_rio.Rdata')
 load('Favelas.Rdata')
@@ -23,15 +23,15 @@ knitr::opts_chunk$set(warning = FALSE)
 pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
 ```
 
-"Alô? Com quem eu falo?" Uma versão acústica de "Ninguém Explica Deus" toca ao
+"Alô? Com quem eu falo?" Uma versão acústica de _Ninguém Explica Deus_ toca ao
 fundo da chamada. "Eu poderia falar com um pastor da igreja? Estamos tentando
 conversar com líderes locais para entender o voto nas favelas da região". Uma
 voz veio ao telefone e, finalmente, o pastor de uma igreja metodista havia se
 disposto a conversar com a reportagem.
 
--- Mas as perguntas são sobre política?
+"Mas as perguntas são sobre política?"
 
--- Sim.
+"Sim".
 
 E o telefone desliga.
 
@@ -52,13 +52,13 @@ Para responder à pergunta, o _Pindograma_ construiu um mapa detalhado de como
 elas votam. Usando bases do Governo Federal e o Google Maps, a reportagem
 [localizou cada uma das `r pn(number_of_sections)` seções eleitorais do Rio de
 Janeiro][2]. Então, cruzamos essas seções com as áreas das favelas com mais de
-1.000 pessoas, segundo dados da Prefeitura do Rio, e analisamos os resultados
+mil pessoas, segundo dados da Prefeitura do Rio, e analisamos os resultados
 das últimas eleições presidenciais:
 
 ```{r}
 ggplot() +
   ggtitle('Margem de Vitória de Jair Bolsonaro nas Favelas do Rio') +
-  labs(subtitle = '(em pontos percentuais)', caption = 'Fonte: TSE') +
+  labs(subtitle = '(em pontos percentuais)', caption = 'Fonte: TSE, Base do Pindograma de seções eleitorais') +
   geom_sf(data = tracado, fill = '#dce9ef') +
   geom_sf(data = favelas_grouped, aes(fill = margin), color = NA) +
   scale_fill_gradient2(low = '#ff0000', mid = '#d4d4d4', high = '#003A70', midpoint = 0) +
@@ -86,16 +86,16 @@ favelas_bolsonaro_win = favelas_grouped %>%
   nrow()
 
 favelas_bolsonaro_moradores = favelas_grouped %>%
-  filter(pt_2018 > bolsonaro_2018) %>%
+  filter(bolsonaro_2018 > pt_2018) %>%
   pull(pop) %>%
   sum(na.rm = T)
 ```
 
-Bolsonaro obteve maioria em quase todas as favelas do Rio -- o atual presidente
-foi vitorioso em `r pn(favelas_bolsonaro_win)` comunidades somando
-`r pn(favelas_bolsonaro_moradores)` moradores; enquanto Haddad venceu em somente
-`r pn(favelas_haddad_win)` favelas, somando `r pn(favelas_haddad_moradores)`
-moradores.
+Bolsonaro obteve maioria em quase todas as favelas do Rio com mais de mil
+residentes -- o atual presidente foi vitorioso em `r pn(favelas_bolsonaro_win)`
+comunidades, somando `r pn(favelas_bolsonaro_moradores)` moradores. Enquanto
+isso, Haddad venceu em somente `r pn(favelas_haddad_win)` favelas, somando
+`r pn(favelas_haddad_moradores)` moradores.
 
 ```{r}
 quedas = favelas_grouped %>%
@@ -115,7 +115,7 @@ queda_oeste = abs(quedas$d[3]) * 100
 No entanto, essa transição do PT para Bolsonaro não ocorreu de maneira uniforme
 pela cidade. Nas favelas da região central, a porcentagem de votos para o
 candidato do PT caiu `r pn(queda_centro)`%. Na Zona Norte, essa queda foi de
-`r pn(queda_norte)`; e na Zona Oeste, de `r pn(queda_oeste)`. Foi somente nas
+`r pn(queda_norte)`%, e na Zona Oeste, de `r pn(queda_oeste)`%. Foi somente nas
 favelas da Zona Sul que o voto no PT cresceu entre 2014 e 2018.
 
 Especialistas que estudam o voto do Rio sugerem três causas para explicar essa
@@ -172,8 +172,8 @@ ggplot() +
 ```
 
 O pastor Adelson, da Assembleia de Deus de Santa Cruz, falou ao _Pindograma_
-sobre o comportamento eleitoral dos fiéis. “Depois da crise econômica não tem
-como fugir do desemprego. A população aqui foi mais afetada. A vida piorou -- e
+sobre o comportamento eleitoral dos fiéis. “Depois da crise econômica, não tem
+como fugir do desemprego. A população aqui foi mais afetada. A vida piorou. E
 quem oferece cesta básica, ajuda com moradia, emprego? A igreja. Sempre juntamos
 uma ajuda para um irmão que precisa. Antes, os membros da congregação, alguns
 apoiavam o governo do PT, outros não. Mas quase todo mundo mudou de ideia.
@@ -195,7 +195,7 @@ plot14 = ggplot(favelas_grouped_ev, aes(x = evangelicos, y = pt_2014)) +
   ylim(0.2, 0.6) +
   scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-  xlab('População Evangélica') + ylab('Votos no candidato do PT')
+  xlab('População Evangélica') + ylab('Votos em Dilma Rousseff')
 
 plot18 = ggplot(favelas_grouped_ev, aes(x = evangelicos, y = pt_2018)) +
   geom_point(color = pg_blue) +
@@ -204,7 +204,7 @@ plot18 = ggplot(favelas_grouped_ev, aes(x = evangelicos, y = pt_2018)) +
   ylim(0.2, 0.6) +
   scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-  xlab('População Evangélica') + ylab('Votos no candidato do PT')
+  xlab('População Evangélica') + ylab('Votos em Fernando Haddad')
 
 plot_grid(title, plot_grid(plot14, plot18, labels = c('2014', '2018')), ncol = 1, rel_heights = c(0.1, 1)) +
   labs(caption = 'Fonte: IBGE/Censo 2010, TSE') +
@@ -213,10 +213,10 @@ plot_grid(title, plot_grid(plot14, plot18, labels = c('2014', '2018')), ncol = 1
 ```
 
 O alinhamento do voto evangélico a determinados candidatos não é um fenômeno
-inédito. Em 2014, áreas do Rio com maior presença de evangélicos já votavam mais
-em candidatos conservadores para o Legislativo; e também já davam mais votos que
-os católicos a Marcelo Crivella, um pastor licenciado. Mas foi só em 2018 que o
-voto evangélico pesou em uma eleição presidencial.
+inédito. Em 2014, áreas do Rio com maior presença de evangélicos já votavam
+mais em candidatos conservadores para o Legislativo, e já davam mais votos que
+os católicos a Marcelo Crivella, então um pastor licenciado. Mas foi só em 2018
+que o voto evangélico pesou em uma eleição presidencial.
 
 O pesquisador Ignacio Cano, especialista em segurança pública e política do Rio
 de Janeiro, compartilha dessa avaliação. Segundo o pesquisador, “os eleitores
@@ -226,7 +226,7 @@ com medo de perder parte relevante do voto evangélico. Em 2018 o Partido dos
 Trabalhadores já perdeu quase todo esse voto. Esse descolamento foi parte por
 pragmatismo, parte pela desmoralização do governo”.
 
-Há muitas razões para a adesão dos evangélicos a Bolsonaro – o conservadorismo
+Há muitas razões para a adesão dos evangélicos a Bolsonaro: o conservadorismo
 moral, a oposição à corrupção do PT, e o ativismo de fiéis bolsonaristas junto a
 suas comunidades religiosas. [Para Silas
 Malafaia](https://epoca.globo.com/como-bolsonaro-se-tornou-candidato-dos-evangelicos-23126650),
@@ -235,13 +235,13 @@ erro da esquerda" foi ter apoiado o "aborto, ideologia de gênero, casamento gay
 liberação de drogas" -- pautas que Bolsonaro opôs por toda a sua carreira.
 
 Mas nenhum desses motivos pode ser reduzido a uma crença de que os evangélicos
-são meramente manipulados pelos líderes religiosos -- tanto [segundo
+são meramente manipulados pelos líderes religiosos, tanto [segundo
 especialistas](https://www.bbc.com/portuguese/brasil-45829796), quanto segundo
 os próprios pastores. O pastor Adelson afirma que nunca instruiu o voto de
 ninguém:  "Não conheço aqui nenhum pastor que faça isso. Que direcione o voto
-assim. Nós entendemos da Bíblia — o voto de cada fiel é pessoal e individual.
-Pastor que fala em quem votar deveria responder na Justiça. Na congregação
-convivemos com o diferente — por isso que chamamos o Brasil de democracia, não?”
+assim. Nós entendemos da Bíblia -- o voto de cada fiel é pessoal e individual.
+Pastor que fala em quem votar deveria responder na Justiça. Na congregação,
+convivemos com o diferente. Por isso que chamamos o Brasil de democracia, não?”
 
 ##### II) Quadros Políticos Locais
 
@@ -253,10 +253,10 @@ moradores – algo que pode ser essencial durante uma eleição para apoiar ou
 derrubar campanhas.
 
 A perda de apoio dessas bases foi, em parte, responsável pela queda da votação
-do PT nas favelas. Para o pesquisador Ignacio Cano, "o PT ficou órfão de quadros
-locais" nos últimos anos, ele explica que com a economia indo bem, era fácil
-convencer líderes locais a fazerem campanha pelo partido; mas que essa base foi
-perdida com a crise econômica. Segundo Cano, a coligação de partidos e
+do PT nas favelas. Para o pesquisador Ignacio Cano, "o PT ficou órfão de
+quadros locais" nos últimos anos. Ele explica que era fácil convencer líderes
+locais a fazerem campanha pelo partido com a economia indo bem, mas que essa
+base foi perdida com a crise econômica. Segundo Cano, a coligação de partidos e
 lideranças apoiando o PT no Rio se desmanchou por volta de 2016.
 
 Salvino Oliveira, coordenador de [uma plataforma de narrativas sobre as
@@ -264,18 +264,18 @@ periferias](https://www1.folha.uol.com.br/colunas/perifaconnection/), pensa de
 forma parecida.  Para ele, forças de esquerda perderam uma conexão com muitos
 eleitores por volta de 2016. Além disso, ele ressalta que durante os governos
 petistas, lideranças do terceiro setor, de associações de moradores e de
-organizações de esquerda foram absorvidas para cargos no governo – mas que no
+organizações de esquerda foram absorvidas para cargos no governo, mas que no
 poder, passaram a negligenciar a base das organizações de que vieram. Segundo
 Salvino, tanto as bases de esquerda quanto os eleitores no geral passaram a
 sentir que não se escutava mais a favela.
 
 Ainda assim, o PT segurou muito mais votos nas favelas da Zona Sul e da região
-central do que na Zona Oeste. Salvino explica que especialmente na Zona Sul do
+central do que na Zona Oeste. Salvino explica que, especialmente na Zona Sul do
 Rio, ONGs bem organizadas e com inclinação de esquerda estão diariamente em
 contato direto com os eleitores. Assim, conseguem indiretamente apoiar
 candidatos que simpatizam com as suas causas. Nas suas palavras, "as ONGs da
 Zona Sul, pela sua localização, sempre tiveram mais relevância e visibilidade.
-Recebem mais doações — depois das olimpíadas ganharam plataformas e pautas
+Recebem mais doações — depois das Olimpíadas ganharam plataformas e pautas
 globais".
 
 Já na Zona Oeste, o funcionamento desse tipo de ONG acaba restrito pelas
@@ -284,13 +284,13 @@ Estado", ganhando quando os serviços públicos não funcionam. "Se a energia
 elétrica vem por boas políticas públicas até a casa do morador, a milícia não
 pode cobrar taxa. Se o Estado protegesse a região, mesma coisa. É vantajoso para
 esses grupos paramilitares que ninguém reclame das condições, por isso
-restringir a atuação de ONGs. A milícia disputa o controle da miséria".
+restringem a atuação de ONGs. A milícia disputa o controle da miséria".
 
 ##### III) Milícias
 
-Então a como as milícias afetam o voto do eleitor carioca? Para o pesquisador
+Então como as milícias afetam o voto do eleitor carioca? Para o pesquisador
 Ignacio Cano, esses grupos exercem considerável influência em atividades
-eleitorais, como a distribuição de cartazes e santinhos, com certeza a milícia
+eleitorais, como a distribuição de cartazes e santinhos: "com certeza a milícia
 controla isso”. Outro exemplo dessas atividades está na ["taxa
 eleitoral"](https://oglobo.globo.com/brasil/milicias-do-rio-cobram-ate-120-mil-para-que-candidatos-facam-campanha-20191488),
 cobrada pelas milícias para que candidatos tenham permissão para fazer campanha
@@ -300,14 +300,14 @@ Para a pesquisadora Jessie Bullock, especialista na relação entre grupos
 criminosos e o voto no Rio de Janeiro, as milícias se adaptam melhor que o
 tráfico à prática de influenciar eleições: "Os grupos de tráfico têm seu negócio
 baseado na venda, principalmente de drogas. A logística dessa venda é de
-interações rápidas com o consumidor, e transporte efetivo das mercadorias". Já
+interações rápidas com o consumidor e transporte efetivo das mercadorias". Já
 as milícias, segundo Bullock, têm um contato muito mais pessoal com os moradores
 dos seus territórios; afinal, precisam cobrar todo mês por "segurança" e
 serviços. Essa conexão pessoal com os moradores -- componente importante da
 prática de extorsão -- permite que os criminosos ajam mais naturalmente como
-cabos eleitorais. Da mesma forma, o fato da milícia manter relações duradouras
-com quem ela interage tende a facilitar um bom relacionamento com certos
-políticos -- coisa que o _modus operandi_ furtivo do tráfico dificulta.
+cabos eleitorais. Da mesma forma, a milícia manter relações duradouras com quem
+ela interage tende a facilitar um bom relacionamento com certos políticos,
+coisa que o _modus operandi_ furtivo do tráfico dificulta.
 
 Ainda de acordo com Bullock, a influência das milícias é muito determinante em
 pleitos menores. Vereadores e deputados estaduais ligados à paramilitares ganham
@@ -315,15 +315,15 @@ acesso privilegiado a algumas comunidades, facilitando suas eleições. Exemplo
 maior disso é Nadinho de Rio das Pedras, apontado pela CPI das Milícias em 2008
 como "ex-líder" da milícia da favela de Rio das Pedras. Ele foi eleito vereador
 em 2004 com [75,5% dos votos da
-favela](https://apublica.org/2019/02/como-vota-rio-das-pedras-reduto-da-mais-antiga-milicia-carioca/)
-– e acabou assassinado em 2009. Desde então, dezenas de candidatos continuam
+favela](https://apublica.org/2019/02/como-vota-rio-das-pedras-reduto-da-mais-antiga-milicia-carioca/),
+e acabou assassinado em 2009. Desde então, dezenas de candidatos continuam
 sendo eleitos em circunstâncias similares.
 
-Mas apesar de exercerem um controle perigoso sobre os pleitos minoritários nas
-favelas onde têm presença, as milícias não aparentam ter produzido vantagem para
-nenhum candidato a presidente em 2018. Usando dados do Disque Denúncia do Rio,
-classificamos as favelas como áreas de tráfico ou áreas de milícia, baseado em
-quantas ligações da região denunciavam cada grupo em 2016 e 2017. E houve pouca
+Apesar de exercerem um controle perigoso sobre os pleitos minoritários nas
+favelas onde têm presença, as milícias não aparentam ter produzido vantagem
+para nenhum candidato a presidente em 2018. Usando dados do Disque Denúncia do
+Rio, classificamos as favelas como áreas com ou sem milícia, baseado em quantas
+ligações da região denunciavam cada grupo em 2016 e 2017, e houve pouca
 diferença em como cada área votou, quando controlamos pela quantidade de
 evangélicos:
 
@@ -339,10 +339,8 @@ ggplot(tr_mil %>% mutate(mil = milicia > 0.7) %>% filter(!is.na(mil)), aes(x = e
   theme(legend.title = element_blank()) +
   theme(legend.text = element_text(size = 12)) +
   theme(legend.position = 'bottom') +
-  xlab('População Evangélica') + ylab('Votos no candidato do PT') +
-  labs(caption = 'Fonte: IBGE/Censo 2010, TSE, Disque Denúncia') +
-  theme(plot.caption = element_text(hjust = 0)) +
-  theme(plot.title.position = "plot")
+  xlab('População Evangélica') + ylab('Votos em Fernando Haddad') +
+  labs(caption = 'Fonte: IBGE/Censo 2010, TSE, Disque Denúncia')
 ```
 
 As milícias são uma força importante para o cenário eleitoral do Rio: elas
@@ -383,6 +381,6 @@ pelo Volt Data Lab).
 
 [2]: https://github.com/ipeaGIT/geobr/issues/184
 
-[3]: self
+[3]: https://github.com/pindograma/materias/blob/master/2020-06-07-favelas/MateriaFavelas.Rmd
 
 [4]: https://noticias.r7.com/prisma/r7-planalto/o-pt-nao-quer-ouvir-o-que-mano-brown-tem-para-dizer-26042019

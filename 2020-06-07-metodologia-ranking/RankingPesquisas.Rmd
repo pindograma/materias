@@ -78,11 +78,12 @@ average_polls_per_election = model_polls %>%
 ```
 
 Pesquisas eleitorais são uma parte importante de toda eleição. Além de
-refletirem as intenções de voto no momento em que foram realizadas, elas pautam
-narrativas de candidatos e da mídia sobre a eleição -- narrativas que, por sua
-vez, podem ter um impacto forte sobre a opinião pública.
+refletirem as intenções de voto do eleitorado no momento em que são
+realizadas, elas pautam narrativas de candidatos e da mídia sobre a eleição --
+narrativas que, por sua vez, podem ter um impacto forte sobre a opinião
+pública.
 
-Mas a despeito da influência que as pesquisas exercem sobre o debate público,
+Mas, a despeito da influência que as pesquisas exercem sobre o debate público,
 não há consenso sobre o quanto podemos confiar nelas. Ora ouvimos [ataques][6]
 aos institutos, acusando-os de [manipular][7] resultados; ora [somos][8]
 [tranquilizados][20] por levantamentos que apontam para o alto grau de acerto
@@ -94,19 +95,19 @@ levantamentos; assim como existem institutos que produzem resultados de baixa
 qualidade -- seja de propósito, seja por incompetência. Mas como saber qual é
 qual?
 
-Foi para responder essa pergunta que o _Pindograma_ criou o seu Ranking de
+Foi para responder a essa pergunta que o _Pindograma_ criou o seu Ranking de
 Institutos de Pesquisa. Nossa metodologia, inspirada nos critérios usados pelo
-site americano [FiveThirtyEight][1], usa vários medidas para avaliar o
+site estadunidense [FiveThirtyEight][1], usa várias medidas para avaliar o
 desempenho passado dos institutos de forma objetiva.
 
-A seguir, documentamos esses critérios de forma aprofundada -- para que você
+A seguir, documentamos esses critérios de forma aprofundada, para que você
 também possa entender, nos mínimos detalhes, como é possível determinar o
 desempenho das empresas de pesquisa.
 
 ## Passo 1: Coleta de Dados
 
 Acumular as pesquisas eleitorais para formular esse ranking foi, sem dúvida, a
-tarefa que mais tomou esforço do _Pindograma_. Embora [vários][2] [sites][3]
+tarefa que mais tomou tempo do _Pindograma_. Embora [vários][2] [sites][3]
 [já agreguem][4] pesquisas eleitorais no Brasil, só um deles dá acesso público
 aos seus dados: o [Poder360][5].
 
@@ -142,9 +143,9 @@ do seguinte processo:
 
 ##### Busca por relatórios "direto da fonte"
 
-Usando dados do TSE, levantamos todos os institutos de pesquisa que registraram
+Usando dados do TSE, localizamos todos os institutos de pesquisa que registraram
 mais de 15 pesquisas entre 2012 e 2018. Em seguida, procuramos os sites de
-todas essas empresas, e quando disponíveis, baixamos todos os relatórios de
+todas essas empresas, e quando disponíveis, baixamos todos seus relatórios de
 pesquisa disponíveis na Internet. São poucos os institutos que disponibilizam
 essas informações -- mas os que o fazem geralmente são os que mais publicam
 pesquisas. Só do Ibope, por exemplo, coletamos 928 PDFs relativos às últimas
@@ -155,13 +156,13 @@ as suas informações de forma automática. Com isso, a transcrição manual de
 resultados só foi necessária com uma minoria de PDFs irregulares. No total,
 agregamos `r pn(number_of_pdf_polls)` pesquisas dessa forma.
 
-No começo, esperávamos receber mais relatórios entrando em contato com os
+Inicialmente, esperávamos receber mais relatórios entrando em contato com os
 institutos que não os disponibilizavam pela Internet. Mas mesmo depois de um mês
 pedindo esses documentos por telefone para mais de cem institutos, só dois
 enviaram essas informações ao _Pindograma_. Com isso, nos restou buscar notícias
 na Internet que continham os resultados de pesquisas dessas empresas.
 
-##### Busca por notícias que contém resultados de pesquisa
+##### Busca por notícias que contêm resultados de pesquisa
 
 Para garantir o levantamento mais completo possível de pesquisas eleitorais
 publicadas na Internet, aproveitamos o registro de pesquisas do TSE. Segundo a
@@ -170,8 +171,8 @@ junto à Justiça Eleitoral. Com o registro, cada pesquisa recebe um número de
 identificação, e a lei exige que esse número seja divulgado sempre que os
 resultados da pesquisa são mencionados.
 
-Alguns meios de comunicação publicam pesquisas sem número; e outros publicam
-esse número de forma pouco ortodoxa. Mas quase sempre, pesquisas que foram
+Alguns meios de comunicação publicam pesquisas sem número; outros publicam
+esse número de forma pouco ortodoxa. Quase sempre, porém, pesquisas que foram
 divulgadas na Internet são localizáveis através de uma busca seu número em um
 _search engine_.
 
@@ -179,12 +180,12 @@ O _Pindograma_ usou a [API do Bing][10] (o Google não tem API de busca) para
 automatizar a busca pelas 20.771 pesquisas registradas no TSE entre 2012 e
 2018. Em seguida, veio a etapa mais trabalhosa do processo todo: **transcrever
 os resultados**. Toda a equipe do _Pindograma_, aliada por sete colaboradores,
-"preencheu planilhas" durante três meses para consolidar o levantamento mais
-completo de pesquisas para o período 2012-2018.
+"preencheu planilhas" durante três meses para consolidar o levantmento de
+pesquisas eleitorais do período de 2012-2018 mais completo até hoje.
 
 Desse processo, saíram `r pn(number_of_manual_polls)` pesquisas eleitorais -- o
 que pode parecer pouco, comparado com as 20 mil pesquisas registradas junto ao
-TSE. Mas diferença faz sentido, e se deve a alguns fatores:
+TSE. No entanto, essa diferença faz sentido, e deve-se a alguns fatores:
 
 * Uma parte considerável do jornalismo local no Brasil não se digitalizou. Isso
 faz com que muitas pesquisas para prefeito não sejam localizáveis pelo Bing.
@@ -206,15 +207,15 @@ em excesso no sistema do TSE.
 De toda forma, o _Pindograma_ pretende continuar alimentando sua base com
 pesquisas que for encontrando. **E você pode nos ajudar com isso!** Caso você
 saiba de uma pesquisa que não está aparecendo nosso banco de dados, mande um
-email para pesquisas@pindograma.com.br.
+email para nós em pesquisas@pindograma.com.br.
 
 ##### Pós-processamento dos dados
 
 Para garantir a qualidade desses dados, o _Pindograma_ fez uma série de
-verificações. Corrigimos pesquisas cujo total somava mais de 100%; sondagens que
-estavam associadas às cidades erradas; e outras coisas do gênero. Em seguida,
-cruzamos todas as pesquisas que encontramos com a relação de candidatos
-divulgada pelo TSE.
+verificações. Corrigimos pesquisas cujo total somava mais de 100%, sondagens
+que estavam associadas às cidades erradas, e outras coisas do gênero. Em
+seguida, cruzamos todas as pesquisas que encontramos com a relação de
+candidatos divulgada pelo TSE.
 
 ##### Combinação com base do Poder360
 
@@ -225,8 +226,8 @@ com dados do Poder360, quando necessário.
 
 Pois bem: entre 2012 e 2018, o Poder360 acumulou `r pn(number_of_p3_polls)`
 pesquisas "utilizáveis" -- isto é, pesquisas que restaram após o tratamento dos
-dados e a remoção de sondagens que não tinham um número do TSE. E destas, `r
-pn(number_of_unique_p3_polls)` não foram localizadas no levantamento do
+dados e a remoção de sondagens que não tinham um número do TSE. Destas,
+`r pn(number_of_unique_p3_polls)` não foram localizadas no levantamento do
 _Pindograma_.
 
 Há algumas razões possíveis para o _Pindograma_ não ter encontrado essas
@@ -275,7 +276,7 @@ Antes de descrever o cálculo do ranking dos institutos de pesquisa, é importan
 entender que toda pesquisa eleitoral erra ao compararmos seus percentuais com o
 resultado das eleições. Afinal, o eleitor sempre pode mudar de ideia entre o dia
 da pesquisa e a hora de digitar o voto. Também existe a chance de uma pesquisa
-ter caído, por puro azar, fora do intervalo de confiança.
+ter caído, por puro azar, fora do [intervalo de confiança][24].
 
 Além disso, certos pleitos são mais incertos do que outros: eleições para
 prefeito, por exemplo, são mais incertas do que eleições para governador. E
@@ -291,19 +292,19 @@ com os seguintes passos:
 ##### 1) Seleção
 
 Para calcular o desempenho de cada instituto, o _Pindograma_ não usou todas as
-pesquisas disponíveis na base. Ao invés disso, selecionamos as sondagens que
+pesquisas disponíveis na base. Em vez disso, selecionamos as sondagens que
 entram no cálculo a partir dos seguintes critérios:
 
 * **Pleitos majoritários**. Foram excluídas pesquisas para deputado estadual,
   deputado federal, e senador.
 
-* **Âmbito da pesquisa**. O _Pindograma_ incluiu na análise as nacionais para
-  presidente; estaduais para presidente; estaduais para governador; e
-  municipais para prefeito. Não incluímos pesquisas para presidente ou
-  governador no âmbito municipal. Também excluímos pesquisas cujo âmbito é uma
-  região específica, como pesquisas para governador em cidades do litoral de
-  São Paulo. (O âmbito de cada pesquisa é manualmente determinado pelo
-  _Pindograma_ através de dados do TSE).
+* **Âmbito da pesquisa**. O _Pindograma_ incluiu na análise as pesquisas
+  nacionais para presidente; estaduais para presidente; estaduais para
+  governador; e municipais para prefeito. Não incluímos pesquisas para
+  presidente ou governador no âmbito municipal. Também excluímos pesquisas cujo
+  âmbito é uma região específica, como pesquisas para governador em cidades do
+  litoral de São Paulo. (O âmbito de cada pesquisa foi manualmente determinado
+  pelo _Pindograma_ através de dados do TSE).
 
 * **Proximidade da eleição**. Não faz sentido avaliar pesquisas feitas longe da
   eleição, ainda mais em pleitos voláteis. Por isso, selecionamos somente
@@ -342,7 +343,7 @@ Quando não tínhamos essa informação, a pesquisa foi retirada da análise.
 ##### 2) Erro Médio Ajustado
 
 Selecionadas as pesquisas, o _Pindograma_ comparou seus resultados com o
-veredicto das urnas.
+veredito das urnas.
 
 A medida mais comum para essa comparação no Brasil tem sido a _média simples das
 diferenças absolutas, para cada candidato, entre intenção de voto estimada e
@@ -380,7 +381,7 @@ tibble(
   tab_style(cell_text(weight = 'bold'), cells_body(rows = 10))
 ```
 
-Esse exemplo foi escolhido de propósito, porque revela as limitações desse
+Esse exemplo foi escolhido de propósito, pois revela as limitações desse
 método para calcular o erro médio das pesquisas. O instituto pode cometer um
 erro crasso no que tange a alguns candidatos, mas esse erro acaba sendo diluído
 pelos "acertos" no que tange aos outros.
@@ -425,7 +426,7 @@ brasileiro.
 
 ##### 3) Índice de Desempenho I
 
-De todo modo, o erro médio ajustado ainda não é um bom número, por si só, para
+De todo modo, o erro médio ajustado ainda não é um bom número por si só para
 avaliar as pesquisas eleitorais. Não é justo comparar o erro médio ajustado de
 duas pesquisas se elas tiverem sido feitas em momentos muito diferentes; assim
 como não faz sentido comparar o erro médio ajustado de sondagens para prefeito
@@ -442,7 +443,7 @@ sobre o erro médio ajustado de toda pesquisa:
 
 * Se a pesquisa foi feita para o primeiro ou segundo turno;
 
-* Quantos dias faltam para a eleição;
+* Quantos dias faltavam para a eleição;
 
 * Quantas pessoas foram entrevistadas pela pesquisa;
 
@@ -461,14 +462,14 @@ primeiro turno com 2.000 entrevistados, a regressão nos diz que um erro médio
 ajustado de `r pn(predicted)` pontos percentuais seria esperado. Por isso, caso
 uma pesquisa com essas especificações tivesse um erro médio ajustado de 6
 pontos, ela receberia um índice de desempenho de **`r pn(6 - predicted)`**. Já
-se ela tivesse um erro médio ajustado de 3 pontos, o índice seria de **`r pn(3 -
-predicted)`**. Note que **quanto menor esse índice, melhor é o desempenho da
-pesquisa**.
+se ela tivesse um erro médio ajustado de 3 pontos, o índice seria de
+**`r pn(3 - predicted)`**. Note que **quanto menor esse índice, melhor é o
+desempenho da pesquisa**.
 
 ##### 4) Índice de Desempenho II
 
 O Índice de Desempenho I permite uma comparação mais justa entre todas as
-pesquisas na nossa base. Mas em alguns casos, esse índice ainda pode ser
+pesquisas na nossa base. Mas, em alguns casos, esse índice ainda pode ser
 melhorado.
 
 Imagine, por exemplo, duas eleições para prefeito no interior de São Paulo. Na
@@ -505,9 +506,9 @@ presentes, mais ênfase é dada ao Índice de Desempenho I.
 Há apenas um último detalhe sobre o Índice de Desempenho II. Para evitar
 comparações injustas entre pesquisas conduzidas em espaços de tempo diferentes,
 o _Pindograma_ não faz uma comparação intra-pleito _stricto sensu_. As pesquisas
-de cada eleição são divididas em dois "grupos": aquelas feitas a uma semana ou
+de cada eleição são divididas em dois grupos: aquelas feitas a uma semana ou
 menos da votação; e aquelas feitas a mais de uma semana do pleito. A fórmula
-é aplicada dentro de cada "grupo".
+é aplicada dentro de cada grupo.
 
 Em termos concretos, o cálculo desse índice é simples, e pode ser descrito pela
 seguinte fórmula:
@@ -543,8 +544,8 @@ tibble(
   theme_pindograma_table_stub()
 ```
 
-Mais uma vez, se trata de um exemplo escolhido para demonstrar um problema. O
-desempenho desses quatro institutos é parecida pela média do Índice de
+Mais uma vez, trata-se de um exemplo escolhido para demonstrar um problema. Os
+desempenhos desses quatro institutos são parecidos pela média do Índice de
 Desempenho II, embora haja uma assimetria entre o número de pesquisas
 analisadas para essas quatro empresas.
 
@@ -554,9 +555,9 @@ pode simplesmente ter dado sorte nas pesquisas que o _Pindograma_ analisou, e
 seu desempenho real pode ser menor que a indicada pelo índice. Por outro lado,
 o Instituto A pode ter tido azar nesses levantamentos, e a qualidade das suas
 pesquisas pode ser ainda maior do que é indicado pelo índice. Já com o Instituto
-B, esse problema não existe. Com 848 pesquisas analisadas, é bem mais tranquilo
-supor que o índice de -0,578 _realmente_ represente o desempenho do instituto
-como um todo.
+B, esse problema não existe. Com 848 pesquisas analisadas, é bem mais plausível
+de se supor que o índice de -0,578 _realmente_ represente o desempenho do
+instituto como um todo.
 
 O _Pindograma_ lidou com essa diferença de confiabilidade através de uma
 **regressão à média**. Para calcular o Índice Final de Desempenho de cada
@@ -607,7 +608,7 @@ desempenho passado dos institutos de pesquisa no Brasil realmente não é um
 indicador para o desempenho futuro.
 
 Caso a hipótese (1) seja verdadeira, o _Pindograma_ ficaria mais do que feliz em
-ver outras pessoas fazendo rankings melhores. E caso a hipótese (2) estiver
+ver outras pessoas fazendo rankings melhores. Caso a hipótese (2) estiver
 certa, bastaria esperar até o fim de 2020 -- e talvez incluir pesquisas de 2010
 na base -- para comprovar o que já esperamos sobre o comportamento dos
 institutos. Entretanto, a hipótese (3) traz prospectos mais inquietantes: é
@@ -616,16 +617,16 @@ bem nos dias de hoje; ou que fazer boas pesquisas eleitorais seja mais uma
 questão de sorte do que de competência.
 
 Ao nosso ver, ter levantado essas perguntas já é, por si só, um mérito do
-Ranking de Institutos. Mas não é só. Com o Ranking, é possível demonstrar a
-desigualdade no acesso a pesquisas eleitorais de qualidade pelo Brasil; elencar
-institutos que poderiam ser investigados por publicarem pesquisas de má
-qualidade; exigir uma prestação de contas das empresas de pesquisa; e sobretudo,
-qualificar o debate sobre pesquisas eleitorais no Brasil.
+Ranking de Institutos. Mas não é o único. Com o Ranking, é possível demonstrar
+a desigualdade no acesso a pesquisas eleitorais de qualidade pelo Brasil;
+elencar institutos que poderiam ser investigados por publicarem pesquisas de má
+qualidade; exigir uma prestação de contas das empresas de pesquisa; e,
+sobretudo, qualificar o debate sobre pesquisas eleitorais no Brasil.
 
 O _Pindograma_ espera publicar várias reportagens em torno desses temas; mas
 também espera empoderar nossos leitores a responderem suas próprias perguntas
-sobre as pesquisas de opinião. Por isso, convidamos você a conferir os
-[dados e o código][22] por trás do Ranking -- ambos integralmente abertos
+sobre as pesquisas de opinião. Por isso, convidamos você a conferir [os
+dados e o código][22] por trás do Ranking -- ambos integralmente abertos
 para a comunidade. Aproveite para deixar um comentário ou uma contribuição.
 
 ---
@@ -660,7 +661,7 @@ Para reproduzir os números citados, o código pode ser consultado [aqui][23].
 
 [10]: https://azure.microsoft.com/en-us/services/cognitive-services/bing-web-search-api/
 
-[11]: realidade
+[11]: /2020/09/07/pesquisas-falsas.html
 
 [12]: https://www.youtube.com/watch?v=vMnHQjl9aO8
 
@@ -678,4 +679,6 @@ Para reproduzir os números citados, o código pode ser consultado [aqui][23].
 
 [22]: https://github.com/pindograma/pesquisas
 
-[23]: Rmd
+[23]: https://github.com/pindograma/materias/blob/master/2020-06-07-metodologia-ranking/RankingPesquisas.Rmd
+
+[24]: https://pt.wikipedia.org/wiki/Intervalo_de_confian%C3%A7a

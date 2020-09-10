@@ -21,15 +21,15 @@ knitr::opts_chunk$set(warning = FALSE)
 
 O princípio de um agregador de pesquisas eleitorais é simples: o consenso de
 várias pesquisas sobre as intenções de voto vale mais do que os resultados de
-uma única pesquisa. Ao invés de se orientar por um único instituto -- que pode
-ter viezes metodológicos ou produzir pesquisas de baixa qualidade -- um
+uma única pesquisa. Em vez de se orientar por um único instituto -- que pode
+ter vieses metodológicos ou produzir pesquisas de baixa qualidade -- um
 agregador de pesquisas acumula o maior número de pesquisas eleitorais; coloca
 os resultados em um gráfico; e desenha uma linha de tendência que mostra, em
 média, o que dizem as diferentes pesquisas em conjunto.
 
 Parece simples, mas o diabo está nos detalhes. Como selecionar as pesquisas que
 são mostradas no agregador? Devemos dar mais peso às pesquisas mais recentes,
-ou aos institutos com maior histórico de acertos? Devemos calibrar os viezes das
+ou aos institutos com maior histórico de acertos? Devemos calibrar os vieses das
 empresas de pesquisa? Como exatamente calculamos a linha de tendência?
 
 São perguntas que cada agregador de pesquisa no Brasil -- seja o do
@@ -46,8 +46,8 @@ diferente. No entanto, essas ferramentas têm uma série de limitações:
   claro como exatamente esses pesos são aplicados. Enquanto isso, o Poder360
   diz que sua média móvel "considera os resultados de levantamentos...
   realizados num período de 60 dias (antes e após o ponto específico)" -- mas
-  não esclarece como essa média é calculada caso ainda não tenhamos dias "após o
-  ponto específico".
+  não esclarece como essa média é calculada, caso ainda não tenhamos dias "após
+  o ponto específico".
 
 * **Falta de critérios objetivos e transparentes na inclusão de pesquisas**.
   Nenhum dos três agregadores de pesquisa explica os critérios que usaram para
@@ -67,7 +67,7 @@ pesquisas -- cuja metodologia é descrita a seguir.
 
 ## Passo 1: Coleta de Dados
 
-A forma com a qual o _Pindograma_ consolidou sua base de pesquisas eleitorais
+A forma pela qual o _Pindograma_ consolidou sua base de pesquisas eleitorais
 está [amplamente documentada][4] em nosso artigo sobre como desenvolvemos nosso
 Ranking de Institutos de Pesquisa. Nós buscamos incluir todas as pesquisas
 eleitorais que constavam no registro de pesquisas do Tribunal Superior Eleitoral
@@ -102,8 +102,9 @@ ggplot(rio_polls, aes(x = DT_FIM_PESQUISA, y = result, color = factor(NUMERO_CAN
   scale_y_continuous(labels = function(x) paste0(x, '%')) +
   theme_pindograma() +
   theme(legend.position = 'none') +
-  xlab('Data') +
-  ylab('')
+  xlab('') +
+  ylab('') +
+  labs(caption = 'Fonte: Resultados de Pesquisas Eleitorais (Pindograma e Poder360)')
 ```
 
 Mas essa média não pode ser calculada de qualquer maneira. Idealmente, ela não
@@ -232,13 +233,15 @@ Para reproduzir os números citados, o código pode ser consultado [aqui][8].
 
 [3]: https://especiais.gazetadopovo.com.br/eleicoes/2018/pesquisas-eleitorais/todos/todas-as-pesquisas-eleitorais/
 
-[4]: /2020/09/07/como-o-pindograma-calcula-o-ranking-de-pesquisas-eleitorais/
+[4]: /2020/09/07/ranking.html
 
 [5]: https://github.com/pindograma/pesqEle
 
 [6]: https://github.com/pindograma/agregador/blob/master/average_app/polling_average.cpp
 
-[7]: http://agregador.pindograma.com.br
+[7]: https://pindograma.shinyapps.io/agregador
+
+[8]: https://github.com/pindograma/materias/blob/master/2020-06-07-agregador/Agregador.Rmd
 
 [9]: https://github.com/pindograma/pesquisas
 

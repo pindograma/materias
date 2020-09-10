@@ -11,7 +11,7 @@ library(ggplot2)
 library(stringr)
 
 source('../theme.R')
-load('../realidade.Rdata')
+load('realidade.Rdata')
 
 knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(message = FALSE)
@@ -152,7 +152,8 @@ ggplot(realidade_df, aes(x = AA_ELEICAO, fill = factor(pretty_name))) +
   theme_pindograma() +
   scale_fill_manual(values = c(pg_blue, pg_yellow, pg_light_gray, pg_orange, pg_green)) +
   ylab('Pesquisas') + xlab('') +
-  guides(fill=guide_legend(title="Instituto"))
+  guides(fill = guide_legend(title="Instituto")) +
+  labs(caption = 'Fonte: TSE')
 ```
 
 ##### Manipulando a massa
@@ -530,9 +531,9 @@ Ranking de Pesquisas Eleitorais (_Pindograma_).
 
 Para reproduzir os números citados, o código pode ser consultado [aqui][1].
 
-[1]: self
+[1]: https://github.com/pindograma/materias/blob/master/2020-06-07-pesquisas-falsas/Realidade.Rmd
 
-[2]: ranking
+[2]: /ranking.html
 
 [3]: https://web.archive.org/web/20200221110544/http://www.conre3.org.br/portal/fraudes-eleitorais/
 
