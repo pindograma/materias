@@ -1,0 +1,173 @@
+---
+title: "Eleger prefeitas aumenta voto em candidaturas femininas nas eleições seguintes"
+author: "Francisco Ricci"
+date: "16/09/2020"
+output: html_fragment
+---
+
+```{r echo=F, message=F}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+library(tidyverse)
+
+source('../theme.R')
+load('altamira_tse.Rdata')
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+As eleições municipais de 2020 podem ser importantes, não apenas para eleger
+mais mulheres, mas também para aumentar as chances de outras candidatas em
+eleições futuras. Quando uma cidade com até 200 mil habitantes elege uma
+prefeita com ensino superior, futuras candidatas à Câmara dos Deputados passam
+a ter maiores chances de receberem votos naquela cidade. É o que indica o
+artigo ["Futuros impactos eleitorais de ter uma
+prefeita"](https://www.scielo.br/scielo.php?script=sci_arttext&pid=S1981-38212017000200203&lng=pt&nrm=iso&tlng=pt),
+publicado em 2017 na _Brazilian Political Science Review_.
+
+O _Pindograma_ conversou com Renan Pieri, professor da FGV e um dos autores do
+artigo. Ele explica como é difícil analisar, isoladamente, o efeito que a
+eleição de uma prefeita tem sobre outras candidaturas femininas em pleitos
+futuros. Em uma cidade onde há muitas mulheres no mercado de trabalho, uma
+parcela considerável dos eleitores com ensino superior completo e uma mulher na
+prefeitura, a probabilidade de deputadas se elegerem é maior. Assim, pode ser
+difícil saber se o aumento no voto para deputadas esteve relacionado à presença
+de uma mulher na Prefeitura, ou se esse aumento foi apenas outro sintoma das
+condições que já haviam levado à eleição da prefeita.
+
+Como superar essa dificuldade? Segundo Pieri, "para avaliar o efeito que uma
+prefeita mulher pode ter, independente das diferenças culturais de cidade a
+cidade, nós estudamos eleições [para prefeito] com margens pequenas — ou seja,
+onde uma mulher venceu ou perdeu por poucos votos". Ele explica que municípios
+onde mulheres _venceram_ por poucos votos são parecidos com aqueles onde elas
+_perderam_ por poucos. A semelhança socioeconômica entre as cidades neutraliza
+outros eventuais fatores que possam ter influenciado o voto em candidaturas
+femininas, e permite estudar isoladamente as consequências da eleição de uma
+mulher para a prefeitura.
+
+```{r}
+myr = altamira_mayor_2012 %>%
+  arrange(NUMERO_CANDIDATO)
+
+diff = (myr$QTDE_VOTOS[2] / sum(myr$QTDE_VOTOS) * 100) - (myr$QTDE_VOTOS[1] / sum(myr$QTDE_VOTOS) * 100)
+
+by_gender_2010 = altamira_depest_2010 %>%
+  inner_join(cands_depest_2010, by = 'NUMERO_CANDIDATO') %>%
+  group_by(DESCRICAO_SEXO) %>%
+  summarize(votes = sum(QTDE_VOTOS)) %>%
+  ungroup() %>%
+  arrange(DESCRICAO_SEXO)
+
+by_gender_2014 = altamira_depest_2014 %>%
+  inner_join(cands_depest_2014, by = 'NUMERO_CANDIDATO') %>%
+  group_by(DESCRICAO_SEXO) %>%
+  summarize(votes = sum(QTDE_VOTOS)) %>%
+  ungroup() %>%
+  arrange(DESCRICAO_SEXO)
+
+by_gender_2012 = altamira_vereador_2012 %>%
+  inner_join(cands_ver_2012, by = 'NUMERO_CANDIDATO') %>%
+  group_by(DESCRICAO_SEXO) %>%
+  summarize(votes = sum(QTDE_VOTOS)) %>%
+  ungroup() %>%
+  arrange(DESCRICAO_SEXO)
+
+by_gender_2016 = altamira_vereador_2016 %>%
+  inner_join(cands_ver_2016, by = 'NUMERO_CANDIDATO') %>%
+  group_by(DESCRICAO_SEXO) %>%
+  summarize(votes = sum(QTDE_VOTOS)) %>%
+  ungroup() %>%
+  arrange(DESCRICAO_SEXO)
+
+women_depest_10 = by_gender_2010$votes[1] / sum(by_gender_2010$votes) * 100
+women_depest_14 = by_gender_2014$votes[1] / sum(by_gender_2014$votes) * 100
+
+women_ver_12 = by_gender_2012$votes[1] / sum(by_gender_2012$votes) * 100
+women_ver_16 = by_gender_2016$votes[1] / sum(by_gender_2016$votes) * 100
+```
+
+Um dos municípios analisados por Pieri é Altamira do Paraná, cidade de [4.306
+habitantes][1], segundo o Censo de 2010. Lá, a prefeita Elza Aparecida da Silva
+Aguiar (PSB) venceu a eleição de 2012 por apenas `r pn(diff)`% dos votos
+válidos. Dois anos depois, a parcela do voto para deputadas estaduais na cidade
+cresceu de `r pn(women_depest_10)`% para `r pn(women_depest_14)`%; e em 2016, a
+parcela de votos para vereadoras aumentou de `r pn(women_ver_12)`% para
+`r pn(women_ver_16)`%. Pelo que indica a pesquisa de Pieri, é possível que a
+eleição de Elza tenha contribuído para esses números.
+
+A prefeita era uma diretora de escola bem avaliada pelos moradores e diz que
+enfrentou muitas dificuldades assim que aceitou o convite do PSB para ser
+candidata. "Tinha gente que dizia que não queria votar no Evaldo, meu
+adversário, por isso, por isso e aquilo, muitos motivos, mas não quero votar
+na Elza porque ela é mulher, tinha esse peso". A prefeita entende que sua
+administração serviu para desmistificar a visão de muitos sobre o lugar da
+mulher na sociedade. "Eu trabalhei muito, e mulheres precisam trabalhar mais
+para mostrar que tem a mesma competência que os homens".
+
+Segundo Elza, "em cidade pequena é assim: conhece sempre todo mundo. Antes de
+entrar pra política, eu já conhecia todos os vereadores, e todo mundo passou a
+me conhecer quando eu fui eleita prefeita". Esse contato direto, para a
+prefeita, é essencial para mudar a visão das pessoas sobre a presença de
+mulheres na política. "Depois eu devo ter governado bem, porque minha aprovação
+era alta e fui reeleita sem oposição".
+
+Para a cientista política Karin Vervuurt, as impressões de Elza são confirmadas
+pelas ciências sociais. Vervuurt entende que a forma com que eleitores
+visualizam mulheres no poder é crucial para o voto. "O fato de homens sempre
+terem ocupado o poder torna mais fácil de enxergarmos homens sempre nessas
+posições. Pesquisas da psicologia social mostram que as características
+associadas à boa liderança política  — como a racionalidade e a habilidade de
+negociação  —  são vistas como características masculinas". Por exemplo, a
+[pesquisa](https://www.mefareiouvir.com.br/pesquisa/) "Perfil da Mulher na
+Política", conduzida por Vervuurt com o time do projeto
+[MeFareiOuvir](https://www.mefareiouvir.com.br/), apontou que "não ter o
+perfil" é o maior motivo listado por mulheres para não concorrerem a um cargo
+público.
+
+Para Vervuurt, o efeito das prefeitas sobre o voto para deputadas pode ser
+explicado em parte por prefeitas servirem de contraexemplo direto a
+preconceitos sobre as habilidades de mulheres no poder. "Quando você tem uma
+mulher que chega a uma posição de poder com bastante visibilidade, outras
+mulheres nessas comunidades passam a se enxergar lá também. Um estudo mostra
+que, nos distritos eleitorais da Índia com uma representante feminina, as
+meninas das escolas têm sonhos mais ambiciosos. Outro estudo mostra que, por
+termos poucas mulheres no poder, há um sentimento de que deve existir uma
+diferença de competência que explique essa desigualdade; mulheres devem ser
+menos competentes. O único jeito de quebrar esse ciclo é mostrando a
+competência de mulheres eleitas".
+
+Renan Pieri e seus coautores demonstram que realmente há, em média, um aumento
+no voto para deputadas federais em cidades pequenas causado pela exposição a
+lideranças femininas. No entanto, esse aumento não foi observado em municípios
+no geral. Ele foi observado somente nas cidades com prefeitas com ensino
+superior completo. Os pesquisadores pressupõem que líderes com maior educação
+governam melhor como um todo, o que explicaria o aumento no voto para deputadas
+ser dependente da educação da prefeita eleita. Além de serem eleitas, prefeitas
+precisam ser vistas como governantes acima da média para quebrar o estereótipo
+de gênero em sua comunidade.
+
+Segundo Vervuurt, a instituição de cotas para candidaturas femininas em cada
+partido tem surtido efeito para aumentar a representatividade feminina no
+Congresso, embora o ideal fosse ter cotas para cadeiras no legislativo também.
+Mas enquanto essa proposta fica na teoria, ativistas estão fundando iniciativas
+dedicadas ao apoio de candidaturas femininas e à formação política para
+mulheres que querem ser candidatas, como o
+[#ElasNoPoder](https://elasnopoder.org/ ) – fundada por Vervuurt – e o [Vamos
+Juntas](https://vamosjuntasnapolitica.com/). Com centenas de membros,
+iniciativas como essas buscam criar as condições que Pieri e seus colegas
+observaram já haver aumentado a presença de mulheres na política.
+
+---
+
+**Dados utilizados na matéria**: Candidatos e Votos nas Eleições Brasileiras
+(Tribunal Superior Eleitoral).
+
+**Contribuiu com Dados:** Daniel Ferreira.
+
+Para reproduzir os números citados, o código pode ser consultado [aqui][2].
+
+[1]: https://cidades.ibge.gov.br/brasil/pr/altamira-do-parana/panorama
+
+[2]: https://github.com/pindograma/materias/blob/master/2020-06-16-prefeitas/Prefeitas.Rmd
