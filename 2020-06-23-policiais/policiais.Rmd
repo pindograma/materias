@@ -1,0 +1,125 @@
+---
+title: "212 PMs estão irregularmente filiados a partidos no Paraná"
+author: "Daniel Ferreira"
+date: "23/08/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(stringr)
+library(gt)
+library(ggplot2)
+
+source('../theme.R')
+
+load('join2.Rdata')
+load('dnames.Rdata')
+load('pm2.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+```{r}
+pms = join2 %>%
+  group_by(nome) %>%
+  filter(n() == 1) %>%
+  ungroup() %>%
+  filter(!(nome %in% dnames$nome))
+
+pm_n = nrow(pms)
+
+post_pm = pms %>%
+  filter(data_filiacao > dt_inicio) %>%
+  nrow()
+```
+
+Segundo a Constituição Federal, "o militar, enquanto em serviço ativo, não pode
+estar filiado a partidos políticos". Por isso, policiais militares só podem
+concorrer a cargos políticos se [deixarem ou pedirem licença da corporação][1]. No
+entanto, um levantamento do _Pindograma_ mostrou que `r pn(pm_n)` policiais
+militares ativos no estado do Paraná se encontravam filiados a partidos
+políticos em agosto de 2020.
+
+O _Pindograma_ obteve a lista de policiais militares em atividade no estado e os
+cruzou, por nome e município de residência, com os dados de filiação partidária
+do TSE. Depois, excluiu da lista os policiais com nomes comuns, para evitar
+erros de contagem dupla ou de identificação. Restaram `r pn(pm_n)` policiais
+militares, ou seja, `r pn(pm_n / nrow(pm2) * 100)`% do pessoal ativo da Polícia
+Militar do Paraná.
+
+```{r}
+ggplot(pms, aes(y = factor(str_to_title(cargo), levels = rev(c(
+  'Soldado 1ª. Classe',
+  'Soldado 2ª. Classe',
+  'Cabo',
+  '3º. Sargento',
+  '2º. Sargento',
+  '1º. Sargento',
+  'Subtenente',
+  '2º. Tenente',
+  '1º. Tenente',
+  'Capitão',
+  'Major',
+  'Coronel'
+))))) +
+  ggtitle('PMs Filiados a Partidos no Paraná por Classe') +
+  geom_bar(fill = pg_green) +
+  theme_pindograma() +
+  xlab('Número de Filiados') + ylab('') +
+  labs(caption = 'Fonte: TSE, Portal da Transparência (PR).')
+```
+
+Nem todos os PMs dessa lista exercem, necessariamente, uma atividade
+partidária. Questionado sobre sua filiação partidária, um policial de Curitiba
+disse à reportagem que "me filiei ao PDT nos tempos de faculdade, mas já faz 35
+anos que estou formado. Saí da política em 1991. Eu pensei que nem era filiado
+mais. Tem como se desfiliar?"
+
+É provável que esse policial não esteja sozinho. O cientista político Adriano
+Codato, professor na Universidade Federal do Paraná e [especialista em
+candidaturas de policiais no Brasil][2], especula que um policial militar que se
+filia para concorrer em uma eleição possa esquecer de se desfiliar quando
+retorna à ativa. Portanto, um número elevado de PMs pode estar filiado sem ter
+qualquer envolvimento com a política.
+
+Ainda assim, os números demonstram que não seria difícil para um PM exercer
+atividade partidária de dentro da corporação, a despeito da proibição
+constitucional. Segundo a Justiça Eleitoral, [cabe à PM promover medidas
+disciplinares][3] que evitem a filiação irregular de seus membros. No entanto,
+essas medidas não impediram que pelo menos `r pn(post_pm)` policiais
+paranaenses violassem a lei ao se filiarem a partidos políticos após seu
+ingresso na corporação.
+
+Os casos no Paraná podem estar relacionados a outras formas de participação
+política de militares e policiais. Um [estudo recente][4] do Fórum Brasileiro de
+Segurança Pública mostrou que pelo menos 12% dos policiais militares
+brasileiros compartilharam mensagens simpáticas a um golpe militar nas redes
+sociais. Se membros ativos da corporação estão filiados a partidos sem
+aparentes consequências –– embora seja um ato público e, neste caso, irregular
+— parece improvável que manifestações antidemocráticas e ilegais sejam punidas.
+
+---
+
+**Nota**: Para construir a lista de nomes comuns mencionada na matéria, o
+_Pindograma_ usou a base completa de filiados a partidos no Brasil. Dela,
+listamos todos os nomes que apareciam duas vezes ou mais em uma mesma cidade.
+
+**Dados utilizados na matéria**: Funcionários Públicos do Estado do Paraná
+(Portal da Transparência/CGE-PR); Filiados a Partidos Políticos (TSE).
+
+Para reproduzir os números citados, o código pode ser encontrado [aqui][5].
+
+[1]: https://www.nexojornal.com.br/expresso/2018/06/04/Por-que-militares-ainda-n%C3%A3o-filiados-podem-se-candidatar-em-2018
+
+[2]: https://www.scielo.br/scielo.php?script=sci_arttext&pid=S0103-33522016000300077
+
+[3]: http://temasselecionados.tse.jus.br/temas-selecionados/filiacao-partidaria
+
+[4]: https://piaui.folha.uol.com.br/tropa-de-choque-de-bolsonaro/
+
+[5]: https://github.com/pindograma/materias/blob/master/2020-06-23-policiais/policiais.Rmd
