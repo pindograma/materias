@@ -1,0 +1,577 @@
+---
+title: "asd"
+author: "Pedro Siemsen"
+date: "26/09/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(reshape2)
+library(geobr)
+library(sf)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r include=F}
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+load('disenfranchisement2.Rdata')
+
+excess_cities_ab = eleitorado_obrig_10 %>%
+  filter(diff > 0) %>%
+  nrow()
+excess_cities = excess_cities_ab / nrow(eleitorado_obrig_10)
+
+excess = sum(eleitorado_obrig_10$diff, na.rm = T)
+bio_electors = sum(eleitorado_obrig_20$bio, na.rm = T)
+
+total_electors = sum(eleitorado_obrig_20$eleitores, na.rm = T)
+
+loss_08 = generate_loss_estimate(eleitorado_obrig_02, eleitorado_obrig_04, eleitorado_obrig_06, eleitorado_obrig_08, eleitorado_obrig_10, h08)
+loss_10 = generate_loss_estimate(eleitorado_obrig_04, eleitorado_obrig_06, eleitorado_obrig_08, eleitorado_obrig_10, eleitorado_obrig_12, h09)
+loss_12 = generate_loss_estimate(eleitorado_obrig_06, eleitorado_obrig_08, eleitorado_obrig_10, eleitorado_obrig_12, eleitorado_obrig_14, h11)
+loss_14 = generate_loss_estimate(eleitorado_obrig_08, eleitorado_obrig_10, eleitorado_obrig_12, eleitorado_obrig_14, eleitorado_obrig_16, h13)
+loss_16 = generate_loss_estimate(eleitorado_obrig_10, eleitorado_obrig_12, eleitorado_obrig_14, eleitorado_obrig_16, eleitorado_obrig_18, h15)
+loss_18 = generate_loss_estimate(eleitorado_obrig_12, eleitorado_obrig_14, eleitorado_obrig_16, eleitorado_obrig_18, eleitorado_obrig_20, h17)
+
+estimated_total_loss = sum(c(
+  loss_08, loss_10, loss_12, loss_14, loss_16, loss_18
+))
+```
+
+Entre 2008 e 2018, o recadastramento biométrico privou mais de um milhão de
+brasileiros entre 18 e 69 anos do direito ao voto, segundo levantamento do
+_Pindograma_. Essas pessoas tiveram seus títulos cancelados pelo Tribunal
+Superior Eleitoral (TSE) em pelo menos uma eleição nos últimos doze anos. O
+mesmo recadastramento também irá impactar as eleições em `r pn(nrow(h19))`
+cidades neste ano -- e poderá impedir centenas de milhares de pessoas de votar
+em 2022.
+
+Desde a Constituinte de 1988, o tema da privação ao voto não é muito discutido
+na mídia ou na academia brasileira. O governo assume que nossa república
+já não precisa se preocupar mais com isso. A própria assessoria de imprensa do
+Tribunal Superior Eleitoral informou ao _Pindograma_ que "não se conhece
+irregularidade relacionada a baixo eleitorado".
+
+Mas não é isso que indicam os dados. Ao tentar remediar fraudes esporádicas no
+processo eleitoral, o Tribunal Superior Eleitoral causou um problema ainda
+maior: graças ao recadastramento biométrico, mais de um milhão de eleitores
+foram privados do direito ao voto, enquanto apenas [15,6 mil
+fraudadores](https://cbn.globoradio.globo.com/editorias/pais/2017/03/02/BIOMETRIA-IDENTIFICA-156-MIL-FRAUDES-ELEITORAIS-EM-DOIS-ANOS.htm)
+parecem ter sido desmascarados pela medida.
+
+##### O Porquê do Recadastramento
+
+No Brasil, são obrigados a votar todos os brasileiros alfabetizados de 18 a 69
+anos. Por isso, todos dentro dessa categoria deveriam estar devidamente
+cadastrados junto à Justiça Eleitoral: o número de habitantes e o número de
+eleitores nesse segmento deveriam ser iguais.
+
+Mas isso não era o caso em 2010. O _Pindograma_ comparou quantos alfabetizados
+entre 18 e 69 anos foram contados pelo Censo 2010 com quantos estavam
+registrados no Cadastro Eleitoral do TSE naquele ano. A reportagem encontrou que
+em `r pn(excess_cities*100)`% dos municípios brasileiros, havia mais eleitores
+registrados do que pessoas alfabetizadas entre 18 e 69 anos. Nacionalmente,
+havia um excedente de `r pn(excess)` eleitores.
+
+```{r fig.width=8, fig.height=6}
+rg10 = eleitorado_obrig_10 %>%
+  filter(!is.na(voto_obrig)) %>%
+  left_join(regioes, by = c('SG_UF' = 'state')) %>%
+  group_by(region) %>%
+  summarize(voto_obrig = sum(voto_obrig), eleitores = sum(eleitores)) %>%
+  ungroup() %>%
+  melt() %>%
+  mutate(value = value / 10^6)
+
+ggplot(rg10, aes(x = region, y = value, fill = variable)) +
+  ggtitle('População alfabetizada entre 18 e 69 anos, 2010') +
+  geom_col(position = 'dodge') +
+  theme_pindograma() +
+  theme(legend.title = element_blank()) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = c(pg_yellow, pg_blue), labels = c('Censo 2010', 'Cadastro TSE')) +
+  labs(subtitle = '(segundo o IBGE e o TSE, em milhões)', caption = 'Fonte: Censo 2010/IBGE, TSE') +
+  xlab('') + ylab('') +
+  scale_y_continuous(labels = function(x) paste0(x, 'M'))
+```
+
+A maior preocupação do TSE com essas inconsistências -- geralmente causadas por
+[mortes que não eram
+contabilizadas](https://www.ces.uc.pt/lab2004/pdfs/JairoNicolau.pdf) ou por
+eleitores que se mudavam e não transferiam seus títulos -- era o potencial de
+fraude eleitoral. Vera Taberti, que trabalha como promotora regional eleitoral
+em São Paulo, contou à reportagem que "um dos vários motivos pra partir pra urna
+eletrônica era evitar que a pessoa votasse duas vezes", e a assessoria de
+imprensa do TSE informou que "os procedimentos de checagem são rotineiros, de
+forma que eventuais tentativas de fraudes no alistamento são identificadas
+pontualmente".
+
+Uma das principais estratégias para garantir a exatidão no cadastro eleitoral
+são os **recadastramentos de títulos eleitorais**. Recadastramentos são uma
+janela de tempo durante a qual eleitores são obrigados a se registrarem
+novamente -- caso contrário, perdem o título. As pessoas precisam levar seus
+documentos para repartições públicas e esperar em filas para confirmarem sua
+existência para a Justiça Eleitoral. Com isso, são retirados os possíveis
+eleitores fantasma e títulos de eleitores inativos.
+
+No entanto, nenhum recadastramento obrigatório foi tão grande quanto a
+introdução da biometria, que já foi implementada em
+`r pn(nrow(hist_all) + nrow(hist19_20))` cidades desde 2008. Diferentemente de
+outras campanhas de recadastramento, que ocorriam apenas em alguns municípios
+selecionados, a biometria está sendo implementada em todos os municípios
+brasileiros, com o objetivo de recadastrar todos os eleitores até 2022. No
+entanto, essa iniciativa teve efeitos colaterais preocupantes.
+
+```{r}
+state_merge_20 = eleitorado_obrig_20 %>%
+  group_by(SG_UF) %>%
+  summarize(eleitores = sum(eleitores), bio = sum(bio)) %>%
+  ungroup() %>%
+  mutate(pct = bio / eleitores)
+
+ggplot() +
+  ggtitle('Eleitorado com cadastro biométrico, 2020') +
+  geom_sf(data = states, aes(fill = pct)) +
+  scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  cowplot::theme_map() +
+  theme(text = element_text(family = 'Fantasque', color = '#6e787f')) +
+  theme(legend.position = 'bottom') +
+  theme(legend.text = element_text(size = 10)) +
+  theme(legend.justification = 'center') +
+  theme(legend.title = element_blank()) +
+  theme(plot.title.position = 'plot') +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  guides(fill = guide_colorbar(barwidth  = unit(10, 'cm'))) +
+  labs(caption = 'Fonte: TSE') +
+  theme(plot.caption = element_text(hjust = 0))
+```
+
+##### Efeitos Colaterais
+
+Para entender esses efeitos, o _Pindograma_ conversou com o economista Cláudio
+Ferraz, professor da Universidade da Columbia Britânica e estudioso das
+consequências dos recadastramentos eleitorais feitos pelo TSE. Ele ressalta que,
+"quando você pede para as pessoas se registrarem de novo, nem todo mundo vai se
+registrar de novo". Pela natureza burocrática do processo, já é esperado pelo
+TSE que alguns eleitores deixem de cumprir o recadastramento.
+
+```{r}
+queimados_hab = eleitorado_obrig_10 %>%
+  filter(nome_municipio == 'QUEIMADOS') %>%
+  pull(voto_obrig)
+
+queimados_reg_10 = eleitorado_obrig_10 %>%
+  filter(nome_municipio == 'QUEIMADOS') %>%
+  pull(eleitores)
+
+queimados_reg_18 = eleitorado_obrig_18 %>%
+  filter(nome_municipio == 'QUEIMADOS') %>%
+  pull(eleitores)
+
+queimados_fall = abs((queimados_reg_18 - queimados_reg_10) / queimados_reg_10)
+```
+
+Casos como esses podem ser especialmente dramáticos, como o que aconteceu em
+Queimados, cidade na região metropolitana do Rio de Janeiro:
+
+```{r fig.width=7, fig.height=3.8}
+qm = bind_rows(
+  eleitorado_obrig_10 %>% filter(nome_municipio == 'QUEIMADOS') %>% mutate(ano = 2010),
+  eleitorado_obrig_12 %>% filter(nome_municipio == 'QUEIMADOS') %>% mutate(ano = 2012),
+  eleitorado_obrig_14 %>% filter(nome_municipio == 'QUEIMADOS') %>% mutate(ano = 2014),
+  eleitorado_obrig_16 %>% filter(nome_municipio == 'QUEIMADOS') %>% mutate(ano = 2016),
+  eleitorado_obrig_18 %>% filter(nome_municipio == 'QUEIMADOS') %>% mutate(ano = 2018),
+  eleitorado_obrig_20 %>% filter(nome_municipio == 'QUEIMADOS') %>% mutate(ano = 2020)
+)
+
+ggplot(qm, aes(x = ano, y = eleitores)) +
+  ggtitle('Eleitorado alfabetizado entre 18 e 69 anos') +
+  labs(subtitle = '(Queimados, RJ)') +
+  geom_line(color = pg_blue, size = 2) +
+  geom_point(color = pg_orange, shape = 16, size = 4) +
+  geom_hline(aes(yintercept = first(qm$voto_obrig), linetype = 'Habitantes entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = '.')) +
+  theme_pindograma() +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.position = 'bottom') +
+  theme(legend.title = element_blank()) +
+  xlab('') + ylab('') +
+  labs(caption = 'Fonte: Censo 2010/IBGE, TSE') +
+  scale_linetype_manual(values = 'dashed')
+```
+
+Queimados possuía
+138 mil habitantes segundo o Censo 2010, dos quais `r pn(queimados_hab)` eram
+alfabetizados entre 18 e 69 anos -- portanto, obrigados a votar. Esse número era
+bem próximo da quantidade de eleitores registrados em 2010: `r pn(queimados_reg_10)`.
+Mas após ter passado pelo recadastramento biométrico entre 2017 e 2018, o número
+de eleitores cadastrados cujo voto era obrigatório caiu para
+`r pn(queimados_reg_18)`. Queimados perdeu **`r pn(queimados_fall*100)`%** de
+seus eleitores desse segmento entre 2010 e 2018, embora a população da cidade
+não tenha diminuído no período.
+
+Essa queda foi sentida na pele da comunidade queimadense, segundo o prefeito
+Carlos Vilela (MDB). "Na eleição [de 2018], nós sentimos um impacto violento. O
+número de votantes ficou abaixo da média e o nosso deputado aqui da cidade teve
+dez, onze mil votos quando era pra ter muito mais" afirmou o prefeito em
+entrevista. O deputado em questão era o ex-prefeito Max Lemos (PSDB), [aliado
+político](https://www.tupi.fm/baixada/entrevista-exclusiva-com-carlos-vilela-prefeito-de-queimados-aqui-nao-falta-dinheiro/)
+de Vilela.
+
+O economista Cláudio Ferraz se pergunta: "Quantas pessoas ficam numa fila [de
+recadastramento] e vão embora porque não querem mais esperar? Eu não sei. Eu
+nunca vi números sobre isso, então é realmente difícil dizer". O prefeito Vilela
+tinha a resposta para o caso de sua cidade: "filas enormes, filas _homéricas_
+aqui em Queimados".
+
+```{r}
+queimados_reg_20 = eleitorado_obrig_20 %>%
+  filter(nome_municipio == 'QUEIMADOS') %>%
+  pull(eleitores)
+
+queimados_rise = (queimados_reg_20 - queimados_reg_18) / queimados_reg_18
+```
+
+Após esse caos na cidade, a existência de milhares de eleitores prejudicados foi
+confirmada quando o eleitorado de Queimados voltou a crescer
+`r pn(queimados_rise*100)`% entre 2018 e 2020. Esses números indicam que, de
+fato, houve um contingente considerável de pessoas que perderam o prazo de
+recadastramento em 2018, tiveram o título cancelado, deixaram de votar naquele
+ano e por fim, recuperaram o cadastramento eleitoral em 2020. Porém, mesmo que
+milhares de eleitores tenham se registrado novamente, a perda de eleitores ainda
+não foi sanada por completo. Hoje, Queimados ainda possui menos eleitores
+alfabetizados entre 18 e 69 anos do que possuía em 2010.
+
+```{r}
+smr = eleitorado_obrig_16 %>%
+  filter(nome_municipio %in% h17$mun & !is.na(nome_municipio)) %>%
+  inner_join(eleitorado_obrig_18, by = 'codigo_ibge') %>%
+  mutate(prop = round((eleitores.y - eleitores.x) / eleitores.x, 4)) %>%
+  select(codigo_ibge, SG_UF.x, nome_municipio.x, eleitores.x, eleitores.y, prop)
+
+global_16 = sum(smr$eleitores.x)
+global_18 = sum(smr$eleitores.y)
+global_pct = abs(global_18 - global_16) / global_16
+```
+
+Esse fenômeno não se limitou a Queimados. Nas `r pn(nrow(h17))` cidades que
+passaram pela revisão biométrica entre 2016 e 2018, o número de eleitores foi de
+**`r format(global_16, big.mark = '.')`** para **`r format(global_18, big.mark = '.')`**. O recadastramento causou uma
+queda de `r pn(global_pct*100)`% no eleitorado, que dificilmente poderia ser
+explicada por migrações ou outros fatores demográficos. Além disso, o
+crescimento incomum do eleitorado em 2020 indica que muitos dos títulos
+cancelados em 2018 eram de eleitores ativos, que buscaram se registrar
+novamente:
+
+```{r fig.width=7, fig.height=3}
+bio_18 = bind_rows(
+  eleitorado_obrig_10 %>% filter(nome_municipio %in% h17$mun) %>% mutate(ano = 2010),
+  eleitorado_obrig_12 %>% filter(nome_municipio %in% h17$mun) %>% mutate(ano = 2012),
+  eleitorado_obrig_14 %>% filter(nome_municipio %in% h17$mun) %>% mutate(ano = 2014),
+  eleitorado_obrig_16 %>% filter(nome_municipio %in% h17$mun) %>% mutate(ano = 2016),
+  eleitorado_obrig_18 %>% filter(nome_municipio %in% h17$mun) %>% mutate(ano = 2018),
+  eleitorado_obrig_20 %>% filter(nome_municipio %in% h17$mun) %>% mutate(ano = 2020),
+) %>%
+  group_by(ano) %>%
+  summarize(voto_obrig = sum(voto_obrig), eleitores = sum(eleitores)) %>%
+  ungroup()
+
+ggplot(bio_18, aes(x = ano, y = eleitores)) +
+  ggtitle('Eleitorado alfabetizado entre 18 e 69 anos') +
+  labs(subtitle = '(Cidades com recadastramento biométrico entre 11/2016 e 09/2018)') +
+  geom_line(color = pg_blue, size = 2) +
+  geom_point(color = pg_orange, shape = 16, size = 4) +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = '.')) +
+  theme_pindograma() +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.position = 'bottom') +
+  theme(legend.title = element_blank()) +
+  xlab('') + ylab('') +
+  labs(caption = 'Fonte: Censo 2010/IBGE, TSE')
+```
+
+Alguns poderiam ver esses cancelamentos como um indício de que fraudes
+eleitorais estariam diminuindo. Afinal, em 2010 havia de fato um excesso
+expressivo de eleitores no cadastro do TSE. Logo, o cancelamento seria apenas
+uma maneira de remover esses excessos, contribuindo para um processo eleitoral
+mais seguro e eficiente, sem afetar eleitores ativos.
+
+```{r}
+average_increase_1 = mean(gen_smr(eleitorado_obrig_12, eleitorado_obrig_14, h17)$prop, na.rm = T)
+average_increase_2 = mean(gen_smr(eleitorado_obrig_14, eleitorado_obrig_16, h17)$prop, na.rm = T)
+average_increase = mean(c(average_increase_1, average_increase_2))
+
+after_smr = gen_smr(eleitorado_obrig_18, eleitorado_obrig_20, h17)
+after_increase = mean(after_smr$prop, na.rm = T)
+```
+
+Infelizmente, não é isso que acontece. Em cada uma dessas `r pn(nrow(h17))` cidades, o eleitorado cresceu, em média,
+`r pn(average_increase*100)`% por biênio entre 2012 e 2016. Já em 2020, esse aumento
+foi de `r pn(after_increase*100)`%. Se assumirmos que esse saldo de
+`r pn((after_increase - average_increase) * 100)` pontos percentuais se deveu à
+reinserção no eleitorado de pessoas que haviam perdido o título, o número de
+eleitores excluídos em 2018 por conta do recadastramento chega a
+pelo menos `r pn(round(loss_18, 0))`. Aplicando essa mesma metodologia para
+estimar a perda de eleitores em recadastramentos anteriores, é possível concluir
+que **pelo menos `r pn(estimated_total_loss)` brasileiros deixaram de votar por
+conta do recadastramento biométrico** em algum momento entre 2008 e 2020.
+
+```{r}
+contagem_hab = eleitorado_obrig_10 %>%
+  filter(nome_municipio == 'CONTAGEM') %>%
+  pull(voto_obrig)
+
+contagem_10 = eleitorado_obrig_10 %>%
+  filter(nome_municipio == 'CONTAGEM') %>%
+  pull(eleitores)
+
+contagem_18 = eleitorado_obrig_18 %>%
+  filter(nome_municipio == 'CONTAGEM') %>%
+  pull(eleitores)
+```
+
+Além disso, o caso de Contagem (MG) revela como o recadastramento foi aplicado
+indiscriminadamente pelo TSE. Em 2010, o município tinha `r pn(contagem_hab)`
+habitantes alfabetizados entre 18 e 69 anos, embora tivesse apenas
+`r pn(contagem_10)` eleitores desse segmento registrados. Em 2017, a cidade passou
+pelo recadastramento biométrico, e o número do eleitorado diminuiu para
+`r pn(contagem_18)`.  Mesmo em locais onde o eleitorado já era baixo em comparação
+com a população residente, o TSE diminuiu esse número _ainda mais_, sempre em
+nome de impedir fraudes.
+
+```{r fig.width=7, fig.height=3.8}
+ct = bind_rows(
+  eleitorado_obrig_10 %>% filter(nome_municipio == 'CONTAGEM') %>% mutate(ano = 2010),
+  eleitorado_obrig_12 %>% filter(nome_municipio == 'CONTAGEM') %>% mutate(ano = 2012),
+  eleitorado_obrig_14 %>% filter(nome_municipio == 'CONTAGEM') %>% mutate(ano = 2014),
+  eleitorado_obrig_16 %>% filter(nome_municipio == 'CONTAGEM') %>% mutate(ano = 2016),
+  eleitorado_obrig_18 %>% filter(nome_municipio == 'CONTAGEM') %>% mutate(ano = 2018),
+  eleitorado_obrig_20 %>% filter(nome_municipio == 'CONTAGEM') %>% mutate(ano = 2020)
+)
+
+ggplot(ct, aes(x = ano, y = eleitores)) +
+  ggtitle('Eleitorado alfabetizado entre 18 e 69 anos') +
+  labs(subtitle = '(Contagem, MG)') +
+  geom_line(color = pg_blue, size = 2) +
+  geom_point(color = pg_orange, shape = 16, size = 4) +
+  geom_hline(aes(yintercept = first(ct$voto_obrig), linetype = 'Habitantes entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = '.')) +
+  theme_pindograma() +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.position = 'bottom') +
+  theme(legend.title = element_blank()) +
+  xlab('') + ylab('') +
+  labs(caption = 'Fonte: Censo 2010/IBGE, TSE') +
+  scale_linetype_manual(values = 'dashed')
+```
+
+Essa queda no eleitorado não passou despercebida. Em 2018, o PSB acionou o STF
+pedindo que fosse evitado o cancelamento em massa de títulos eleitorais no
+pleito daquele ano -- mas o tribunal [autorizou o
+cancelamento](https://noticias.r7.com/eleicoes-2018/decisao-do-stf-cancela-titulo-de-mais-de-3-milhoes-de-eleitores-26092018)
+alguns meses antes da eleição. No começo de 2020, outro cancelamento
+significativo estava prestes a ser efetivado em quinze estados, quando [a
+decisão foi
+revertida](https://agenciabrasil.ebc.com.br/justica/noticia/2020-04/tse-suspende-cancelamento-de-25-milhoes-de-titulos-eleitorais)
+pelo TSE em virtude da pandemia do novo coronavírus.
+
+```{r}
+smr2 = eleitorado_obrig_18 %>%
+  filter(nome_municipio %in% h19$mun & !is.na(nome_municipio)) %>%
+  inner_join(eleitorado_obrig_20, by = 'codigo_ibge') %>%
+  mutate(prop = round((eleitores.y - eleitores.x) / eleitores.x, 4)) %>%
+  select(codigo_ibge, SG_UF.x, nome_municipio.x, eleitores.x, eleitores.y, prop)
+
+cuiaba_loss = smr2 %>%
+  filter(nome_municipio.x == 'CUIABÁ') %>%
+  pull(prop) %>%
+  abs()
+
+vz_loss = smr2 %>%
+  filter(nome_municipio.x == 'VÁRZEA GRANDE' & SG_UF.x == 'MT') %>%
+  pull(prop) %>%
+  abs()
+```
+
+Contudo, essa última decisão não abarcou o Brasil inteiro. Embora todos os
+recadastramentos realizados a partir de 2019 tenham sido temporariamente
+suspensos, `r pn(nrow(h19))` recadastramentos ocorreram no fim de
+2018 e continuam valendo. Entre esses casos estão as cidades de Cuiabá (MT) e
+Várzea Grande (MT), cidades vizinhas que perderam, respectivamente,
+`r pn(cuiaba_loss*100)`% e `r pn(vz_loss*100)`% dos seus eleitorados após o
+recadastramento biométrico. Nessas cidades, a eleição de 2020 ocorrerá com parte
+expressiva do eleitorado cortada:
+
+```{r fig.width=7, fig.height=3.8}
+cb_vz = bind_rows(
+  eleitorado_obrig_10 %>% filter(SG_UF == 'MT' & nome_municipio %in% c('CUIABÁ', 'VÁRZEA GRANDE')) %>% mutate(ano = 2010),
+  eleitorado_obrig_12 %>% filter(SG_UF == 'MT' & nome_municipio %in% c('CUIABÁ', 'VÁRZEA GRANDE')) %>% mutate(ano = 2012),
+  eleitorado_obrig_14 %>% filter(SG_UF == 'MT' & nome_municipio %in% c('CUIABÁ', 'VÁRZEA GRANDE')) %>% mutate(ano = 2014),
+  eleitorado_obrig_16 %>% filter(SG_UF == 'MT' & nome_municipio %in% c('CUIABÁ', 'VÁRZEA GRANDE')) %>% mutate(ano = 2016),
+  eleitorado_obrig_18 %>% filter(SG_UF == 'MT' & nome_municipio %in% c('CUIABÁ', 'VÁRZEA GRANDE')) %>% mutate(ano = 2018),
+  eleitorado_obrig_20 %>% filter(SG_UF == 'MT' & nome_municipio %in% c('CUIABÁ', 'VÁRZEA GRANDE')) %>% mutate(ano = 2020)
+) %>%
+  group_by(ano) %>%
+  summarize(voto_obrig = sum(voto_obrig), eleitores = sum(eleitores)) %>%
+  ungroup()
+
+ggplot(cb_vz, aes(x = ano, y = eleitores)) +
+  ggtitle('Eleitorado alfabetizado entre 18 e 69 anos') +
+  labs(subtitle = '(Cuiabá, MT / Várzea Grande, MT)') +
+  geom_line(color = pg_blue, size = 2) +
+  geom_point(color = pg_orange, shape = 16, size = 4) +
+  geom_hline(aes(yintercept = first(cb_vz$voto_obrig), linetype = 'Habitantes entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = '.')) +
+  theme_pindograma() +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.position = 'bottom') +
+  theme(legend.title = element_blank()) +
+  xlab('') + ylab('') +
+  labs(caption = 'Fonte: Censo 2010/IBGE, TSE') +
+  scale_linetype_manual(values = 'dashed')
+```
+
+Pelo menos entre os promotores eleitorais, parece haver um compromisso de
+garantir o sufrágio para todos e impedir que eleitores percam indevidamente o
+título durante o recadastramento biométrico. Segundo a promotora Vera Taberti, a
+Justiça e o Ministério Público Eleitorais estão se esforçando para garantir 100%
+de recadastramento dentro dos períodos estabelecidos: "os promotores locais
+costumam fazer campanhas chamando a atenção da população; eles vão em rádios,
+colocam cartazes". Em contrapartida, ela alerta: "se você não fizer, o título é
+cancelado mesmo".
+
+##### Efeitos diferentes?
+
+Historicamente, a privação do direito ao voto — também conhecida pelo termo
+inglês _disenfranchisement_ — é um problema gravíssimo para uma democracia.
+Exemplos de _disenfranchisement_ incluem a retirada do direito ao voto de
+pessoas condenadas pela Justiça e a exclusão de grupos marginalizados do
+processo eleitoral, como ocorria contra populações negras nos Estados Unidos e
+na África do Sul durante boa parte do século XX.
+
+No caso das perdas de títulos por falta de biometria, é uma questão em aberto se
+elas são mais agudas para grupos marginalizados ou se é um fenômeno que afeta
+eleitores de todas as camadas sociais. Para o economista Cláudio Ferraz, a
+primeira hipótese parece mais provável: "se você obrigar as pessoas a se
+registrarem, pode ter um efeito que é heterogêneo e afetar de forma negativa,
+através desse _disenfranchisement_, as pessoas menos escolarizadas, mais pobres,
+que moram mais longe". Segundo Ferraz, uma das razões para isso é que "o custo
+de você não se cadastrar é alto para as pessoas ricas, como funcionários
+públicos, pessoas que tiram passaporte. Em algumas regiões rurais, as pessoas
+mais pobres e menos escolarizadas vão ter muito menos incentivo a se registrar
+de novo".
+
+Ferraz está trabalhando em um artigo cujo objetivo é demonstrar que grupos
+marginalizados tiveram, em média, mais títulos cancelados durante os
+recadastramentos do TSE anteriores à biometria. [Uma versão preliminar][1]
+mostra que o cancelamento de títulos impacta negativamente a qualidade de
+serviços de educação e saúde. Para Ferraz, essa diminuição na qualidade dos
+serviços públicos indica que os mais pobres e marginalizados perderam o direito
+ao voto, tornando-se invisíveis na hora de determinar novos investimentos
+públicos.
+
+```{r eval=F}
+# Para verificar que a renda média dos municípios não afeta a queda no
+# eleitorado, ver:
+
+cit = gen_smr(eleitorado_obrig_16, eleitorado_obrig_18, h17) %>%
+  left_join(tabela, by = c('nome_municipio.x' = 'mun', 'SG_UF.x' = 'state'))
+
+ggplot(cit, aes(x = Average, y = prop)) + geom_point()
+```
+
+No entanto, não é certo que o recadastramento biométrico tenha causado mais
+cancelamentos de títulos entre os mais vulneráveis. Considerando as cidades que
+passaram pelo recadastramento biométrico entre 2016 e 2018, a renda média do
+município não está associada a quedas maiores no eleitorado.
+
+Além disso, quando olhamos mais de perto algumas cidades que sofreram com uma
+redução significativa do eleitorado, a renda média dos eleitores em certos
+bairros não parece ter afetado a queda de votos:
+
+```{r fig.width=7, fig.height = 6}
+ggplot() +
+  ggtitle('Renda Média e Mudança de Eleitorado em Queimados (RJ), 2016-18') +
+  geom_sf(data = queimados_tracts %>% mutate(V009 = ifelse(V009 >= 1020, 1020, V009)), aes(fill = V009), lwd = 0) +
+  geom_sf(data = st_jitter(queimados_points, 100), aes(color = diff), size = 1) +
+  scale_fill_gradient(low = pg_light_gray, high = pg_blue) +
+  scale_color_gradient2(low = 'red', mid = 'white', high = 'green') +
+  theme_void() +
+  theme(legend.position = 'bottom') +
+  theme(text = element_text(family = 'Fantasque', color = '#6e787f')) +
+  theme(legend.text = element_text(size = 10)) +
+  theme(legend.justification = 'center') +
+  theme(plot.title.position = 'plot') +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  guides(fill = guide_colorbar(barwidth = unit(6, 'cm'), title.position = 'top', title.hjust = 0.5, title = 'Renda Média (2010)'),
+         color = guide_colorbar(barwidth  = unit(6, 'cm'), title.position = 'top', title.hjust = 0.5, title = 'Perda/Ganho de Eleitores')) +
+  labs(caption = 'Fonte: TSE, Censo 2010/IBGE') +
+  theme(plot.caption = element_text(hjust = 0))
+```
+
+```{r fig.width=7, fig.height = 6}
+ggplot() +
+  ggtitle('Renda Média e Mudança de Eleitorado em Cuiabá/Várzea Grande (MT), 2018-20') +
+  geom_sf(data = cb_vz_tracts %>% filter(name_district %in% c('Cuiabá', 'Várzea Grande')) %>% mutate(V009 = ifelse(V009 >= 5000, 5000, V009)), aes(fill = V009), lwd = 0) +
+  geom_sf(data = st_jitter(cb_vz_points %>% filter(name_district %in% c('Cuiabá', 'Várzea Grande')), 100), aes(color = diff), size = 0.1) +
+  scale_fill_gradient(low = pg_light_gray, high = pg_blue) +
+  scale_color_gradient2(low = 'red', mid = 'white', high = 'green') +
+  theme_void() +
+  theme(legend.position = 'bottom') +
+  theme(text = element_text(family = 'Fantasque', color = '#6e787f')) +
+  theme(legend.text = element_text(size = 10)) +
+  theme(legend.justification = 'center') +
+  theme(plot.title.position = 'plot') +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  guides(fill = guide_colorbar(barwidth = unit(6, 'cm'), title.position = 'top', title.hjust = 0.5, title = 'Renda Média (2010)'),
+         color = guide_colorbar(barwidth  = unit(6, 'cm'), title.position = 'top', title.hjust = 0.5, title = 'Perda/Ganho de Eleitores')) +
+  labs(caption = 'Fonte: TSE, Censo 2010/IBGE') +
+  theme(plot.caption = element_text(hjust = 0))
+```
+
+Ficou claro para o _Pindograma_, portanto, que ainda sabemos pouco sobre a
+interação entre renda e a taxa de cancelamento de títulos eleitorais.
+
+---
+
+A introdução da biometria foi feita com a intenção de acabar com fraudes no
+processo eleitoral. Porém, o número de fraudes impedidas foi da ordem de dezenas
+de milhares, enquanto a quantidade de eleitores que foram privados do direito de
+votar passa de um milhão.
+
+Na última década, as autoridades brasileiras trataram como natural que
+centenas de milhares de eleitores perdessem o direito ao voto durante o
+recadastramento eleitoral -- perda que, mantidas as diretrizes atuais, voltará a
+acontecer em 2022. Frente a esse quadro, o economista Cláudio Ferraz se
+pergunta: "Valeu a pena o Brasil ter gasto bilhões e bilhões pra fazer o
+cadastramento biométrico? Não sei a resposta".
+
+---
+
+**Dados utilizados na matéria**: Estatísticas do Eleitorado (Tribunal Superior
+Eleitoral); Lista de Recadastramentos Biométricos (Tribunal Superior Eleitoral);
+Censo Demográfico 2010 (IBGE/CEM-USP); Localização de seções eleitorais
+(_Pindograma_).
+
+**Contribuiu com dados**: Daniel Ferreira.
+
+Para reproduzir os números desta matéria, o código pode ser encontrado [aqui][2].
+
+[1]: http://www.ridge.uy/wp-content/uploads/2014/12/Ferraz-Claudio-Varjao.pdf
+
+[2]: self
+
