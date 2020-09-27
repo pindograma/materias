@@ -197,7 +197,7 @@ ggplot(qm, aes(x = ano, y = eleitores)) +
   labs(subtitle = '(Queimados, RJ)') +
   geom_line(color = pg_blue, size = 2) +
   geom_point(color = pg_orange, shape = 16, size = 4) +
-  geom_hline(aes(yintercept = first(qm$voto_obrig), linetype = 'Habitantes entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
+  geom_hline(aes(yintercept = first(qm$voto_obrig), linetype = 'Habitantes alfabetizados entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
   scale_x_continuous(breaks = scales::pretty_breaks()) +
   scale_y_continuous(labels = scales::comma_format(big.mark = '.')) +
   theme_pindograma() +
@@ -364,7 +364,7 @@ ggplot(ct, aes(x = ano, y = eleitores)) +
   labs(subtitle = '(Contagem, MG)') +
   geom_line(color = pg_blue, size = 2) +
   geom_point(color = pg_orange, shape = 16, size = 4) +
-  geom_hline(aes(yintercept = first(ct$voto_obrig), linetype = 'Habitantes entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
+  geom_hline(aes(yintercept = first(ct$voto_obrig), linetype = 'Habitantes alfabetizados entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
   scale_x_continuous(breaks = scales::pretty_breaks()) +
   scale_y_continuous(labels = scales::comma_format(big.mark = '.')) +
   theme_pindograma() +
@@ -431,7 +431,7 @@ ggplot(cb_vz, aes(x = ano, y = eleitores)) +
   labs(subtitle = '(Cuiabá, MT / Várzea Grande, MT)') +
   geom_line(color = pg_blue, size = 2) +
   geom_point(color = pg_orange, shape = 16, size = 4) +
-  geom_hline(aes(yintercept = first(cb_vz$voto_obrig), linetype = 'Habitantes entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
+  geom_hline(aes(yintercept = first(cb_vz$voto_obrig), linetype = 'Habitantes alfabetizados entre 18 e 69 anos (Censo 2010)'), color = pg_green, size = 1) +
   scale_x_continuous(breaks = scales::pretty_breaks()) +
   scale_y_continuous(labels = scales::comma_format(big.mark = '.')) +
   theme_pindograma() +
