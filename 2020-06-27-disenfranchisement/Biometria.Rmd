@@ -573,5 +573,5 @@ Para reproduzir os números desta matéria, o código pode ser encontrado [aqui]
 
 [1]: http://www.ridge.uy/wp-content/uploads/2014/12/Ferraz-Claudio-Varjao.pdf
 
-[2]: self
+[2]: https://github.com/pindograma/materias/blob/master/2020-06-27-disenfranchisement/Biometria.Rmd
 
