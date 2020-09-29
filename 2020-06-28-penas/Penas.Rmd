@@ -43,27 +43,27 @@ vio = penas %>%
   filter(Art == 'Special2')
 
 ggplot(penas, aes(x = `MAX-ANOS`, y = `DIF RELATIVA`)) +
-  ggtitle('Flexibilidade das penas no Brasil') +
-  labs(subtitle = '(Todos os crimes)') +
+  ggtitle('Flexibilidade das penas no Brasil - Todos os crimes') +
+  labs(subtitle = '(Cada ponto é uma pena de um crime)') +
   xlab('Pena máxima (anos)') + ylab('Razão entre pena máxima e pena mínima') +
   geom_jitter(width = .2, height = .2, shape = 16, color = pg_blue) +
-  geom_point(data = ext, color = pg_orange, shape = 16, size = 3) +
-  geom_point(data = vio, color = pg_green, shape = 16, size = 3) +
+  geom_point(data = ext, aes(color = pg_orange), shape = 16, size = 3) +
+  geom_point(data = vio, aes(color = pg_green), shape = 16, size = 3) +
+  scale_color_manual(values = c(pg_green, pg_orange), labels = c('Violência Doméstica', 'Extorsão mediante sequestro que resulta em morte')) +
   stat_smooth(method = 'gam', formula = y ~ s(x, k = 12), se = F, color = pg_orange) +
   labs(caption = 'Fonte: Código Penal') +
   theme_pindograma() +
   theme(plot.title = element_text(size = 16)) +
   theme(axis.title = element_text(size = 12)) +
-  theme(plot.subtitle = element_text(hjust = 0.5))
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.position = 'bottom') +
+  theme(legend.title = element_blank())
 ```
 
 O crime com menor flexibilidade para uma juíza é o de **extorsão mediante
 sequestro que resulta em morte**, pintado em laranja no gráfico, cuja pena
 mínima é de 24 anos e a máxima, de trinta. A pena máxima é somente 0,25 vezes
 maior que a pena mínima.
-
-```{r}
-```
 
 Já entre os crimes com maior margem de pena, existem 19 delitos cujo valor
 máximo é 12,16 vezes o valor mínimo. Falsificação de atestado médico, por
@@ -78,20 +78,23 @@ vio = penas %>%
   filter(Art == 'Special2')
 
 ggplot(penas %>% filter(`TÍTULO` == 'DOS CRIMES CONTRA A PESSOA' & Art != 'Special2'), aes(x = `MAX-ANOS`, y = `DIF RELATIVA`)) +
-  ggtitle('Flexibilidade das penas no Brasil') +
-  labs(subtitle = '(Crimes contra a pessoa)') +
+  ggtitle('Flexibilidade das penas no Brasil - Crimes contra a pessoa') +
+  labs(subtitle = '(Cada ponto é uma pena de um crime)') +
   xlab('Pena máxima (anos)') + ylab('Razão entre pena máxima e pena mínima') +
   geom_jitter(width = .2, height = .2, shape = 16, color = pg_blue) +
-  geom_point(data = vio, color = pg_green, shape = 16, size = 3) +
+  geom_point(data = vio, aes(color = pg_green), shape = 16, size = 3) +
+  scale_color_manual(values = c(pg_green), labels = c('Violência Doméstica')) +
   stat_smooth(method = 'gam', formula = y ~ s(x, k = 6), se = F, color = pg_orange) +
   labs(caption = 'Fonte: Código Penal') +
   theme_pindograma() +
+  theme(legend.position = 'bottom') +
+  theme(legend.title = element_blank()) +
   theme(plot.title = element_text(size = 16)) +
   theme(axis.title = element_text(size = 12)) +
   theme(plot.subtitle = element_text(hjust = 0.5))
 ```
 
-No entanto, tanto no crime de violência doméstica quanto no crime de extorsão
+Contudo, tanto no crime de violência doméstica quanto no crime de extorsão
 mediante sequestro que resulta em morte, a pena mínima e máxima não interferem
 na forma como a pena será cumprida. Isso porque a lei estabelece três maneiras
 distintas para o cumprimento da pena. O regime aberto é mais brando e aplicado
@@ -101,7 +104,7 @@ pena aplicada seja maior que 8 anos:
 
 ```{r}
 tibble(
-  labels = c('Até 4 anos', '5 a 8 anos', '8 anos ou mais'),
+  labels = c('≤ 4 anos', '> 4 anos, ≤ 8 anos', '> 8 anos'),
   `Detenção.Sem Reincidência` = c('Aberto', 'Semi-aberto', 'Semi-aberto'),
   `Detenção.Reincidente` = c('Semi-aberto', 'Semi-aberto', 'Semi-aberto'),
   `Reclusão.Sem Reincidência` = c('Aberto', 'Semi-aberto', 'Fechado'),
@@ -123,23 +126,31 @@ máximo ou não.
 ```{r}
 flex = penas %>%
   filter(`TIPO DE PENA` == 'reclusão') %>%
-  filter(`MIN-ANOS` <= 4 & `MAX-ANOS` > 8)
+  filter(`MIN-ANOS` <= 4 & `MAX-ANOS` > 8) %>%
+  filter(`DESCRIÇÃO` != 'Sinistro em transporte marítimo, fluvial ou aéreo (com o fim de lucro)')
 ```
 
 Das `r nrow(penas)` sanções do Código Penal analisadas pelo _Pindograma_,
 apenas `r nrow(flex)` apresentam um intervalo que permite a uma juíza decretar
 o cumprimento seja em regime aberto, semiaberto ou fechado. Chama a atenção que
 a muitos desses crimes são contra a administração pública: infrações como
-corrupção ativa, corrupção passiva e peculato tem pena de reclusão de 2 a 12
+corrupção ativa, corrupção passiva e peculato têm pena de reclusão de 2 a 12
 anos, dando margem a juízes para definirem como agentes públicos cumprirão suas
 penas:
 
 ```{r}
+#flex %>%
+#  arrange(`TÍTULO`) %>%
+#  select(`DESCRIÇÃO`, `TÍTULO`, `MIN-ANOS`, `MAX-ANOS`) %>%
+#  rename(Crime = `DESCRIÇÃO`, `Título` = `TÍTULO`, `Pena Mínima` = `MIN-ANOS`, `Pena Máxima` = `MAX-ANOS`) %>%
+#  mutate(`Título` = str_to_title(`Título`)) %>%
+#  gt() %>%
+#  theme_pindograma_table()
+
 flex %>%
   arrange(`TÍTULO`) %>%
-  select(`DESCRIÇÃO`, `TÍTULO`, `MIN-ANOS`, `MAX-ANOS`) %>%
-  rename(Crime = `DESCRIÇÃO`, `Título` = `TÍTULO`, `Pena Mínima` = `MIN-ANOS`, `Pena Máxima` = `MAX-ANOS`) %>%
-  mutate(`Título` = str_to_title(`Título`)) %>%
+  select(`DESCRIÇÃO`, `MIN-ANOS`, `MAX-ANOS`) %>%
+  rename(Crime = `DESCRIÇÃO`, `Pena Mínima` = `MIN-ANOS`, `Pena Máxima` = `MAX-ANOS`) %>%
   gt() %>%
   theme_pindograma_table()
 ```
@@ -155,7 +166,7 @@ categoria de crimes protagonize muitos debates públicos.
 
 **Dados utilizados na matéria**: Sanções do Código Penal (_Pindograma_).
 
-**Foto da matéria**: Tribunal da Justiça do Estado de São Paulo.
+**Foto da matéria**: PH/TJSP.
 
 Para reproduzir os números citados, o código pode ser acessado [aqui][2].
 
