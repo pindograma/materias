@@ -1,0 +1,164 @@
+---
+title: "Penas"
+author: "Oscar Neto"
+date: "28/09/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(reshape2)
+library(geobr)
+library(sf)
+library(gt)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r include=F}
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+penas = read_csv('tabela-cp.csv')
+```
+
+Quando uma conduta é classificada como crime no Brasil, a lei estabelece a pena
+mínima e máxima que poderá ser imposta ao condenado. Um intervalo maior ou
+menor entre essas duas penas indica quanta liberdade um juiz tem para definir a
+punição.
+
+O _Pindograma_ analisou todos os crimes do [Código Penal][1] considerando a _razão
+entre a pena máxima e a pena mínima_ -- isto é, quantas vezes a pena máxima é
+maior que a pena mínima. O levantamento mostra que quanto mais grave o crime,
+menos liberdade tem o juiz:
+
+```{r}
+ext = penas %>%
+  filter(Art == 'Special1')
+
+vio = penas %>%
+  filter(Art == 'Special2')
+
+ggplot(penas, aes(x = `MAX-ANOS`, y = `DIF RELATIVA`)) +
+  ggtitle('Flexibilidade das penas no Brasil') +
+  labs(subtitle = '(Todos os crimes)') +
+  xlab('Pena máxima (anos)') + ylab('Razão entre pena máxima e pena mínima') +
+  geom_jitter(width = .2, height = .2, shape = 16, color = pg_blue) +
+  geom_point(data = ext, color = pg_orange, shape = 16, size = 3) +
+  geom_point(data = vio, color = pg_green, shape = 16, size = 3) +
+  stat_smooth(method = 'gam', formula = y ~ s(x, k = 12), se = F, color = pg_orange) +
+  labs(caption = 'Fonte: Código Penal') +
+  theme_pindograma() +
+  theme(plot.title = element_text(size = 16)) +
+  theme(axis.title = element_text(size = 12)) +
+  theme(plot.subtitle = element_text(hjust = 0.5))
+```
+
+O crime com menor flexibilidade para uma juíza é o de **extorsão mediante
+sequestro que resulta em morte**, pintado em laranja no gráfico, cuja pena
+mínima é de 24 anos e a máxima, de trinta. A pena máxima é somente 0,25 vezes
+maior que a pena mínima.
+
+```{r}
+```
+
+Já entre os crimes com maior margem de pena, existem 19 delitos cujo valor
+máximo é 12,16 vezes o valor mínimo. Falsificação de atestado médico, por
+exemplo, tem pena de um mês a um ano; resistência à ordem legal prevê pena de
+dois meses a dois anos. Desses crimes, o único praticado contra a pessoa é o de
+**violência doméstica** -- com pena de 3 meses a 3 anos e pintada em verde no
+gráfico. Violência doméstica, também é, de longe, o crime contra a pessoa com
+a pena mais flexível:
+
+```{r}
+vio = penas %>%
+  filter(Art == 'Special2')
+
+ggplot(penas %>% filter(`TÍTULO` == 'DOS CRIMES CONTRA A PESSOA' & Art != 'Special2'), aes(x = `MAX-ANOS`, y = `DIF RELATIVA`)) +
+  ggtitle('Flexibilidade das penas no Brasil') +
+  labs(subtitle = '(Crimes contra a pessoa)') +
+  xlab('Pena máxima (anos)') + ylab('Razão entre pena máxima e pena mínima') +
+  geom_jitter(width = .2, height = .2, shape = 16, color = pg_blue) +
+  geom_point(data = vio, color = pg_green, shape = 16, size = 3) +
+  stat_smooth(method = 'gam', formula = y ~ s(x, k = 6), se = F, color = pg_orange) +
+  labs(caption = 'Fonte: Código Penal') +
+  theme_pindograma() +
+  theme(plot.title = element_text(size = 16)) +
+  theme(axis.title = element_text(size = 12)) +
+  theme(plot.subtitle = element_text(hjust = 0.5))
+```
+
+No entanto, tanto no crime de violência doméstica quanto no crime de extorsão
+mediante sequestro que resulta em morte, a pena mínima e máxima não interferem
+na forma como a pena será cumprida. Isso porque a lei estabelece três maneiras
+distintas para o cumprimento da pena. O regime aberto é mais brando e aplicado
+em casos de condenações que não ultrapassem 4 anos; o regime semi-aberto, em
+condenações de entre 4 e 8 anos; e o regime fechado, apenas em situações em que a
+pena aplicada seja maior que 8 anos:
+
+```{r}
+tibble(
+  labels = c('Até 4 anos', '5 a 8 anos', '8 anos ou mais'),
+  `Detenção.Sem Reincidência` = c('Aberto', 'Semi-aberto', 'Semi-aberto'),
+  `Detenção.Reincidente` = c('Semi-aberto', 'Semi-aberto', 'Semi-aberto'),
+  `Reclusão.Sem Reincidência` = c('Aberto', 'Semi-aberto', 'Fechado'),
+  `Reclusão.Reincidente` = c('Fechado', 'Fechado', 'Fechado')
+) %>%
+  gt(rowname_col = 'labels') %>%
+  tab_spanner_delim('.') %>%
+  theme_pindograma_table() %>%
+  theme_pindograma_table_stub() %>%
+  theme_pindograma_table_spanner(c('Detenção', 'Reclusão'))
+```
+
+Sob essa perspectiva, há pouca diferença entre os crimes mencionados
+anteriormente: a condenação por extorsão mediante sequestro sempre será
+cumprida, por via de regra, em regime fechado; já a pena por violência
+doméstica será cumprida, quase sempre, em regime aberto, seja ela próxima do
+máximo ou não.
+
+```{r}
+flex = penas %>%
+  filter(`TIPO DE PENA` == 'reclusão') %>%
+  filter(`MIN-ANOS` <= 4 & `MAX-ANOS` > 8)
+```
+
+Das `r nrow(penas)` sanções do Código Penal analisadas pelo _Pindograma_,
+apenas `r nrow(flex)` apresentam um intervalo que permite a uma juíza decretar
+o cumprimento seja em regime aberto, semiaberto ou fechado. Chama a atenção que
+a muitos desses crimes são contra a administração pública: infrações como
+corrupção ativa, corrupção passiva e peculato tem pena de reclusão de 2 a 12
+anos, dando margem a juízes para definirem como agentes públicos cumprirão suas
+penas:
+
+```{r}
+flex %>%
+  arrange(`TÍTULO`) %>%
+  select(`DESCRIÇÃO`, `TÍTULO`, `MIN-ANOS`, `MAX-ANOS`) %>%
+  rename(Crime = `DESCRIÇÃO`, `Título` = `TÍTULO`, `Pena Mínima` = `MIN-ANOS`, `Pena Máxima` = `MAX-ANOS`) %>%
+  mutate(`Título` = str_to_title(`Título`)) %>%
+  gt() %>%
+  theme_pindograma_table()
+```
+
+A liberdade do juiz não está apenas em sua capacidade
+de arbitrar uma pena mais próxima do máximo ou do mínimo, mas também se o réu
+cumprirá a condenação em regime aberto, semiaberto ou fechado. Esta liberdade
+mais ampla, no entanto, só é observada de maneira mais preponderante em crimes
+financeiros praticados contra a administração pública. Não é por acaso que essa
+categoria de crimes protagonize muitos debates públicos.
+
+---
+
+**Dados utilizados na matéria**: Sanções do Código Penal (_Pindograma_).
+
+**Foto da matéria**: Tribunal da Justiça do Estado de São Paulo.
+
+Para reproduzir os números citados, o código pode ser acessado [aqui][2].
+
+[1]: http://www.planalto.gov.br/ccivil_03/decreto-lei/del2848compilado.htm
+
+[2]: https://github.com/pindograma/materias/blob/master/2020-06-28-penas/Penas.Rmd

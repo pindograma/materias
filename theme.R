@@ -76,5 +76,10 @@ theme_pindograma_table_stub = function(gt_table) {
     tab_style(cell_text(font = 'Fantasque Sans Mono', size = px(15)), cells_stub())
 }
 
+theme_pindograma_table_spanner = function(gt_table, spanners) {
+  gt_table %>%
+    tab_style(cell_text(font = 'Fantasque Sans Mono', size = px(17)), cells_column_spanners(spanners))
+}
+
 pg_dot_palette = c(pg_orange, pg_green, pg_blue, pg_yellow)
 pg_column_palette = c(pg_orange, pg_green, pg_blue, pg_yellow, pg_dark_gray)
