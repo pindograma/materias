@@ -1,0 +1,287 @@
+---
+title: "Jovens na Política"
+author: "João Costa"
+date: "01/10/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(gt)
+
+source('../materias/theme.R')
+load('jovens.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r}
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Uma campanha lançada pelo Tribunal Superior Eleitoral em junho deste ano chamou
+a atenção do _Pindograma_. A iniciativa [“Eu na Prefeitura / Eu na
+Câmara”](http://www.tse.jus.br/eleitor/jovens-na-politica/eu-na-prefeitura-eu-na-camara)
+era voltada apenas para os brasileiros entre 16 e 25 anos. O objetivo era
+“atrair os jovens para pensar o Brasil e participar da vida pública”. No
+lançamento, o presidente do TSE, Luís Roberto Barroso,
+[afirmou](http://www.tse.jus.br/imprensa/noticias-tse/2020/Junho/tse-lanca-campanha-para-incentivar-maior-participacao-dos-jovens-na-politica)
+que jovens são necessários para a renovação política, mas que não os via
+interessados em “mudar o mundo a partir da política”.
+
+As impressões de Barroso estavam certas? Após os protestos de julho de 2013, surgiram pesquisas e [matérias](https://www.hojemais.com.br/tres-lagoas/noticia/politica/corrupcao-e-falta-de-incentivo-e-o-que-desestimula-os-jovens-ao-primeiro-voto) que [apontavam](http://blog.felipepeixoto.com.br/o-desencanto-dos-jovens-pela-politica/2014/06/) para os [jovens](https://diariodonordeste.verdesmares.com.br/politica/jovens-estao-distantes-do-processo-politico-1.1028381) como os mais [insatisfeitos](https://gauchazh.clicrbs.com.br/opiniao/noticia/2018/07/o-desinteresse-dos-jovens-pela-politica-e-assustador-e-preocupante-cjj60ub6a0ikg01paoszaa7rh.html) e os que mais [rejeitavam](https://portalcorreio.com.br/jovens-preferem-ficar-longe-da-politica-partidaria/) partidos e [políticos](https://www.bbc.com/portuguese/noticias/2014/09/140911_salasocial_eleicoes_jovens_preocupa_hb). Ao mesmo tempo, não faltam impressões de [mudança](https://www.uol/eleicoes/especiais/jovens-filiados-politica-eleicao.htm) e [renovação política](https://politica.estadao.com.br/noticias/geral,grupos-de-renovacao-politica-ganham-forca-e-incomodam-partidos,70003056410) trazidas pela juventude: vêm surgindo [movimentos](https://politica.estadao.com.br/noticias/geral,grupos-de-renovacao-ja-contabilizam-71-pre-candidatos-em-capitais,70003164595) e [iniciativas](https://www.folhadelondrina.com.br/opiniao/vamos-incentivar-os-jovens-a-se-interessarem-por-politica-2996660e.html), tanto do poder público quanto da esfera privada, que visam educar e [estimular](https://www.nsctotal.com.br/noticias/conheca-projetos-que-buscam-aproximar-jovens-eleitores-da-politica-em-sc) jovens a [participarem](https://www.cadaminuto.com.br/noticia/2020/08/02/na-politica-jovens-vem-mostrando-capacidade-de-agrupamento-e-dinamismo-nas-discussoes) da política.
+
+Temos, então, duas narrativas contrastantes. Há quem defenda que os jovens estão
+mudando a cara da política brasileira, mas há também quem diga que o
+desinteresse da juventude ainda é preocupante. Para não ficar de fora da
+conversa, o _Pindograma_ foi atrás de dados que pudessem ilustrar melhor como os
+jovens brasileiros participam da política.
+
+Os dados mostram que jovens votam, em média, menos que os mais velhos. No
+entanto, cada vez mais candidatos jovens vêm sendo eleitos em eleições estaduais
+e federais desde 2002. Enquanto isso, os partidos brasileiros se veem em crise:
+ano a ano, perdem filiados de suas juventudes e têm crescente dificuldade para
+dialogar com esse segmento da população.
+
+Quem escapa dessa tendência são os partidos mais ideológicos e os movimentos de
+renovação. Novas forças políticas que vêm tomando o espaço de partidos
+tradicionais são mais eficazes em reter e atrair integrantes. Ao que tudo
+indica, não são os jovens que estão se distanciando da política: é a política
+estabelecida que se afasta dos jovens.
+
+##### O voto
+
+Antes de tudo, vale perguntar quem é considerado jovem quando se trata de
+política. A campanha do TSE foca na faixa de 16 a 25 anos. Uma pesquisa do
+[Instituto Data
+Popular](https://istoe.com.br/380009_O+QUE+OS+JOVENS+PENSAM+SOBRE+A+POLITICA/)
+de 2014 tratava dos brasileiros entre 16 e 33 anos. Já entre os partidos
+políticos, cada um tem sua própria definição de juventude. Para o PT, são todos
+os filiados abaixo de 29 anos. Para o MDB, todos até os 34.
+
+Independente do critério usado, os dados disponíveis revelam que há de fato uma
+diferença entre jovens e o restante do eleitorado de voto obrigatório:
+
+```{r}
+ggplot(abstencoes, aes(x = DS_FAIXA_ETARIA, y = proporcao)) +
+	geom_col(aes(fill = jovem)) +
+	scale_fill_manual(values = c(pg_orange, '#e89c4d')) +
+	coord_flip(ylim = c(.1, .21)) +
+	facet_wrap(~ano) +
+	theme_pindograma() +
+	xlab('') + ylab('') +
+	scale_y_continuous(labels = scales::percent_format(accuracy = 1), breaks = c(.1, .15, .20)) +
+	labs(title = 'Abstenção de Eleitores por Faixa Etária', caption = 'Fonte: TSE') +
+	theme(legend.position = 'bottom') +
+	theme(legend.title = element_blank())
+```
+
+```{r}
+all_02 = prop_jovem %>%
+	filter(ANO_ELEICAO == 2002) %>%
+	pull(n_eleitos) %>%
+	sum()
+
+jovem_02 = prop_jovem %>%
+	filter(ANO_ELEICAO == 2002) %>%
+	filter(jovem_34) %>%
+	pull(n_eleitos) %>%
+	sum()
+
+prop_02 = jovem_02 / all_02 * 100
+
+all_18 = prop_jovem %>%
+	filter(ANO_ELEICAO == 2018) %>%
+	pull(n_eleitos) %>%
+	sum()
+
+jovem_18 = prop_jovem %>%
+	filter(ANO_ELEICAO == 2018) %>%
+	filter(jovem_34) %>%
+	pull(n_eleitos) %>%
+	sum()
+
+prop_18 = jovem_18 / all_18 * 100
+```
+
+Mesmo votando menos, os jovens têm ganhado espaço dentre os representantes
+eleitos no país. A representação de jovens de até 34 anos em cargos estaduais e
+federais aumentou pleito após pleito desde 2002. Naquele ano, os jovens eram
+`r pn(prop_02)`% dos deputados estaduais, federais e governadores eleitos:
+`r pn(jovem_02)` representantes no total. Já em 2018, esse número chegou a
+`r pn(jovem_18)`, ou seja, `r pn(prop_18)`% dos eleitos. (Por lei, senadores e
+presidentes não podem ter menos de 35 anos, então desconsideramos esses cargos
+na análise).
+
+```{r}
+ggplot(prop_jovem_chart, aes(x = factor(ANO_ELEICAO), y = frac)) +
+	geom_col(fill = pg_blue, width = 0.6) +
+	geom_text(aes(label = n_eleitos), vjust = -0.5, family = 'Fantasque') +
+	coord_cartesian(ylim = c(0, .15)) +
+	theme_pindograma() +
+	xlab('') + ylab('Fração de jovens entre os eleitos') +
+	theme(axis.title.y = element_text(size = 12)) +
+	scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+	labs(title = 'Políticos Jovens Eleitos, 2002-2018 (até 35 anos)', subtitle = '(Governadores, Deputados Federais, Deputados Estaduais)', caption = 'Fonte: TSE') +
+	theme(plot.subtitle = element_text(hjust = .5))
+```
+
+**Os políticos**
+
+Esse aumento não passou despercebido. As candidaturas jovens receberam especial
+atenção midiática em 2018. No último ano de eleições federais, dentre os cinco
+deputados federais mais votados, dois tinham 24 anos ou menos: João Campos
+(PSB-PE), filho do falecido governador de Pernambuco Eduardo Campos, e Kim
+Kataguiri (DEM-SP), um dos líderes do Movimento Brasil Livre (MBL). Além deles,
+destacaram-se os deputados Tabata Amaral (PDT-SP), Felipe Rigoni (PSB-ES) e
+Sâmia Bomfim (PSOL-SP), que, antes de ser eleita ao Congresso, fora a [mais
+jovem vereadora já eleita em São
+Paulo](http://www.saopaulo.sp.leg.br/vereador/samia-bomfim/).
+
+Dentre esses nomes, somente João Campos e Sâmia Bomfim eram militantes de longa
+data em seus partidos. Já Kim Kataguiri ganhou notoriedade por sua liderança no
+MBL e sua militância contra o governo de Dilma Rousseff (PT), entrando no DEM
+apenas no ano da eleição. Tabata Amaral e Felipe Rigoni também se elegeram por
+partidos que integravam há menos de um ano.
+
+Em sua trajetória pelo Congresso, Tabata — assim como Rigoni — chamou a atenção
+por sua ligação a movimentos de renovação política. Em entrevista ao
+_Pindograma_, a deputada enfatizou a importância do Acredito, movimento que
+ajudou a fundar, para sua eleição: “[O Acredito] foi uma ponte entre a sociedade
+da qual eu fazia parte e os partidos políticos. Não era somente a Tabata
+chegando para conversar com os partidos, era um movimento com milhares de
+voluntários, que teria dezenas de seus membros se candidatando”.
+
+```{r}
+renova_mean_age = mean(candidatos_renova$NR_IDADE_DATA_POSSE)
+```
+
+O movimento é uma de várias organizações que se dizem comprometidas com a
+renovação política no Brasil que começaram a surgir a partir dos protestos de
+2013. Algumas, como o RenovaBR e a RAPS, promovem cursos e programas de
+capacitação para a formação de novas lideranças políticas. Os movimentos já
+causaram polêmica e até sofreram acusações de serem ["partidos
+clandestinos"][1], mas o fato é que parecem atrair mais jovens que os partidos
+oficiais. O _Pindograma_ verificou que a média de idade dos
+`r nrow(candidatos_renova)` ex-alunos do RenovaBR concorrendo nas eleições de
+2020 é de `r pn(renova_mean_age)`, enquanto a média de idade de todos os
+candidatos é de `r pn(all_mean_age)` -- quase dez anos a mais.
+
+Sejam os candidatos ligados a movimentos suprapartidários ou não, o que explica
+essa gravitação dos votos para os mais jovens? O sociólogo Antonio Teixeira de
+Barros, especialista em participação política no Brasil, explica que muitos
+candidatos jovens surfam a onda da insatisfação com a política tradicional. “Os
+candidatos jovens conseguem vocalizar isso, o que resulta em adesão dos
+eleitores a essa suposta 'nova política' com a presença de políticos jovens”.
+
+**Os Filiados**
+
+Apesar do êxito de muitas candidaturas mais jovens, esse sucesso nas urnas não
+está refletido nas bases de filiados dos próprios partidos. A trajetória dos
+parlamentares citados acima reflete essa tendência – afinal, apenas João Campos
+e Sâmia Bonfim eram filiados a seus partidos antes de 2018.
+
+Tradicionalmente, candidatos e futuras lideranças partidárias saem das
+juventudes dos partidos, compostas pelos filiados jovens. Os partidos, porém,
+foram e continuam sendo um dos maiores alvos de insatisfação e rejeição por
+parte de brasileiros, com destaque para os jovens. Uma Pesquisa do Instituto
+Data Popular de 2014 apontou que 58% dos brasileiros entre 16 e 33 anos
+acreditavam que o país estaria melhor sem partidos políticos.
+
+Entre os jovens, filiar-se a um partido está mais impopular a cada ano. Desde
+2012, a proporção média de filiados desse segmento vem caindo:
+
+```{r}
+ggplot(filiacoes_medias %>% filter(Ano >= 2012), aes(factor(Ano), prop34, fill = Partido)) +
+  geom_col(position = "dodge") +
+	coord_cartesian(ylim = c(.15, .35)) +
+	theme_pindograma() +
+	scale_fill_manual(values = c(pg_orange, pg_blue),
+										labels = c('Porcentagem jovem da população brasileira', 'Porcentagem jovem entre filiados a partidos'),
+										guide = guide_legend(nrow = 2)) +
+	scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+	labs(title = 'Jovens na população brasileira x Jovens filiados a partidos',
+			 subtitle = '(18 a 34 anos)',
+			 caption = 'Fonte: TSE, IBGE') +
+	theme(plot.subtitle = element_text(hjust = .5)) +
+	xlab('') + ylab('') +
+	theme(legend.position = 'bottom', legend.title = element_blank())
+```
+
+O professor Antonio Teixeira de Barros comenta que os partidos têm tido
+dificuldade em se atualizarem e atenderem às demandas de gerações mais novas.
+“Os jovens passaram a preferir formas de mobilização mais dinâmicas e menos
+centralizadas e burocratizadas”, explica. O ativismo mais direcionado a certas
+pautas está em alta, vide a força que os movimentos
+[feminista](https://jornal.usp.br/atualidades/feminismo-cresce-na-america-latina-e-no-brasil/),
+[negro](https://www.poder360.com.br/brasil/sao-paulo-tem-protestos-antirracistas-neste-domingo/),
+[LGBTQ+](https://www.nexojornal.com.br/explicado/2017/06/17/A-trajet%C3%B3ria-e-as-conquistas-do-movimento-LGBTI-brasileiro)
+e ambientalista têm ganhado nos últimos tempos.
+
+Isto pode ajudar a explicar a alta taxa de filiação a partidos de esquerda, como
+o PSOL. O partido é o segundo maior em proporção de jovens filiados: 33,34%, ou
+o dobro da média nacional. Desde 2008, a proporção de jovens no partido caiu,
+mas ano a ano o número total de jovens aumentou, indicando que o partido como um
+todo vem ganhando mais força desde sua fundação.  Barros comenta que “há uma
+conexão forte do PSOL com os movimentos sociais defensores dessas causas e há
+muitos jovens envolvidos em coletivos associados a esses movimentos sociais”.
+
+Do outro lado do espectro político, há partidos que também se destacam em
+filiação de jovens. Apesar da saída de Bolsonaro no final de 2019, o PSL quase
+dobrou seu número de filiados entre 16 e 24 anos no último biênio. No mesmo
+período, os filiados de até 34 anos cresceram em cinco pontos percentuais e
+passaram a representar quase um quinto do quadro partidário. A defesa de valores
+conservadores, do cristianismo e da ‘família’ atrai jovens mais conservadores,
+segundo Barros. “Os jovens religiosos se reconhecem nesse discurso,
+especialmente nas manifestações contra o aborto, contra a união civil
+homoafetiva, contra o debate sobre gênero nas escolas e a defesa de um sistema
+de ensino despartidarizado”.
+
+```{r}
+facet_labs = c('FALSE' = 'NOVO / REDE / PSL / PSOL / PATRIOTA', 'TRUE' = 'PT / PDT / PSDB / PSB / MDB / DEM')
+
+ggplot(filiacoes_joao_raw %>% filter(Ano >= 2012 & filiados34 >= 100), aes(x = factor(Ano), y = filiados34, color = party_color)) +
+	scale_color_identity(guide = guide_legend(nrow = 2),
+											 labels = c('PSL', 'MDB', 'DEM', 'PSDB', 'PATRIOTA', 'REDE', 'PDT', 'PT', 'PSB', 'NOVO', 'PSOL')) +
+	geom_line(aes(group = Partido), size = 1) +
+	facet_wrap(~trad, labeller = as_labeller(facet_labs)) +
+	theme_pindograma() +
+	xlab('') + ylab('Número de Filiados') +
+	scale_y_continuous(labels = scales::comma_format(big.mark = '.')) +
+	labs(title = 'Filiação Partidária de Jovens, 2012-2020', subtitle = '(de 18 a 34 anos)', caption = 'Fonte: TSE') +
+	theme(plot.subtitle = element_text(hjust = .5)) +
+	theme(legend.position = 'bottom') +
+	theme(legend.title =  element_blank())
+```
+
+---
+
+Seja à direita ou à esquerda, os jovens parecem dar preferência a partidos mais
+ideológicos e transparentes com suas causas. A percepção é de que partidos
+tradicionais não são sinceros ou representativos da juventude. A deputada Tabata
+Amaral destacou a necessidade de transformação dos partidos brasileiros, que
+correm o risco de alienarem cada vez mais os jovens. “A gente vai ter que ter
+coragem de dar um chacoalhão nos partidos brasileiros, de provocá-los a serem
+mais democráticos, a serem éticos, a serem transparentes, porque em 2020 a gente
+espera mais deles”, disse.
+
+Os partidos que não se atualizam perdem suas juventudes enquanto movimentos de
+renovação e grupos ativistas vão tomando seu lugar. Talvez a próxima campanha do
+TSE deva ser direcionada aos dirigentes partidários e não à geração que vai
+substituí-los.
+
+---
+
+**Dados utilizados na matéria**: Filiação Partidária Agregada (Tribunal Superior
+Eleitoral); Candidaturas (Tribunal Superior Eleitoral); Estimativas da População
+(IBGE).
+
+**Contribuíram com dados**: Antonio Piltcher e Daniel Ferreira.
+
+Para reproduzir os números citados, os dados podem ser encontrados [aqui][2].
+
+[1]: https://www1.folha.uol.com.br/poder/2019/07/ciro-diz-que-movimento-de-tabata-e-partido-clandestino-e-que-ela-faz-dupla-militancia.shtml
+
+[2]: https://github.com/pindograma/materias/blob/master/2020-10-02-jovens/Jovens.Rmd
