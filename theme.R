@@ -1,6 +1,7 @@
 library(showtext)
 
-font_add('Fantasque', regular = '~/Downloads/fantasque-sans-mono/OTF/FantasqueSansMono-Regular.otf')
+font_add('Fantasque', regular = '~/Downloads/fantasque-sans-mono/OTF/FantasqueSansMono-Regular.otf', 
+         bold = '~/Downloads/fantasque-sans-mono/OTF/FantasqueSansMono-Bold.otf')
 
 trace(grDevices::png, exit = quote({
     showtext::showtext_begin()
