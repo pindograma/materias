@@ -1,0 +1,287 @@
+---
+title: "Como não ser enganado por um indicador de gastas em educação"
+author: "Antonio Piltcher"
+date: "09/10/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(gt)
+library(ggflags)
+library(gridExtra)
+
+source('../../materias/theme.R')
+load('indicadores-edu.Rdata')
+#correct latvian flag color *for windows users, path may not work
+path = str_c(.libPaths(), "/ggflags/data/lflags.rds", sep = "") 
+data(lflags, package = "ggflags")
+.flaglist[["lv"]]@content[[1]]@content[[2]]@content[[1]]@gp$fill <- "#C28FEF2B"
+.flaglist[["qa"]]@content[[1]]@content[[2]]@content[[1]]@gp$fill <- "#9450E054"
+save(.flaglist, file=path)
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r}
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Quando são publicados resultados de exames de educação, é comum ouvir que o
+desempenho do Brasil deixa a desejar frente ao “alto” percentual do PIB
+investido em educação no país. Seja em
+[matérias](https://www.gazetadopovo.com.br/educacao/peru-e-chile-gastam-menos-em-educacao-do-que-o-brasil-e-eles-alcancam-as-melhores-notas-5mo5nrw7yq9poa113h8ioj4r0/)
+de
+[veículos](https://agenciabrasil.ebc.com.br/educacao/noticia/2018-07/brasil-gasta-6-do-pib-em-educacao-mas-desempenho-escolar-e-ruim)
+[tradicionais](https://oglobo.globo.com/sociedade/educacao/percentual-do-pib-brasileiro-dedicado-educacao-maior-do-que-em-paises-desenvolvidos-22858629),
+[tuítes](https://twitter.com/jairbolsonaro/status/1102502825660239872?s=20) do
+Presidente da República ou até nas sugestões do mecanismo de busca do _Google_,
+a narrativa do gasto excessivo no setor da educação é predominante.
+
+![Busca feita em guia anônima](busca.png)
+
+
+Porém, analisando resultados de todas as edições do Programa Internacional de
+Avaliação de Estudantes (PISA), fica claro que o gasto em educação como
+proporção do PIB de países participantes não é um bom indicador de desempenho na
+prova. Nosso levantamento mostra que não há correlação entre essa medida de
+investimento e notas no teste.
+
+Por outro lado, outra métrica importante –– o gasto médio por aluno ––
+demonstrou uma correlação positiva com resultados no exame. E o Brasil é um dos
+países que menos investe sob essa ótica.
+
+Talvez por soar mais impressionante e contribuir com a narrativa de
+incompetência na gestão pública, a primeira métrica –– baseada no PIB –– tomou a
+dianteira no discurso público brasileiro dos últimos anos. O _Pindograma_
+mostra, no entanto, por que deveríamos pensar duas vezes ao usar esse indicador.
+
+---
+
+Em âmbito internacional, o [PISA](https://www.oecd.org/pisa/pisafaq/) é a
+[principal referência](https://www.politize.com.br/pisa-educacao/) de desempenho
+dos países em educação. Os resultados do teste são fruto das respostas de alunos
+de 15 anos em todo o mundo a um questionário padronizado que inclui perguntas de
+proficiência em leitura, ciência e matemática, bem como questões sobre o
+contexto social e relação dos alunos com a educação. O desempenho do Brasil no
+exame costuma ter cobertura ampla na mídia e virou até tema de proposta nas
+eleições presidenciais de 2018. Geraldo Alckmin (PSDB) chegou a
+[prometer](https://www.psdb.org.br/acompanhe/noticias/alckmin-detalha-plano-de-governo-em-entrevista-a-globo-news/)
+que aumentaria a nota do país em 50 pontos no PISA em oito anos.
+
+Mas como aumentar a nota do Brasil no PISA? O investimento em educação parece
+ser a maneira mais óbvia de atacar o problema. Acontece que há mais um jeito de
+medir esse investimento, e cada uma dessas medidas conta uma história diferente
+sobre a educação brasileira.
+
+Entre as principais medidas de investimento de um país em educação, estão o
+_gasto médio por aluno_ e o _gasto percentual do PIB em educação_. Situando o
+Brasil entre os países que reportaram seus investimentos em educação em 2015,
+vemos o contraste entre a posição do país nos dois indicadores (valores em dólar
+corrigido pelo poder de compra, ou dólar PPC):
+
+```{r, fig.height=6, fig.width=9}
+ggplot(gdp_2015, aes(reorder(Country, Value),
+                     Value,
+                     fill = factor(ifelse(Country == 'Brazil', 'BRA', ''))))+
+  geom_col(width = 0.5)+
+  scale_fill_manual(name = "Country", values=c(pg_blue,pg_yellow))+
+  geom_flag(aes(country = code))+
+  theme_pindograma()+
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), breaks = c(0:10)/100 ) +
+  annotate('text', label = 'Investimento médio',
+           family = 'Fantasque', color = pg_dark_gray,
+           x = 10, y = 0.07, size = 4)+
+  annotate('curve', curvature = 0.12, x = 10,
+           xend = 10, y = .0668, yend = .061,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .6,
+           color = pg_dark_gray)+
+  coord_cartesian(ylim = c(.03, .09))+
+  geom_hline(aes(yintercept = 0.05922), color = pg_orange, size = 1, linetype = 'dashed')+
+  ylab('')+xlab('')+
+  labs(title = 'Porcentagem do PIB destinada à educação (2015)')+
+  theme(legend.position = 'none', 
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(size =16),
+        plot.title = element_text(family = 'Fantasque',
+                                  color = pg_dark_gray,
+                                  face = "bold",
+                                  size = 16,
+                                  margin = margin(t = 5, r = 0, b = 15, l = 0)),
+        panel.background = element_rect(fill = pg_light_gray)
+        )
+```
+
+```{r, fig.height=6, fig.width=9}
+ggplot(student_2015, aes(reorder(Country, Value),
+                     Value,
+                     fill = factor(ifelse(Country == 'Brazil', 'BRA', ''))))+
+  geom_col(width = 0.5)+
+  scale_fill_manual(name = "Country", values=c(pg_blue,pg_yellow))+
+  geom_flag(aes(country = code))+
+  scale_y_continuous(labels = scales::dollar_format(big.mark = '.', decimal.mark = ',')) +
+  theme_pindograma()+
+  coord_cartesian(ylim = c(1000,21500))+
+  ylab('') + xlab('') +
+  labs(title = 'Gasto médio por aluno, dólar PPC (2015)',
+       caption = 'Fonte: OCDE')+
+  theme(legend.position = 'none', 
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(size =16),
+        plot.title = element_text(family = 'Fantasque',
+                                  color = pg_dark_gray,
+                                  face = "bold",
+                                  size = 16,
+                                  margin = margin(t = 5, r = 0, b = 15, l = 0) ),
+        plot.caption = element_text(size = 14),
+        panel.background = element_rect(fill = pg_light_gray) )
+```
+Embora muitos afirmem que o Brasil tem um alto gasto percentual do PIB em
+educação, nosso investimento esteve próximo à média do gasto dos outros países
+–– seja considerando os gastos públicos e privados no setor (como no gráfico),
+seja considerando apenas os investimentos públicos. Já no gasto por aluno,
+amargamos um penúltimo lugar entre os países que reportaram dados em 2015, a frente apenas da Indonésia.
+
+Manchetes como [“Brasil gasta 6% do PIB, mas desempenho escolar é
+ruim”](https://agenciabrasil.ebc.com.br/educacao/noticia/2018-07/brasil-gasta-6-do-pib-em-educacao-mas-desempenho-escolar-e-ruim)
+pressupõem que um maior gasto percentual do PIB em educação deveria levar a um
+desempenho maior no PISA. Entretanto, nosso levantamento revela que essa
+suposição não se sustenta:
+```{r, fig.height = 6, fig.width=9 }
+ggplot(gdp_vs_pisa, aes(Value, Average))+
+  geom_point()+
+  geom_smooth(se = F, color = pg_orange)+
+  geom_flag(aes(country = code))+
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(x = 'Porcentagem do PIB destinada à educação', 
+       y = 'Resultado no PISA',
+       title = 'Correlação entre gasto percentual do PIB e desempenho no PISA',
+       caption = 'Fonte: OCDE')+
+  annotate('text', label = 'Irlanda',
+           family = 'Fantasque', color = pg_blue,
+           x = .037, y = 530, size = 5, face = 'bold')+
+  annotate('curve', curvature = 0.12, x = .037,
+           xend = .0358, y = 525, yend = 515,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = 1,
+           color = pg_blue)+
+  annotate('text', label = 'Nova Zelândia',
+           family = 'Fantasque', color = pg_blue,
+           x = .077, y = 525, size = 5, face = 'bold')+
+  annotate('curve', curvature = 0.12, x = .0755,
+           xend = .0733, y = 520, yend = 512,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = 1,
+           color = pg_blue)+
+  annotate('text', label = 'Brasil',
+           family = 'Fantasque', color = pg_blue,
+           x = .062, y = 380, size = 5, face = 'bold')+
+  annotate('curve', curvature = 0.12, x = .06,
+           xend = .058, y = 385, yend = 392,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = 1,
+           color = pg_blue)+
+  coord_cartesian(ylim = c(380, 530))+
+  theme_pindograma()+
+  theme(panel.background = element_rect(fill = pg_light_gray),
+        plot.title = element_text(size = 16,
+                                  face = 'bold',
+                                  margin = margin(t = 5, r = 0, b = 15, l = 0)),
+        plot.caption = element_text(size = 14),
+        axis.text = element_text(size = 16),
+        axis.title = element_text(size = 16),
+        axis.title.x = element_text(margin = margin(t = 15)),
+        axis.title.y = element_text(margin = margin(r = 10)))
+```
+
+O gráfico indica que não há uma correlação consistente entre as medidas: não é
+possível identificar uma tendência de aumento nos resultados conforme os gastos
+proporcionais aumentam. A Irlanda, por exemplo, gasta menos em educação
+proporcionalmente a seu PIB do que a Nova Zelândia e apresenta resultados
+melhores. O que dá pra identificar, em contrapartida, é que países
+subdesenvolvidos estão todos na parte inferior do gráfico, enquanto países mais
+ricos estão na parte superior. Dentro de cada grupo, os gastos variam por todo o
+espectro.
+
+Compare o gráfico anterior com o gráfico a seguir, que traça o mesmo tipo de
+correlação, dessa vez comparando os resultados do PISA com o gasto médio por
+aluno. Note que os pontos da Irlanda e da Nova Zelândia estão muito mais
+próximos, assim como os pontos do Brasil e os de outros países com desempenho
+similar:
+
+```{r, fig.height = 6, fig.width=9 }
+ggplot(student_vs_pisa, aes(Value, Average))+
+  geom_point()+
+  geom_smooth(se = F, color = pg_orange)+
+  geom_flag(aes(country = code))+
+  scale_x_continuous(labels = scales::dollar_format(big.mark = ".", decimal.mark = ",") ) +
+  labs(x = 'Gasto por aluno (dólar PPC)', 
+       y = 'Resultado no PISA',
+       title = 'Correlação entre gasto por aluno e desempenho no PISA',
+       caption = 'Fonte: OCDE')+
+  annotate('text', label = 'Irlanda',
+           family = 'Fantasque', color = pg_blue,
+           x = 9500, y = 530, size = 5, face = 'bold')+
+  annotate('curve', curvature = 0.12, x = 9500,
+           xend = 9400, y = 525, yend = 515,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = 1,
+           color = pg_blue)+
+  annotate('text', label = 'Nova Zelândia',
+           family = 'Fantasque', color = pg_blue,
+           x = 12000, y = 475, size = 5, face = 'bold')+
+  annotate('curve', curvature = 0.12, x = 12000,
+           xend = 11100, y = 482, yend = 500,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = 1,
+           color = pg_blue)+
+  annotate('text', label = 'Brasil',
+           family = 'Fantasque', color = pg_blue,
+           x = 5800, y = 400, size = 5, face = 'bold')+
+  annotate('curve', curvature = 0.12, x = 4800,
+           xend = 3700, y = 400, yend = 397,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = 1,
+           color = pg_blue)+
+  coord_cartesian(ylim = c(380, 530))+
+  theme_pindograma()+
+  theme(panel.background = element_rect(fill = pg_light_gray),
+        plot.title = element_text(size = 16,
+                                  face = 'bold',
+                                  margin = margin(t = 5, r = 0, b = 15, l = 0)),
+        plot.caption = element_text(size = 14),
+        axis.text = element_text(size = 16),
+        axis.title = element_text(size = 16),
+        axis.title.x = element_text(margin = margin(t = 15)),
+        axis.title.y = element_text(margin = margin(r = 10)))
+```
+
+Dentre os países analisados, é possível identificar que maiores níveis de gasto
+por aluno estão ligados a melhores desempenhos no PISA. O fato de a correlação
+desacelerar na parte direita do gráfico está em linha com a _teoria de retornos
+marginais decrescentes_: em um país que possui um baixo nível de gastos por
+aluno como o México, um pequeno aumento no investimento gera uma grande melhora
+no desempenho desse país no PISA. Já em países com gastos altos por aluno como a
+Noruega, o mesmo valor investido por aluno melhorará o desempenho, mas em uma
+menor proporção.
+
+Os gráficos sugerem que o gasto por aluno é uma métrica mais confiável do que o
+gasto proporcional ao PIB para entender o desempenho de um país no PISA. O
+Brasil, por exemplo, destinou `r pn(pib_br)`% do PIB à educação em 2015,
+enquanto a Irlanda destinou apenas `r pn(pib_ir)`% no mesmo ano e obteve uma
+nota melhor. No entanto, cada aluno irlandês recebeu, em média, 
+`r pn(stu_ir)` dólares PPC de investimento, aproximadamente três vezes mais do 
+que um aluno brasileiro.
+
+Para equiparar o gasto brasileiro por aluno ao irlandês, teríamos que gastar
+quase `r pn(pib_br*stu_ir/stu_br)`% do PIB com educação. Vale ressaltar, porém,
+que isso não garantiria, necessariamente, um melhor desempenho no PISA. Outros
+fatores influenciam estes resultados e os maiores investimentos na educação
+podem demorar anos para terem efeitos perceptíveis. Uma comparação mais completa
+com a Irlanda teria que envolver uma análise do histórico de investimentos na
+educação e da qualidade de formação da geração atual de professores irlandeses,
+por exemplo.
+
+No _Pindograma_, gostamos de pautar o debate público com base em dados. No
+entanto, eles podem ser usados para dar tom científico a narrativas
+questionáveis, como a de que não faltam recursos na educação brasileira. Por
+isso, na divulgação dos próximos resultados do PISA ou de outras avaliações,
+pense bem na qualidade de cada indicador e a qual propósito ele está servindo.
+
+
