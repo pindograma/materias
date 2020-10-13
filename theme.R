@@ -22,13 +22,18 @@ theme_pindograma = function() {
     theme(axis.ticks.length.y = unit(.25, 'cm')) +
     theme(axis.ticks = element_line(color = pg_dark_gray, size = 1.25)) +
     theme(text = element_text(family = 'Fantasque')) +
-    theme(axis.text = element_text(size = 12)) +
-    theme(axis.title = element_text(size = 14, color = pg_dark_gray)) +
-    theme(plot.title = element_text(size = 14, color = pg_dark_gray, hjust = 0.5)) +
+    theme(axis.text = element_text(size = 16)) +
+    theme(axis.title = element_text(size = 16, color = pg_dark_gray)) +
+    theme(plot.title = element_text(size = 16,
+                                    color = pg_dark_gray,
+                                    hjust = 0.5,
+                                    margin = margin(5, 0, 15, 0),
+                                    face = 'bold')) +
     theme(plot.title.position = 'plot') +
     theme(plot.subtitle = element_text(color = pg_dark_gray)) +
     theme(plot.caption.position = 'plot') +
-    theme(plot.caption = element_text(hjust = 0, size = 10, color = pg_dark_gray))
+    theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+    theme(panel.background = element_rect(fill = pg_light_gray))
 }
 
 theme_pindograma_table = function(gt_table) {
