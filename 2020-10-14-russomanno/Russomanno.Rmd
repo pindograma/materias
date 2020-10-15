@@ -1,0 +1,97 @@
+---
+title: "Russomanno"
+author: "João Costa"
+date: "10/14/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+
+source('../theme.R')
+load('russomanno_mapas.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+"Celso Russomanno lidera em São Paulo" –– essa manchete não é novidade para
+quem acompanha as eleições paulistanas. Na data de publicação desta matéria,
+nosso [agregador de pesquisas](https://pindograma.shinyapps.io/agregador/)
+indica que ele tem 26% das intenções de voto. Nas últimas duas eleições
+municipais, Celso Russomanno (Republicanos) também liderou as pesquisas de
+intenção de voto em São Paulo por meses––mas logo antes da eleição, perdeu
+espaço para candidatos de partidos mais tradicionais. Se com o apoio explícito
+do Presidente da República o candidato do Republicanos vai finalmente ganhar a
+eleição, só o tempo dirá. O que as últimas eleições mostram é que seus votos
+parecem ter endereços fixos.
+
+Os mapas abaixo mostram a porcentagem de votos que Russomanno recebeu em cada
+uma das seções eleitorais de São Paulo em 2012 e 2016. O sucesso do candidato
+no geral foi maior em 2012, mas a distribuição geográfica do voto foi parecida
+nos dois anos.
+
+```{r fig.height=8}
+ggplot() +
+  ggtitle('Concentração de Votos de Celso Russomanno\n(São Paulo, 2016)') +
+  geom_sf(data = russ16, aes(fill = cand), lwd = 0) +
+  scale_fill_gradient(low = 'white', high = pg_green, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(legend.title = element_blank())
+```
+
+De cara, o centro do mapa torna fácil de notar onde Russomanno _não_ recebe
+votos: bairros nobres da cidade. Nestas áreas, o total de votos quase não
+passou dos 5% em 2016. O arco de bairros de alta renda que começa em Alto de
+Pinheiros, segue pelos Jardins e o Itaim Bibi e desce para o Brooklin, o Campo
+Belo e Santo Amaro parece particularmente avesso a Russomanno. Saindo de áreas
+mais centrais, outros bairros de alta renda como o Tatuapé na Zona Leste e
+Santana na Zona Norte também não apoiaram o candidato, mesmo que a média de
+votação tenha sido mais próxima de 10%.
+
+É nas periferias que Russomanno teve mais sucesso. Em particular, os bairros da
+cidade que fazem divisa com Guarulhos tanto na Zona Norte quanto na Zona Leste
+foram mais inclinados ao voto no candidato, com seções em que a votação chegou
+a mais de 20% em 2016. O Parque Novo Mundo e Penha de França se destacam por
+terem dado mais de 25% dos votos para Russomanno. Na Zona Sul, o bairro de
+Heliópolis e seus entornos também são focos dessas altas porcentagens. Cruzando
+o rio Pinheiros, uma faixa que vai do Rio Pequeno na Zona Oeste, passando pela
+Vila Andrade e o Capão Redondo e terminando nas margens oeste da Represa de
+Guarapiranga na Zona Sul forma um corredor de apoio a Russomanno onde as
+porcentagens flutuaram em torno de 15%. Bairros próximos à divisa de Diadema
+como Cidade Ademar e Pedreira também registraram porcentagens similares.
+
+O eleitorado mais rico nunca deu muito apoio a Russomanno, indicando que é
+improvável que ele ganhe esses eleitores em 2020. A vitória de Russomanno
+parece depender de ele superar os 20% e conquistar a maioria nas periferias. O
+diferencial este ano é o apoio que recebeu do presidente Jair Bolsonaro (sem
+partido), cuja popularidade aumentou graças ao auxílio emergencial. No entanto,
+63% dos paulistanos que ganham até 2 salários mínimos disseram que não votariam
+"de jeito nenhum" em um candidato apoiado pelo presidente, segundo a [última
+pesquisa
+Datafolha](http://media.folha.uol.com.br/datafolha/2020/10/09/b93d086293eb628a773ff1545da827bcciesp1.pdf).
+
+Resta ver se Celso Russomanno conseguirá manter-se na liderança e, quem sabe,
+finalmente se eleger prefeito.
+
+---
+
+**Dados utilizados na matéria**: Resultados de Pesquisas Eleitorais
+(_Pindograma_); Localização de Seções Eleitorais (_Pindograma_).
+
+**Contribuiu com dados**: Daniel Ferreira.
+
+Para reproduzir os números da matéria, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-14-russomanno/Russomanno.Rmd
