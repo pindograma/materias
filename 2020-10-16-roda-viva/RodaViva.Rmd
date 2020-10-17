@@ -1,0 +1,288 @@
+---
+title: "De Dilma a Bolsonaro: como votam as favelas do Rio"
+author: "Francisco Ricci"
+date: "07/09/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+O Roda Viva é o mais [antigo programa de
+entrevistas](https://telepadi.folha.uol.com.br/william-waack-e-nome-cotado-para-o-comando-roda-viva/)
+na televisão brasileira, e constantemente gera pautas no debate público. A
+entrevista do então candidato à presidência Jair Bolsonaro, por exemplo,
+acumula [10 milhões de
+visualizações](https://www.youtube.com/watch?v=lDL59dkeTi0) no YouTube. Dessa
+forma, a escolha de quem colocar no centro da Roda é também a escolha do que
+colocar no centro da discussão pública naquela semana. Resta, então, perguntar
+quem foram os convidados políticos escolhidos nos últimos mandatos
+presidenciais? 
+
+O _Pindograma_ analisou todos os convidados atuantes na política partidária
+convidados desde 2012 e os classificamos entre favoráveis ao governo,
+opositores e figuras sem posição explícita, que chamaremos de ‘neutros’.
+Durante o governo Bolsonaro, por exemplo, Ricardo Salles foi classificado como
+favorável; Flávio Dino (PCdoB) como opositor; e Rodrigo Maia (DEM) como neutro. 
+
+```{r}
+dict = read_csv('meses.csv')
+
+convidados <- read_excel('convidados_rodaviva_final.xlsx') %>%
+  separate(Data, c("dia", "mes"), sep = " de ") %>%
+  left_join(dict, by = "mes") %>%
+  mutate(data = make_date(ano, nr, dia)) %>%
+  group_by(ano) %>%
+  mutate(bin = cur_group_id()) %>%
+  ungroup() %>%
+  mutate(governo = ifelse(governo == 1, 'Governo', ifelse(governo == -1, 'Oposição', 'Neutro')))
+
+ggplot(convidados, aes(x = factor(mandato_exec, levels = c('DILMA I', 'DILMA II', 'TEMER', 'BOLSONARO')), fill = factor(governo, levels = c('Governo', 'Neutro', 'Oposição')))) +
+  geom_bar(position = 'dodge') +
+  theme_pindograma() +
+  xlab('') + ylab('Convidados') +
+  scale_fill_manual(values = c(pg_green, pg_dark_gray, pg_orange)) +
+  theme(legend.title = element_blank()) +
+  labs(title = 'Alinhamento político de convidados do Roda Viva\n(2012-2020)', caption = 'Fonte: Wikipédia/Pindograma')
+```
+
+```{r}
+oposicionistas_dilma = convidados %>%
+  filter(mandato_exec == 'DILMA I') %>%
+  filter(governo == 'Oposição') %>%
+  nrow()
+
+neutros_dilma = convidados %>%
+  filter(mandato_exec == 'DILMA I') %>%
+  filter(governo == 'Neutro') %>%
+  nrow()
+
+governistas_dilma = convidados %>%
+  filter(mandato_exec == 'DILMA I') %>%
+  filter(governo == 'Governo') %>%
+  nrow()
+
+psdb_dilma = convidados %>%
+  filter(mandato_exec == 'DILMA I') %>%
+  filter(governo == 'Oposição') %>%
+  filter(SIGLA_PARTIDO == 'PSDB') %>%
+  nrow()
+
+pt_dilma = convidados %>%
+  filter(mandato_exec == 'DILMA I') %>%
+  filter(governo == 'Governo') %>%
+  filter(SIGLA_PARTIDO == 'PT') %>%
+  nrow()
+
+ministros_dilma = convidados %>%
+  filter(mandato_exec == 'DILMA I') %>%
+  filter(governo == 'Governo') %>%
+  filter(SIGLA_PARTIDO == 'MIN_DILMAI') %>%
+  nrow()
+```
+
+O primeiro mandato de Dilma Rousseff (PT) foi coberto pelo Roda Viva de forma
+bastante equilibrada. Como um todo, foram convidados `r pn(oposicionistas_dilma)`
+oposicionistas, `r pn(governistas_dilma)` governistas e `r pn(neutros_dilma)`
+entrevistado neutro para o centro da roda de entrevistas. Entre os políticos
+convidados que criticaram seu primeiro governo, `r pn(psdb_dilma)` dos
+`r pn(oposicionistas_dilma)` eram membros do PSDB. Já entre os entrevistados
+que apoiavam a presidente, `r pn(pt_dilma)` dos `r pn(governistas_dilma)` eram
+membros do PT. À época, foram convidados `r pn(ministros_dilma)` ministros de
+estado.
+
+```{r}
+oposicionistas_dilma2 = convidados %>%
+  filter(mandato_exec == 'DILMA II') %>%
+  filter(governo == 'Oposição') %>%
+  nrow()
+
+neutros_dilma2 = convidados %>%
+  filter(mandato_exec == 'DILMA II') %>%
+  filter(governo == 'Neutro') %>%
+  nrow()
+
+governistas_dilma2 = convidados %>%
+  filter(mandato_exec == 'DILMA II') %>%
+  filter(governo == 'Governo') %>%
+  nrow()
+
+psdb_dilma2 = convidados %>%
+  filter(mandato_exec == 'DILMA II') %>%
+  filter(governo == 'Oposição') %>%
+  filter(SIGLA_PARTIDO == 'PSDB' | SIGLA_PARTIDO == 'SEC_PSDB') %>%
+  nrow()
+
+exbase_dilma2 = convidados %>%
+  filter(mandato_exec == 'DILMA II') %>%
+  filter(governo == 'Oposição') %>%
+  filter(!(SIGLA_PARTIDO %in% c('PSDB', 'SEC_PSDB', 'DEM'))) %>%
+  filter(name != 'PEDRO TAQUES') %>%
+  nrow()
+```
+
+No segundo mandato de Dilma, os críticos roubaram os holofotes. A crise
+política e econômica que levou ao impedimento da presidente moldou a cobertura
+do Roda Viva, que explorou principalmente convidados que a rejeitavam. Foram
+convidados `r pn(oposicionistas_dilma2)` oposicionistas, `r pn(neutros_dilma2)`
+neutros e somente `r pn(governistas_dilma2)` defensores do governo ––
+todos ministros de estado à época. Já entre os `r pn(oposicionistas_dilma2)`
+que trouxeram críticas, `r pn(exbase_dilma2)` eram ex-membros da base aliada
+que aderiram ao impedimento da presidente e outros `r pn(psdb_dilma2)` eram
+membros do PSDB. 
+
+```{r}
+all_temer = convidados %>%
+  filter(mandato_exec == 'TEMER') %>%
+  nrow()
+
+oposicionistas_temer = convidados %>%
+  filter(mandato_exec == 'TEMER') %>%
+  filter(governo == 'Oposição') %>%
+  nrow()
+
+neutros_temer = convidados %>%
+  filter(mandato_exec == 'TEMER') %>%
+  filter(governo == 'Neutro') %>%
+  nrow()
+
+governistas_temer = convidados %>%
+  filter(mandato_exec == 'TEMER') %>%
+  filter(governo == 'Governo') %>%
+  nrow()
+
+psdb_temer = convidados %>%
+  filter(mandato_exec == 'TEMER') %>%
+  filter(governo == 'Governo') %>%
+  filter(SIGLA_PARTIDO == 'PSDB') %>%
+  nrow()
+
+ministros_temer = convidados %>%
+  filter(mandato_exec == 'TEMER') %>%
+  filter(governo == 'Governo') %>%
+  filter(SIGLA_PARTIDO == 'MIN_TEMER') %>%
+  nrow()
+```
+
+Michel Temer (MDB) [ultrapassou a grande impopularidade de
+Dilma](https://www.correiobraziliense.com.br/app/noticia/politica/2018/06/10/interna_politica,687492/reprovacao-de-temer-bate-recorde-e-chega-a-82-diz-datafolha.shtml).
+Ainda assim, o seu governo foi o que mais teve voz no programa desde 2012.
+Dos `r pn(all_temer)` convidados do programa, apenas `r pn(oposicionistas_temer)`
+eram críticos ao governo. De resto, `r pn(neutros_temer)` eram neutros e
+`r pn(governistas_temer)` eram governistas. Os poucos políticos críticos vieram
+de diversos partidos de esquerda, como Ciro Gomes (PDT), Marina Silva (REDE) e
+Manuela D'Ávila (PCdoB). Apenas dois petistas foram convidados ao programa: o
+ex-ministro da Justiça José Eduardo Cardozo e Luiz Marinho, então candidato ao
+governo de São Paulo. Entre os muitos favoráveis a Temer, estavam
+`r pn(ministros_temer)` ministros de estado e `r pn(psdb_temer)` membros do
+PSDB, partido que passou a compor o governo.
+
+```{r}
+oposicionistas_bolsonaro = convidados %>%
+  filter(mandato_exec == 'BOLSONARO') %>%
+  filter(governo == 'Oposição') %>%
+  nrow()
+
+neutros_bolsonaro = convidados %>%
+  filter(mandato_exec == 'BOLSONARO') %>%
+  filter(governo == 'Neutro') %>%
+  nrow()
+
+governistas_bolsonaro = convidados %>%
+  filter(mandato_exec == 'BOLSONARO') %>%
+  filter(governo == 'Governo') %>%
+  nrow()
+
+ministros_bolsonaro = convidados %>%
+  filter(mandato_exec == 'BOLSONARO') %>%
+  filter(governo == 'Governo') %>%
+  filter(SIGLA_PARTIDO == 'MIN_BOLSONARO' | name == 'TEREZA CRISTINA' | name == 'ROGERIO MARINHO') %>%
+  nrow()
+```
+
+Apesar de críticas do presidente Jair Bolsonaro (sem partido) à imprensa, a
+cobertura do Roda Viva tem sido particularmente equilibrada durante o seu
+governo. Foram convidados `r pn(oposicionistas_bolsonaro)` oposicionistas,
+`r pn(neutros_bolsonaro)` neutros e `r pn(governistas_bolsonaro)` governistas
+para o centro da roda de entrevistas. `r pn(ministros_bolsonaro)` dos
+`r pn(governistas_bolsonaro)` convidados favoráveis ao Governo Bolsonaro foram
+ministros, a maior proporção das administrações analisadas.
+
+```{r}
+desafetos_bolsonaro = convidados %>%
+  filter(mandato_exec == 'BOLSONARO') %>%
+  filter(governo == 'Oposição') %>%
+  filter(name %in% c(
+    'ALEXANDRE FROTA',
+    'GUSTAVO BEBIANNO',
+    'JOICE HASSELMANN',
+    'LUIZ HENRIQUE MANDETTA',
+    'WILSON WITZEL'
+  )) %>%
+  nrow()
+```
+
+Mas são as vozes da oposição convidadas que configuram o fato mais único do
+governo de Bolsonaro. `r pn(desafetos_bolsonaro)` dos
+`r pn(oposicionistas_bolsonaro)` entrevistados de oposição foram crias do
+próprio presidente: Alexandre Frota (PSDB), expulso do PSL por ter deixado de
+apoiar o governo Jair Bolsonaro; Joice Hasselmann (PSL), já como desafeto do
+clã Bolsonaro; o então governador do Rio de Janeiro Wilson Witzel (PSC) que
+rompera com o presidente; e os ex-ministros Gustavo Bebianno (PSL) e Luiz
+Henrique Mandetta (DEM).
+
+Durante o período que analisamos, o Roda Viva foi comandado por Mário Sérgio
+Conti (2011-2013), Augusto Nunes (2013-2018), Ricardo Lessa (2018-2019),
+Daniela Lima (2019) e atualmente é apresentado por Vera Magalhães. Mas foi no
+período de Augusto Nunes no comando do programa que os desequilíbrios entre
+apoiadores e opositores chamaram a atenção. A grande quantidade de críticos a
+Dilma e apoiadores de Temer causou controvérsias que culminaram com a saída do
+jornalista do programa. 
+
+Em
+[entrevista](https://politica.estadao.com.br/blogs/neumanne/augusto-deixou-roda-viva-por-nao-aceitar-interferencia-politica/.)
+ao Estadão, Nunes afirmou que saiu do programa por ter sido pressionado a
+convidar mais representantes da esquerda. Criticou quem sustentava "que a
+programação da Cultura, sobretudo o Roda Viva, deve[ria] entrar no clima de Fla
+x Flu vigente na internet" e afirmou que era "preciso combater a radicalização
+dos confrontos políticos". Sugeriu também à [Folha de São
+Paulo](https://www1.folha.uol.com.br/ilustrada/2018/07/augusto-nunes-diz-que-deixou-roda-viva-apos-pressao-politica.shtml)
+que o conselho do Roda Viva impunha a ele a escolha de alguns convidados como
+"o ministro da Educação, o das Comunicações, o da Saúde", o que poderia
+explicar o alto número de apoiadores do governo Temer.
+
+Com a mudança de governo, o programa mudou. Recentemente, a apresentadora Vera
+Magalhães anunciou [pelo
+Twitter](https://twitter.com/veramagalhaes/status/1315838754049884161) que o
+Roda Viva terá mais um bloco de 15 minutos, graças à "maior audiência
+histórica". A estratégia da jornalista de equilibrar convites a governistas e a
+ex-aliados do governo [parece ter
+agradado](https://telepadi.folha.uol.com.br/entrevista-com-biologo-no-roda-viva-e-a-maior-desde-edicao-com-bolsonaro-em-2018/)
+ao público.
+
+---
+
+**Dados utilizados na matéria**: Lista de convidados do Roda Viva
+(Wikipedia/_Pindograma_); Lista de Deputados Eleitos (Tribunal Superior
+Eleitoral); Lista de Ministros de Estado (Portal da Transparência/CGU).
+
+**Contribuíram com dados**: Antonio Piltcher e Daniel Ferreira.
+
+Para reproduzir os números citados, os dados e o código podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-16-roda-viva/RodaViva.Rmd
