@@ -1,0 +1,161 @@
+---
+title: "Recife"
+author: "João Costa"
+date: "18/10/2020"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+
+source('../theme.R')
+load('recife.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Três candidatos que já concorreram nas eleições de 2018 lideram a disputa pela
+prefeitura do Recife. À frente, está o deputado federal João Campos (PSB),
+seguido de Marília Arraes (PT), sua colega na Câmara, e Mendonça Filho (DEM),
+ex-governador e ex-ministro da Educação que tentou obter uma vaga no Senado nas
+últimas eleições.
+
+Para entender melhor o potencial eleitoral de cada candidato na capital
+pernambucana, o _Pindograma_ analisou os padrões de votação dos três nas
+últimas eleições. O forte apoio a Campos por diversos bairros populares parece
+sustentar sua liderança nesta corrida. Já Mendonça Filho deve continuar a
+receber votos de bairros nobres. Enquanto isso, Marília tem o desafio de
+expandir seu voto para além dos universitários e da esquerda de maior renda.
+
+```{r fig.height=8}
+ggplot() +
+  ggtitle('Concentração de Votos de Mendonça Filho\n(Eleição para Senador, Recife, 2018)') +
+  labs(caption = 'Fonte: Base de locais de votação do Pindograma, TSE') +
+  geom_sf(data = mendonca18, aes(fill = cand), lwd = 0) +
+  scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+O mapa acima mostra onde Mendoncinha, como é conhecido o candidato do DEM, teve
+votos para o Senado. As seções eleitorais onde recebeu mais votos no Recife se
+concentram nos bairros com as maiores rendas per capita da cidade. Na Zona Sul
+da cidade, elas vão do Pina até o final de Boa Viagem. Já na Zona Norte, um
+conjunto de bairros nobres que vão de Casa Forte ao Derby foram os que mais
+votaram no ex-governador. Em ambas estas zonas de apoio, o candidato teve mais
+de 20% dos votos para o Senado. Fora desses bairros, a votação de Mendoncinha
+cai à medida que a renda do bairro também cai, ficando abaixo dos 12% em quase
+todo o resto da cidade. 
+
+```{r fig.height=8}
+ggplot() +
+  ggtitle('Concentração de Votos de Marília Arraes\n(Eleição para Deputado Federal, Recife, 2018)') +
+  labs(caption = 'Fonte: Base de locais de votação do Pindograma, TSE') +
+  geom_sf(data = marilia18, aes(fill = cand), lwd = 0) +
+  scale_fill_gradient(low = 'white', high = '#ff6961', labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+Já a candidata do PT, que foi vereadora antes de ser deputada federal, teve
+dois principais focos de votação na cidade. O primeiro deles está nos arredores
+do campus da Universidade Federal de Pernambuco. O outro foco de votação de
+Marília foi no Centro, em bairros de classe média como Soledade e Boa Vista,
+onde se localizam a Universidade Católica de Pernambuco e outras faculdades.
+Nestes dois grupos de seções eleitorais, Marília recebeu cerca de 10% dos votos
+para deputada. A petista também concentrou votos em bairros nobres como a
+Jaqueira, Graças e o Espinheiro, embora tenha recebido menos votos que nos
+bairros universitários. Essa distribuição dentro da cidade sugere que, no
+Recife, Marília foi a candidata de escolha de universitários e eleitores de
+esquerda mais ricos. Este eleitorado contrasta diretamente com os recifenses
+que votaram em João Campos, que foi bem mais popular na mesma eleição.
+
+```{r fig.height=8}
+ggplot() +
+  ggtitle('Concentração de Votos de João Campos\n(Eleição para Deputado Federal, Recife, 2018)') +
+  labs(caption = 'Fonte: Base de locais de votação do Pindograma, TSE') +
+  geom_sf(data = joao18 %>% mutate(cand = ifelse(cand >= .2, .2, cand)), aes(fill = cand), lwd = 0) +
+  scale_fill_gradient(low = 'white', high = pg_orange, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+O mapa de votação de Campos chama atenção não pelos focos de votação, mas pelos
+pontos fracos. As áreas que ajudaram a eleger Marília como deputada e onde
+Mendonça Filho recebeu mais votos são justamente as regiões onde João teve seu
+pior desempenho. Ao invés de concentrar votos nas elites, o deputado teve apoio
+consistente de bairros de menor renda. Campos teve diversos focos de apoio
+espalhados pela cidade em bairros como Cohab na Zona Sul, Dois Unidos na Zona
+Norte e Santo Amaro no Centro. Em todos esses bairros, a votação em Campos
+superou os 10%, chegando até 20% no bairro de Campo Grande. 
+
+Mesmo fora desse centros de apoio, o candidato teve pelo menos 5% dos votos em
+quase todos os bairros da capital pernambucana: as exceções foram justamente os
+focos de apoio à Marília e os bairros de classe alta. Além da alta
+popularidade, Campos conta também com o apoio do governador Paulo Câmara e do
+atual prefeito Geraldo Júlio, ambos do PSB.
+
+Baseado nestes mapas, fica mais fácil de entender porque Campos saltou de 18%
+para 30% das intenções de voto na mais recente atualização do [nosso
+agregador](https://pindograma.shinyapps.io/agregador) de pesquisas. À medida
+que a eleição se aproxima, o [jovem
+deputado](https://pindograma.com.br/2020/10/02/jovens.html) começa a angariar
+seus votos distribuídos por toda a capital pernambucana e mostrar a força que o
+levou a ser o [quinto mais
+votado](https://www1.folha.uol.com.br/poder/2018/10/veja-quem-sao-os-15-deputados-federais-mais-votados-no-pais.shtml)
+para a Câmara dos Deputados em 2018. Enquanto isso, é provável que as classes
+mais altas dividam o voto entre Marília Arraes e Mendonça Filho, favorecendo
+João ainda mais.
+
+No entanto, a corrida ainda não está encerrada: falta um mês para a eleição e a
+candidata do Podemos, Delegada Patrícia, está em empate técnico com Arraes e
+Mendonça. Ela ficou de fora da análise pois é novata na política e nunca
+concorreu a cargo público. A delegada aposta forte no discurso anticorrupção e
+de reforço à segurança pública. Já elogiou o juiz Sérgio Moro diversas vezes e
+se apresenta como a alternativa ao PSB e ao PT, que desde 2000 dominam a
+política recifense.
+
+Resta ver se o discurso de renovação que funcionou tão bem em 2018 vai
+catapultá-la ao segundo turno ou se as figuras já conhecidas vão seguir à
+frente e repetir o padrão de dois anos atrás. 
+
+---
+
+**Dados utilizados na matéria**: Locais de Votação (_Pindograma_); Votação por
+Seção Eleitoral (Tribunal Superior Eleitoral).
+
+**Contribuiu com dados**: Daniel Ferreira.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-18-recife/Recife.Rmd
