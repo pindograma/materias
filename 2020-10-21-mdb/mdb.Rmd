@@ -1,0 +1,555 @@
+---
+title: "Partidos em números: MDB"
+author: "João Costa"
+date: "21/10/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "MDB"
+cor <- filter(party_palette, party_name == party)$party_color
+cor_continua <- "Greens"
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+Hoje o _Pindograma_ estreia a série **Partidos em Números**. Ao longo das próximas semanas, vamos apresentar perfis dos diferentes partidos que ocupam (ou não) as manchetes. 
+
+Para começar, falaremos do partido mais emblemático da Nova República: o Movimento Democrático Brasileiro, ou MDB. Ele foi parte de todos os governos desde a redemocratização e já ocupou a presidência por quase 10 anos, embora tenha eleito apenas um candidato ao cargo. Desde 1987, sempre foi um dos maiores partidos no Congresso Nacional e atualmente conta com o maior número filiados de todos os partidos brasileiros. 
+
+---
+
+As origens do Movimento Democrático Brasileiro remontam à ditadura militar e à redemocratização do Brasil. O primeiro MDB foi criado em 1966, após o Ato Institucional n.º 2 da ditadura estabelecer o bipartidarismo no Brasil. A legenda foi refundada em janeiro de 1980 e passou a ser o Partido do Movimento Democrático Brasileiro, o primeiro partido oficialmente registrado após a volta do pluripartidarismo e o começo da abertura do regime militar.
+
+O partido foi fundado por líderes do antigo MDB, que reunia diversas vertentes de oposição permitidas pela ditadura. Com o retorno à democracia em 1985, o PMDB surgiu como a principal força política do país, reunindo lideranças que marcaram a redemocratização como Tancredo Neves e Ulysses Guimarães. 
+
+Após Sarney — eleito como vice de Tancredo Neves, que faleceu antes de tomar posse —, o MDB presidiu o país entre 1992 e 1994 com Itamar Franco e entre 2016 e 2018 com Michel Temer, após os impedimentos de Fernando Collor (PRN) e Dilma Rousseff (PT).  Desde a redemocratização, conseguiu a maior bancada no Câmara dos Deputados em 5 das 9 eleições e sempre participou das bases aliadas do governo. 
+
+Devido a sua história, o MDB sempre abarcou uma grande variedade de vertentes políticas. Esta heterogeneidade de posições levou, por exemplo, a um racha do partido no primeiro governo Lula, mas é também o que explica o governismo nato do partido. A falta de ideologia clara permite o trânsito entre os mais diversos governos e faz do MDB a mais emblemática legenda do chamado ‘centrão’.
+
+Em julho de 2017, em meio a escândalos de corrupção associados a figuras importantes do partido, a legenda tirou o ‘Partido’ do nome, voltando a ser o MDB.  Nas eleições de 2018, o partido sofreu seu maior revés na Câmara dos Deputados, conquistando apenas 34 assentos do plenário e ficando com 6ª maior bancada na Câmara. No entanto, manteve a maior bancada no Senado (13 senadores).  O partido hoje é presidido por Baleia Rossi, deputado federal por São Paulo e sucessor de Romero Jucá na direção.
+
+---
+
+##### Gráficos:
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 1.5)+
+  geom_point(color = cor, size = 2)+
+  scale_y_continuous(
+    labels = scales::label_number_si(accuracy = 0.01, decimal.mark = ",")
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    subtitle = "Valores em milhões de filiados"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5)
+  )
+```
+
+
+Há anos o MDB é o partido com o maior número de filiados do Brasil. O gráfico mostra que, assim como os outros grandes partidos brasileiros durante a última década, o número de filiados do partido tem caído em anos recentes, embora costume crescer em anos de eleição municipal.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+Como constatamos em nossa [matéria](https://pindograma.com.br/2020/10/02/jovens.html) sobre jovens, os filiados entre 16 e 34 anos estão diminuindo. O MDB está cada vez mais velho.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.4,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+A maioria dos filiados do MDB são homens, o que também é o caso com quase todo partido brasilerio. Por outro lado há um gradual aumento proporcional das filiadas mulheres, o que também é tendência nacional.  O salto grande entre 2018 e 2020 mostra que o partido ficou mais equilibrado em termos de gênero no último biênio.
+
+```{r, fig.height=6, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(1000, 1500, 2000, 3000), palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Em termos de filiados por 100 mil eleitores, o MDB é mais forte em Santa Catarina e no Tocantins. Os estados do Nordeste e o Amazonas se destacam por serem os estados mais fracos do partido.
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  labs(
+    caption = "Fonte: TSE, IGP-M (Fundação Getúlio Vargas)",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+Por ser o maior partido do Brasil desde a redemocratização, o MDB sempre foi um dos maiores beneficiários do fundo partidário. Chama a atenção o salto nos anos do segundo mandato de Dilma e brusca queda em 2019, quando o MDB teve seu pior desempenho eleitoral. Além do fundo partidário, em 2020 o partido recebeu R$ 148.253.393,14 de fundo eleitoral para o financiamento de campanhas.
+
+```{r, fig.height=6, fig.width=9}
+governadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+
+ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  annotate('text', label = 'Helder Barbalho',
+           family = 'Fantasque', color = "grey10",
+           x = -40.5, y = 2, size = 3.5)+
+  annotate('curve', curvature = .15, x = -46.2,
+           xend = -49, y = 2.2, yend = 0,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Renan Filho',
+           family = 'Fantasque', color = "grey10",
+           x = -34, y = -14.5, size = 3.5)+
+  annotate('curve', curvature = .15, x = -34,
+           xend = -36, y = -13, yend = -10.4,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Ibaneis Rocha',
+           family = 'Fantasque', color = "grey10",
+           x = -55.5, y = -13.7, size = 3.5)+
+  annotate('curve', curvature = .15, x = -54,
+           xend = -49, y = -15, yend = -16,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+
+3 é o mesmo número de governadores de outros grandes partidos como o PSDB, PSL e PSB. Ficam apenas atrás do PT, que tem 4.
+
+```{r, fig.height=6, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Nas últimas duas eleições, o MDB elegeu um total de 12 senadores. Devido à mudança de legendas, o partido tem hoje 13 senadores e compõe a maior bancada do Senado Federal.
+
+```{r, fig.height=6, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(depfed, aes(fill = eleitos))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Dos eleitos para a Câmara dos Deputados, o MDB elegeu 1/4 dos deputados tanto no Acre quanto no Mato Grosso. Outro destaque é Santa Catarina, que é o estado com maior concentração de filiados do partido. Vale lembrar que essa é a menor bancada que o MDB elegeu ao Congresso em toda sua história. Em outros anos, mais estados teriam alta proporção de parlamentares do MDB.
+
+```{r, fig.height=6, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(depest, aes(fill = eleitos))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Mais uma vez, o MDB tem um de seus melhores desempenhos em Santa Catarina. Neste estado, assim como em Alagoas, o MDB elegeu 1/5 da bancada da Assembleia Legislativa. Vale lembrar que esse segundo estado também conta com um senador e um governador da legenda, Renan Calheiros e Renan Filho, formando uma célebre família partidária. O Tocantins, o Piauí e o Pará também têm grandes bancadas do partido.
+
+```{r, fig.height=6, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, 1)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(candidatos, levels = c(1,0))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Municípios com candidato a\nprefeito pelo partido em 2020",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none",
+    panel.background = element_blank()
+  )
+```
+
+Como esperado do maior partido do país, o MDB apresentou candidatos em vários municípios por todo o país. Os destaques são o Pará e Alagoas, ambos governados pelo partido. A Bahia chama atenção pelo baixo número de candidatos disputadas pelo MDB.
+
+```{r, fig.height=6, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = candidatos),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,10,20,30),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Candidatos a vereador por município em 2020",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Tratando de vereadores, o MDB tem também presença em todo o país. A Bahia chama de novo a atenção pelos baixos números de candidatos, assim como outros estados do Nordeste. As capitais ficam pequenas no mapa do Brasil, mas têm grande número de candidatos. Salvador, por mais que esteja em um estado com fraca presença do partido, conta com 53 candidatos. A cidade de São Paulo é a recordista em possíveis vereadores da legenda, com 83.
+
+```{r, fig.height=6, fig.width=9}
+perfil <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+
+ggplot(perfil, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(
+    plot.subtitle = element_text(hjust = .5),
+    axis.line.x = element_blank()
+    )
+```
+
+Apesar do aumento das filiadas, 66,57% dos candidatos do MDB em 2020 são homens.  No primeiro ano de cotas raciais para o fundo eleitoral, 54,81% dos candidatos são brancos. 
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+
+ggraph(leader, layout = "star", center = 5) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(
+    values = nodes$party_color, guide = F
+    ) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 40), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+
+ggraph(follower, layout = "star", center = 5) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 40), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Como o maior partido do país, o MDB se coliga com quase todo outro partido para as eleições de 2020. Nas 3651 chapas lideradas pelo MDB, os partidos mais coligados são o PP, PT, PSDB, DEM e PL. Já nas 1909 chapas em que o prefeito não é do MDB, PP, PSD e DEM são as legendas mais comuns. Isso coloca o MDB fora de apenas 10 eleições entre os 5570 municípios do Brasil.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultado eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-21-mdb/mdb.Rmd
