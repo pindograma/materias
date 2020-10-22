@@ -25,15 +25,14 @@ nosso [agregador de pesquisas](https://pindograma.shinyapps.io/agregador/)
 indica que ele tem 26% das intenções de voto. Nas últimas duas eleições
 municipais, Celso Russomanno (Republicanos) também liderou as pesquisas de
 intenção de voto em São Paulo por meses––mas logo antes da eleição, perdeu
-espaço para candidatos de partidos mais tradicionais. Se com o apoio explícito
-do Presidente da República o candidato do Republicanos vai finalmente ganhar a
-eleição, só o tempo dirá. O que as últimas eleições mostram é que seus votos
-parecem ter endereços fixos.
+espaço para candidatos de partidos mais tradicionais.
 
-Os mapas abaixo mostram a porcentagem de votos que Russomanno recebeu em cada
-uma das seções eleitorais de São Paulo em 2012 e 2016. O sucesso do candidato
-no geral foi maior em 2012, mas a distribuição geográfica do voto foi parecida
-nos dois anos.
+Se com o apoio explícito do Presidente da República o candidato do Republicanos
+vai finalmente ganhar a eleição, só o tempo dirá. O que as últimas eleições
+mostram é que seus votos parecem ter endereços fixos.
+
+O mapa abaixo mostra a porcentagem de votos que Russomanno recebeu em cada
+uma das seções eleitorais de São Paulo na última eleição.
 
 ```{r fig.height=8}
 ggplot() +

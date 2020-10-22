@@ -2,7 +2,9 @@
 title: "Recife"
 author: "João Costa"
 date: "18/10/2020"
-output: html_fragment
+output:
+  html_fragment:
+    self_contained: false
 ---
 
 ```{r setup, include=FALSE}
