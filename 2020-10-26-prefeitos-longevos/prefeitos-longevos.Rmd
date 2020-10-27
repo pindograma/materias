@@ -1,0 +1,258 @@
+---
+title: "Os prefeitos campeões de reeleição que concorrem em 2020"
+author: "Pedro Siemsen"
+date: "26/10/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+library(gt)
+
+source("../theme.R")
+load("./data/prefeitos_longevos.Rdata")
+format_pop <- Vectorize(scales::label_number(big.mark = "."))
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r}
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Nas eleições de 2020, há `r sum(candidatos$target)` candidatos a prefeito que podem ser reeleitos uma quarta ou quinta vez desde 1996. Há a possibilidade de que quase `r pn(candidatos %>% filter(target) %>% distinct(UF, MUNICIPIO, .keep_all = T) %>% select(POPULACAO) %>% sum(na.rm = T)/1000000)` milhões de brasileiros — número maior do que a população do estado do Rio de Janeiro — continuem a ser governados por políticos que já passaram pelo menos 12 anos na liderança de seus municípios. Em geral, eles são homens, brancos e de partidos da centro-direita como MDB, PSD, PSDB e PP.
+
+---
+
+O "político de carreira" é uma figura comum no Brasil. [Em média, 80% dos eleitos](https://revistapesquisa.fapesp.br/deputado-profissional/) para o Congresso Nacional já tiveram experiência prévia na política. Esse padrão também é comum na política municipal: mais de [2.000 vereadores](https://www1.folha.uol.com.br/poder/2020/10/com-ate-44-anos-de-mandato-eternos-vereadores-tentam-reeleicao.shtml) no país têm 20 anos ou mais de mandato.
+
+Realmente curiosos, no entanto, são os prefeitos com um número alto de mandatos. Desde 2000, prefeitos podem concorrer à reeleição. Embora um [estudo](https://www.scielo.br/scielo.php?script=sci_arttext&pid=S0101-33002012000200002#nta) mostre que incumbência não facilita a eleição de um candidato, esses candidatos conseguiram se reeleger e muito.
+
+20 anos depois, `r prefeitos %>% filter(VEZES == 4) %>% count()` prefeitos acumularam quatro mandatos nas suas trajetórias, e mais `r candidatos %>% filter(VEZES == 3) %>% count ` buscam chegar a esse número nos pleitos de 2020. Além destes, `r candidatos %>% filter(VEZES == 4) %>% count()` podem atingir seu quinto mandato desde 1996, o que significaria 20 anos de controle sobre seus municípios num período de 28 anos. Esses candidatos têm, em média, `r candidatos %>% filter(target) %>% .$IDADE %>% mean() %>% pn()` anos de idade enquanto a média geral de candidatos é de `r candidatos$IDADE %>% mean() %>% pn()` anos. Casos como esses influenciam a política local em `r candidatos %>% filter(target) %>% distinct(UF, MUNICIPIO, .keep_all = T) %>% count()` municípios, que englobam `r pn(candidatos %>% filter(target) %>% distinct(UF, MUNICIPIO, .keep_all = T) %>% .$POPULACAO %>% sum(na.rm = T)/2101471.25)`% da população brasileira. 
+
+```{r, fig.height=6, fig.width=9}
+mapa <- candidatos %>% filter(target) %>% 
+  right_join(geoloc_cities) %>% 
+  select(UF, MUNICIPIO, geom, target) %>% 
+  mutate(target = ifelse(is.na(target), FALSE, target))
+
+ggplot()+
+  geom_sf(data = mapa, aes(geometry = geom, fill = target), lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom), fill = NA, lwd = 0.2)+
+  labs(
+    title = "Municípios em que há candidato à prefeitura
+disputando quarta ou quinta reeleição",
+    caption = "Fonte: TSE"
+  )+
+  scale_fill_manual(
+    values = c("grey90", pg_orange)
+  )+
+  theme_pindograma()+
+  theme(
+    panel.background = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.line.x = element_blank(),
+    legend.position = "none"
+  )
+```
+
+```{r}
+table <- prefeitos %>% filter(target, !is.na(POPULACAO))%>%
+  select(NOME_URNA, VEZES_NOME, UF, MUNICIPIO, POPULACAO) %>% 
+  filter(VEZES_NOME > 2) %>% 
+  mutate(`Concorre ao mandato` = VEZES_NOME+1) %>% 
+  filter(POPULACAO > 232000) %>% 
+  arrange(desc(POPULACAO)) %>%
+  mutate(POPULACAO = format_pop(POPULACAO)) %>% 
+  select(UF, MUNICIPIO, POPULACAO, NOME_URNA, `Concorre ao mandato`) %>% 
+  rename(Candidato = NOME_URNA, Município = MUNICIPIO, População = POPULACAO) %>% 
+  mutate(Candidato = str_to_title(Candidato), Município = str_to_title(Município))
+
+table %>% gt() %>% 
+  theme_pindograma_table() %>%
+  tab_style(cell_fill(color = pg_light_gray), cells_body())
+```
+
+Os `r candidatos %>% filter(VEZES == 4) %>% count()` prefeitos que buscam o quinto mandato desde 1996 estão concorrendo em todas as regiões brasileiras. Candidaturas em cidades relativamente populosas chamam atenção, como Volta Redonda (RJ), Linhares (ES), Santana de Parnaíba (SP) e Jataí (GO), todas com mais de 100 mil habitantes. Já os outros `r candidatos %>% filter(VEZES == 3) %>% count()`candidatos com 3 mandatos no currículo também concorrem em municípios populosos, como, Uberlândia (MG), Vila Velha (ES), Piracicaba (SP),) e Mossoró (RN), todas cidades com 250 mil a 650 mil habitantes. 
+
+Com tanto tempo no poder, surgem alguns casos pitorescos: dois campeões das reeleições estão concorrendo a seus sextos mandatos. Carlos Murta (MDB), está concorrendo a prefeito de Vespasiano (MG), um município de 117 mil habitantes na Grande Belo Horizonte. O emedebista é descrito como portador de "[DNA político](https://www.facebook.com/carlos.murta.58/about_details)", repetidamente confirmado pelo seu sucesso eleitoral. Já na Grande São Paulo, Rubens Furlan (PSDB) tenta a sorte em Barueri (SP) e faz parte de [um grupo que controla a cidade há 30 anos](https://www1.folha.uol.com.br/poder/2020/09/tucano-busca-6o-mandato-em-barueri-municipio-rico-e-desigual-da-grande-sao-paulo.shtml). 
+
+Esses prefeitos, além de já terem governado seus municípios por 16 anos, mantêm o controle de suas cidades em torno dos mesmos grupos políticos, indicando sucessores ou garantindo que seus partidos obtenham a vitória em eleições municipais quando eles não podem concorrer. Um exemplo disso ocorreu na cidade de Oriximiná, no Pará. Lá, Luiz Gonzaga (PSDB) governou de 1997 a 2004, de 2009 a 2016 e agora concorre novamente. Nos anos em que Gonzaga não pôde concorrer, seu vice-prefeito, Argemiro Diniz (PSDB) tomou seu lugar: Diniz venceu as eleições em 2004, mas perdeu em 2016. 
+
+Também na região metropolitana de Belo Horizonte, Vitor Penido (DEM) impressiona por estar completando seu sexto mandato como prefeito de Nova Lima no final de 2020. O mineiro iniciou seu primeiro mandato como prefeito da cidade em 1977 e vem marcando sua presença na política municipal e estadual desde então. Nas eleições deste ano, Nova Lima não pode escolher o longevo Penido, mas tem um rosto familiar como opção: Wesley de Jesus (DEM). Previamente presidente da Câmara Municipal e vereador mais votado da cidade, o político nasceu [9 anos depois](https://politica.estadao.com.br/eleicoes/2020/candidatos/mg/nova-lima/prefeito/wesley-de-jesus,25) do primeiro mandato de Penido e agora concorre utilizando mensagens como ["Tá colado no Vitor [Penido] há 14 anos"](https://www.facebook.com/wesleydejesusnovalima/photos/a.379169205832003/2005298286552412/?__cft__[0]=AZX9uMHai9ZY9u3lttkTknBirh-has1dO0AjF2wYGfqNLUhHM5EaZEpZYthtybnuPaz1t2XTaYiNxlComC3RQcVrFVGtnCNG33_G_ZSIJz9w8cJl9nqh-3LNRN8rkhDtNG6N0JbLlXenT9YsQb0hocmeqw-EoU-4Y-H3DL_lgcoxKOW_7V1gyWvmngWszeiibOY&__tn__=EH-R). Penido também tenta contribuir para a eleição de seu protegido e a continuidade de seu legado com mensagens parecidas no Facebook. 
+
+![Wesley da Lima, à direita, candidato à prefeitura de Nova Lima, colado com o veterano Vitor Penido, segundo da esquerda à direita. (Divulgação/Facebook)](penido.jpg)
+Além disso, os casos de prefeitos eleitos por municípios diferentes se destacam. O _Pindograma_ conseguiu identificar 34 prefeitos com três ou mais mandatos em mais de um município até 2020. Um caso notável é o do pernambucano Elias Gomes (MDB), que entrou na corrida eleitoral para um quarto mandato para prefeito de sua cidade natal, Cabo de Santo Agostinho, na Região Metropolitana do Recife. Gomes também foi prefeito de Jaboatão dos Guararapes, a segunda maior cidade da Grande Recife por dois mandatos, de 2009 a 2016. Caso não tivesse [desistido da sua candidatura](https://www.diariodepernambuco.com.br/noticia/politica/2020/10/elias-gomes-mdb-desiste-de-candidatura-e-anuncia-apoio-a-keko-do-arm.html) em 2020 em prol de Kéko do Armazém (PL), poderia ter sido eleito para um sexto mandato entre os dois municípios.
+
+![Elias Gomes (MDB), três vezes prefeito de Cabo de Santo Agostinho e duas de Jaboatão dos Guararapes. (Divulgação/Facebook)](elias.png)
+
+---
+
+Entre os prefeitos com três ou mais reeleições, a primazia do MDB é inquestionável. [O partido](https://pindograma.com.br/2020/10/21/mdb.html) conta com 110 candidatos concorrendo a um quarto ou quinto mandato em 2020. Logo em seguida vêm partidos de centro-direita como o PSD, PSDB, PP e DEM, todos com mais de 50 candidatos nessas eleições. O partido de esquerda mais próximo da liderança é o PSB, que fica em sétimo lugar, à frente do PT e PDT, em nono e décimo lugar respectivamente. A soma de todos os candidatos da esquerda é muito menor do que os partidos de direita; nem chega a ser maior que o número de candidatos emedebistas. 
+
+```{r, fig.height=6, fig.width=9}
+partidos <- candidatos %>% filter(target) %>% count(PARTIDO) %>% 
+  left_join(party_palette, by = c("PARTIDO" = "party_name")) %>% 
+  mutate(PARTIDO = ifelse(
+    PARTIDO == "REPUBLICANOS", "REPUB", 
+    ifelse(PARTIDO == "CIDADANIA", "CIDAD", 
+    ifelse(PARTIDO == "SOLIDARIEDADE", "SOLID", 
+    ifelse(PARTIDO == "PC do B", "PCdoB",
+    ifelse(PARTIDO == "PATRIOTA", "PATRI", PARTIDO)))))
+  ) %>% filter(n >= 24)
+
+ggplot(partidos)+
+  geom_col(aes(reorder(PARTIDO, n), n, fill = PARTIDO))+
+  scale_fill_manual(values = partidos$party_color, guide = F)+
+  coord_cartesian(ylim = c(0, 120))+
+  labs(
+    title = "Partidos com mais prefeitos disputando quarta ou\nquinta reeleição em 2020",
+    x = "",
+    y = "Número de candidatos",
+    caption = "Também têm candidatos: Cidadania, Avante, Republicanos, PSC, Solidariedade, Podemos, PC do B, PSL, PROS, PMN, PV, PTC, Patriota
+Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_text(margin = margin(r = 10)),
+    axis.title.x = element_blank(),
+    plot.caption = element_text(size = 9)
+  )
+```
+
+Porém, nem todos os candidatos são fiéis a alguma sigla. Pelo contrário: pouco mais de dois terços dos candidatos com pelo menos 3 mandatos acumulados já trocou de partido pelo menos uma vez. Destes, 6,75% venceram eleições por 4 partidos diferentes desde 1996.
+
+```{r, fig.height=6, fig.width=9}
+qtd_par_por_cand <- prefeitos_dup %>% 
+  filter(target) %>% 
+  bind_rows(
+    candidatos %>% filter(target)
+  ) %>% 
+  select(ANO_ELEICAO, UF, MUNICIPIO, NOME, CPF, PARTIDO, VEZES) %>%
+  distinct(ANO_ELEICAO, CPF, .keep_all = T) %>% 
+  count(CPF, PARTIDO) %>% 
+  count(CPF) %>% rename(partidos = n) %>%  
+  count(partidos)
+
+ggplot(qtd_par_por_cand, aes(
+  partidos, n,
+  fill = factor(partidos, levels = c(1, 2, 3, 4))
+  ))+
+  geom_col()+
+  theme_pindograma()+
+  scale_fill_manual(
+    values = c(pg_orange, "#B2CC75","#A6C261","#99BA4F", pg_green),
+    guide = F
+  )+
+  labs(
+    title = "Quão comum é trocar de partido?",
+    subtitle = "Quantidade de partidos diferentes pelos quais prefeitos com 3 ou mais mandatos se elegeram",
+    caption = "Fonte: TSE",
+    y = "Número de prefeitos",
+    x = "Número de partidos"
+  )+
+  theme(
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+```
+
+Mulheres ainda não têm muita representatividade na política municipal e a categoria dos prefeitos com mais mandatos também reflete isso. Dos `r sum(candidatos$target)` candidatos em 2020 com 3 mandatos prévios ou mais, `r candidatos %>% filter(target, SEXO == "MASCULINO") %>% count()`, ou `r candidatos %>% filter(target, SEXO == "MASCULINO") %>% count() / sum(candidatos$target) * 100`%, são homens. Ou seja, apenas 5% são mulheres, menos da metade da proporção de prefeitas eleitas em 2016, `r pn(prop_prefeitas_2016$n*100)`%. 
+
+```{r, fig.height=6, fig.width=9}
+analise_sexo <- candidatos %>%
+  count(VEZES, SEXO) %>% group_by(VEZES) %>% 
+  mutate(prop = n / sum(n))
+
+ggplot(
+  analise_sexo,
+  aes(
+    VEZES, prop,
+    fill = factor(SEXO, levels = c("MASCULINO","FEMININO")),
+    label = n
+    )
+  )+
+  geom_col(position = "dodge")+
+  scale_fill_manual(
+    values = c(pg_blue, pg_orange),
+    labels = c("Masculino", "Feminino")
+    )+
+  scale_y_continuous(labels = scales::label_percent())+
+  theme_pindograma()+
+  labs(
+   fill = "Sexo",
+   title = "Proporção entre os sexos dos candidatos à prefeitura em 2020",
+   caption = "Fonte: TSE",
+   x = "Eleições anteriores vencidas"
+  )+
+  theme(
+    axis.title.y = element_blank(),
+  )
+```
+A gradual queda da proporção feminina entre os candidatos mais longevos revela que mulheres enfrentam, além da dificuldade de entrar na política, também a de [manterem-se no poder](https://pindograma.com.br/2020/09/16/prefeitas.html). Os dados podem ser um reflexo das eleições de algumas décadas atrás, época em que a representatividade feminina era uma preocupação menor do que é hoje e haviam menos candidatas.
+
+Assim como há uma representação desproporcional do gênero masculino nesses candidatos, há uma representação desproporcional de candidatos autodeclarados brancos. A subrepresentação de negros não é tão dramática quanto a de candidatas do sexo feminino, mas ainda é expressiva em um pais onde esta demografia representa mais de metade da população. 
+
+```{r, fig.height=6, fig.width=9}
+analise_raca <- candidatos %>% filter(RACA!="SEM INFORMAÇÃO") %>% 
+  mutate(VEZES = ifelse(VEZES > 1, "2+", VEZES)) %>% 
+  count(VEZES, RACA) %>% group_by(VEZES) %>% 
+  mutate(prop = n / sum(n))
+
+ggplot(analise_raca,
+  aes(
+    VEZES, prop,
+    fill = factor(RACA, levels = c("INDÍGENA", "AMARELA",
+                                   "PRETA", "PARDA", "BRANCA"))
+    )
+  )+
+  geom_col(position = "stack")+
+  labs(
+    title = "Proporção entres as raças dos candidatos à prefeitura em 2020",
+    fill = "Autodeclaração\nde cor ou raça",
+    caption = "Fonte: TSE",
+    x = "Eleições anteriores vencidas"
+  )+
+  scale_fill_manual(
+    values = c(pg_yellow, pg_dark_gray, pg_orange, pg_blue, pg_green),
+    labels = c("Indígena", "Amarela", "Preta", "Parda", "Branca")
+  )+
+  scale_y_continuous(labels = scales::label_percent())+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank()
+  )
+```
+
+Resta ver se, com a introdução de cotas raciais e de gênero para as candidaturas e para a distribuição do fundo partidário, é possível que a demografia dos prefeitos brasileiros –– e dos mais longevos –– comece a mudar.
+
+---
+
+O sistema político brasileiro não torna a reeleição de prefeitos particularmente fácil. Um [estudo](https://www.scielo.br/scielo.php?script=sci_arttext&pid=S0101-33002012000200002#nta) conduzido em 2012 pelos pesquisadores Thomas Brambor e Ricardo Ceneviva mostra que prefeitos incumbentes não têm necessariamente chances maiores de vitória. Um candidato incumbente pode estar muito mais vulnerável a críticas e escrutínio de sua gestão do que outros que nunca foram eleitos. Ou seja, não ser conhecido pode ser uma vantagem.
+
+Resta entender por que esses prefeitos fogem à regra. Os fatores podem ser diversos e ainda precisam ser explorados. As eleições são pouco competitivas nesses municípios por causa de uma oposição fraca ou desigualdade no acesso à mídia? Esses prefeitos são recompensados pelo eleitorado por boas gestões? Um histórico de clientelismo garante a vitória de um único grupo político? Esses políticos aparelham a máquina pública a seu favor? Eles obtêm mais preferência de seus partidos por serem mais experientes na política?
+
+O _Pindograma_ consegue definir quem são esses políticos, mas ainda não consegue estabelecer o porquê de seu sucesso. Por isso, vamos continuar trazendo reportagens que expliquem o fenômeno.
+
+---
+
+**Dados utilizados na matéria**: Candidatos eleições 2020 (Tribunal Superior
+Eleitoral); Resultado eleições 2000-2016 (TSE/Cepespdata); Resultado eleições 1996 (TSE); População dos munícipios brasileiros (Instituto Brasileiro de Geografia e Estatística).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: TSE, Marcos Elias de Oliveira Júnior/Wikimedia Commons.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-26-prefeitos-longevos/prefeitos-longevos.Rmd

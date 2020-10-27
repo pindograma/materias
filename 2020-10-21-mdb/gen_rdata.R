@@ -117,7 +117,7 @@ coligacoes <- cand20 %>% filter(CARGO == "PREFEITO") %>%
 nodes <- party_palette %>% arrange(party_name) %>% 
   filter(!party_name %in% c("Branco/Nulo", "PRP", "PPL", "PHS") ) %>% 
   rename(value = party_name) %>% 
-  mutate(id = 1:33)
+  mutate(id = 1:33) 
 
 save(list = c('eleicoes18', 'filiacoes_total', 'cand20', 'geoloc_cities',
               'geoloc_states', 'party_palette', 'filiacoes_idade', 'sexo',
