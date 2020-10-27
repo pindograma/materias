@@ -1,0 +1,131 @@
+---
+title: "Os prefeitos campeões de reeleição que concorrem em 2020"
+author: "Pedro Siemsen"
+date: "26/10/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+
+source('../theme.R')
+source('constants.R')
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r}
+lp = read_csv('leading_party.csv')
+
+races = lp %>%
+  distinct(city) %>%
+  nrow()
+
+partidos = lp %>%
+  count(party) %>%
+  left_join(party_palette, by = 'party')
+```
+
+Nosso [agregador de pesquisas eleitorais][2] conta com pesquisas de mais de 500
+cidades. Não é possível determinar quem vencerá em cada um desses municípios
+apenas baseado nas taxas de intenção de voto atuais, mas mesmo assim podemos
+ter uma ideia de como andam as corridas para prefeito pelo Brasil. 
+
+Considerando os dados de 27 de outubro, os partidos do Centrão e da
+centro-direita lideram as campanhas pelo país. A centro-esquerda fica bem
+atrás e partidos mais ideológicos de ambos os lados do espectro político têm
+favoritos em pouquíssimas cidades. Ainda assim, os eleitores indecisos ou que
+pretendem anular o voto são maioria em um quinto dos municípios em nosso
+agregador. (Caso dois ou mais candidatos estejam tecnicamente empatados na
+liderança, todos são contabilizados como líderes).
+
+```{r fig.height=6}
+ggplot(partidos) +
+  geom_col(aes(reorder(party_name, n), n, fill = party_color)) +
+  scale_fill_identity(guide = F) +
+  coord_flip() +
+  labs(
+    title = "Partidos liderando corridas eleitorais em 2020 (27/10)",
+    caption = "Fonte: Agregador de Pesquisas do Pindograma"
+  ) +
+  theme_pindograma() +
+  xlab('') + ylab('') +
+  theme(axis.text.y = element_text(size = 12))
+```
+
+```{r}
+mdb = partidos %>%
+  filter(party == 15) %>%
+  pull(n)
+
+psdb = partidos %>%
+  filter(party == 45) %>%
+  pull(n)
+
+psb = partidos %>%
+  filter(party == 40) %>%
+  pull(n)
+
+patriota = partidos %>%
+  filter(party == 51) %>%
+  pull(n)
+
+centrao = c(15, 55, 11, 25, 22, 14, 19, 77, 90, 70, 10, 20)
+centrao_count = partidos %>%
+  filter(party %in% centrao) %>%
+  pull(n) %>%
+  sum()
+
+esquerda = c(13, 40, 12, 65)
+esquerda_count = partidos %>%
+  filter(party %in% esquerda) %>%
+  pull(n) %>%
+  sum()
+```
+
+Atualmente, o partido que mais tem líderes de pesquisas é o MDB, com
+`r pn(mdb)` dos favoritos. Logo atrás vêm o PSD, o PP e o DEM, outras legendas
+pouco ideológicas da centro-direita. No total, `r pn(centrao_count)` ou
+`r pn(centrao_count/races*100)`% das corridas são lideradas por partidos
+que participam ou participavam há pouco do Centrão. Dos primeiros cinco
+colocados, apenas o PSDB não é do centrão, com `r pn(psdb)` líderes nas
+intenções de voto.
+
+Os tradicionais partidos de esquerda e centro-esquerda do país têm poucos
+candidatos liderando as pesquisas no momento. O PSB é a legenda com o maior
+número de favoritos, `r pn(psb)`. Somando este número com favoritos do PDT, PT
+e PCdoB, a esquerda mais tradicional lidera em `r pn(esquerda_count)`
+municípios, ou apenas 1 em cada 8 corridas. 
+
+Partidos mais ideológicos de ambos os lados do espectro político têm menos
+favoritos nas pesquisas por enquanto. Pela direita, o Patriota tem `r pn(patriota)`
+candidatos na liderança, e o PSL tem apenas dois, em Carmolândia (TO) e
+Alterosa (MG).  Já na esquerda, o PSOL também lidera em apenas dois municípios:
+Ribas do Rio Pardo (MS) e Belém do Pará, com o candidato Edmilson Rodrigues. 
+
+Nem o Partido Novo — disciplinadamente liberal — nem a Rede Sustentabilidade —
+de enfoque ambientalista e progressista claro — contam com sequer um candidato
+à frente em nosso agregador.
+
+---
+
+**NOTA**: O _Pindograma_ assume, para os cálculos dessa matéria, que a margem
+de erro de todas as pesquisas é de 3%.
+
+**Dados utilizados na matéria**: Resultados de Pesquisas Eleitorais
+(_Pindograma_).
+
+**Contribuiu com dados**: Daniel Ferreira.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-27-liderando/liderando1.Rmd
+
+[2]: https://pindograma.shinyapps.io/agregador
