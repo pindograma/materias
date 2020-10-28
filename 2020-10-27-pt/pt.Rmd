@@ -1,0 +1,586 @@
+---
+title: "Partidos em números: PT"
+author: "João Costa"
+date: "27/10/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../../materias/theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PT"
+cor <- filter(party_palette, party_name == party)$party_color
+cor_continua <- "Reds"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+A série **Partidos em Números** continua e desta vez cobriremos o segundo maior partido do Brasil em número de filiados: o Partido dos Trabalhadores. O partido é uma figura de destaque na política brasileira e um protagonista na política nacional desde o início do século.
+
+---
+
+##### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, 1)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(candidatos, levels = c(1,0))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Municípios com candidato a\nprefeito pelo partido em 2020",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none",
+    panel.background = element_blank()
+  )
+```
+
+Apesar de ter candidaturas distribuídas pelos estados do Nordeste, Sul e Sudeste, há poucos   candidatos a prefeito pelo PT no Norte e no Centro Oeste. Em Roraima, a legenda não disputa nenhum município em 2020. O partido apresenta candidato próprio em 1.258 pleitos, ou seja, pouco mais de uma a cada cinco municípios brasileiros. 
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Em 2020, o PT recebeu apoio de 28 dos outros 32 partidos brasileiros em pelo menos um município do país, com destaque ao PCdoB, PDT, PSB e PSD.  Isso faz com que o PT tenha recebido apoio de mais partidos até que o MDB em 2020. Apenas o PCO, PCB, PSTU e Novo não apoiaram candidaturas petistas. 
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Quando se trata de dar apoio, o PT participou de chapas com 26 partidos, sendo os principais o MDB, PSD, PP e em menor grau o PDT, PSB e PL. Juntando as eleições com candidatos petistas e as campanhas que contam com apoio do partido, o PT está participando da corrida pela prefeitura em 2.908 municípios, pouco mais da metade das cidades do Brasil.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(5,10,20,30),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Candidatos a vereador por município em 2020",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Há muitos municípios onde o PT não apresenta nenhum candidato a vereador em 2020. Em Roraima são apenas três cidades que têm candidatos. A Bahia e o Pará têm uma maior concentração de candidaturas petistas. O norte de Minas Gerais também destoa do sul do estado por ter mais candidatos a vereador pela legenda.
+
+```{r, fig.height=6, fig.width=9}
+perfil <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+
+ggplot(perfil, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+A maioria dos candidatos do PT em 2020 não se declararam brancos (58,7%) sendo que 56,2% se declararam pretos ou pardos. No entanto, a maior representatividade racial ainda não é acompanhada de uma maior representatividade de gênero. Este ano, as mulheres são apenas 34,9% das candidatas.
+
+##### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey10",
+    family = "Fantasque",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distrubuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+Em todos os anos do período analisado, o PT foi o partido que mais recebeu dinheiro do fundo partidário. Mas, apesar do salto no valor nominal em 2015, a tendência nos últimos anos é de diminuição do valor recebido, refletindo a diminuição dos sucessos eleitorais do partido. Isto fica mais claro na diferença dos valores de 2018 e 2019.
+
+Em 2020, além do fundo partidário, o PT recebeu R$ 201.297.516,62 como parte do fundo eleitoral. 
+
+##### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 1.5)+
+  geom_point(color = cor, size = 2)+
+  scale_y_continuous(
+    labels = scales::label_number_si(accuracy = 0.01, decimal.mark = ",")
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE",
+    subtitle = "Valores em milhões de filiados"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+O PT possui a segunda maior base de filiados do Brasil, atrás apenas do [MDB](https://pindograma.com.br/2020/10/21/mdb.html). Desde 2014, no entanto, o número de filiados ao partido estagnou. O aumento de filiados que geralmente acontece antes das eleições municipais não ocorreu em 2016. Após este ano, houve até um decréscimo de petistas filiados.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+Como todos os grandes partidos do Brasil, o PT tem dificuldades de renovar sua base [jovem](https://pindograma.com.br/2020/10/02/jovens.html). O partido vem envelhecendo ano a ano. Ainda assim, o PT continua mais jovem, como um todo, que outros partidos do mesmo porte.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5,
+    color = "grey10"
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.4,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+O aumento da participação feminina no partido é uma tendência desde 2008. Ainda assim, a maioria dos petistas são homens.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(650, 900, 1150, 1400),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O Acre, o Rio Grande do Sul e o Mato Grosso do Sul são os estados com as maiores proporções de filiados ao PT do Brasil. Neste último, a taxa chega a 1.822 filiados ao PT por 100 mil eleitores, o maior número do país. Apesar do sucesso de Fernando Haddad na eleição presidencial de 2018 na região, os estados do Nordeste têm taxas de filiação ao PT mais baixas que estados como São Paulo e Santa Catarina, que votaram em Jair Bolsonaro, então do PSL.
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O Piauí é o estado em que o PT tem maior presença proporcional na Assembleia Legislativa. Já no Amapá, na Paraíba e em Alagoas, o partido não teve sequer um deputado estadual eleito. Em geral, o PT elegeu menos deputados estaduais em 2018 do que nas eleições anteriores, porém ainda compõe bancadas consideráveis dado o grande número de partidos que dividem as vagas.
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+As maiores bancadas petistas de cada estado vêm do Nordeste, com destaque à Bahia e ao Rio Grande do Norte. Fora da região, o partido elegeu mais deputados federais no Rio Grande do Sul e em Minas Gerais. 
+
+Somando todos os deputados pelo país, o PT elegeu a maior bancada à Câmara dos Deputados em 2018.
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Novamente o Nordeste se mostra uma região de maior força do partido, sendo a origem de 4 dos 6 senadores petistas eleitos nas duas últimas eleições. 
+
+```{r, fig.height=7, fig.width=9}
+governadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+
+ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  annotate('text', label = 'Wellington Dias',
+           family = 'Fantasque', color = "grey10",
+           x = -43.5, y = 1, size = 3.5)+
+  annotate('curve', curvature = .15, x = -44,
+           xend = -43.5, y = 0, yend = -4,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Camilo Santana',
+           family = 'Fantasque', color = "grey10",
+           x = -36, y = -0.5, size = 3.5)+
+  annotate('curve', curvature = .15, x = -36,
+           xend = -38.5, y = -1.5, yend = -3.5,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Fátima Bezerra',
+           family = 'Fantasque', color = "grey10",
+           x = -32.5, y = -12, size = 3.5)+
+  annotate('curve', curvature = .15, x = -32.5,
+           xend = -35, y = -11, yend = -5.7,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Rui Costa',
+           family = 'Fantasque', color = "grey10",
+           x = -35, y = -18, size = 3.5)+
+  annotate('curve', curvature = .15, x = -35,
+           xend = -38.5, y = -17, yend = -14,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+
+O PT elegeu o maior número de governadores de qualquer partido em 2018. Repetindo a força demonstrada na região nos outros pleitos, os quatro governadores petistas se concentram no Nordeste do país.
+
+---
+
+##### História
+
+A fundação do Partido dos Trabalhadores (PT) está ligada à [atuação de sindicatos e movimentos de trabalhadores](http://www.fgv.br/cpdoc/acervo/dicionarios/verbete-tematico/partido-dos-trabalhadores-pt) rurais e urbanos de oposição à ditadura militar. Líderes destes movimentos, aliados a [intelectuais](https://fpabramo.org.br/csbh/os-intelectuais-e-a-criacao-do-pt-2/), [movimentos católicos de esquerda e outros opositores do regime](https://www.historia.uff.br/culturaspoliticas/files/daniel4.pdf) se juntaram em 1980 e fundaram um partido que se propunha a ser uma força popular de esquerda para um país que dava sinais de abertura política. O PT [defendia](https://pt.org.br/wp-content/uploads/2014/04/manifestodefundacaopt.pdf) o socialismo democrático, a participação dos trabalhadores no processo político e uma mudança radical da sociedade brasileira.
+
+O então líder sindical Lula, protagonista de greves no ABC Paulista entre 1978 e 1980, ajudou a fundar o partido e rapidamente tornou-se a figura mais popular do PT.
+
+Apesar do partido ter eleito poucos deputados na eleição de 1986, Lula foi o deputado mais votado do Brasil, firmando a legenda como uma nova força política no país. Em 1989, Lula disputou o segundo turno das eleições presidenciais com Fernando Collor (PRN), mas não obteve sucesso. Nas duas eleições seguintes, de 1994 e de 1998, Lula terminou em segundo atrás de Fernando Henrique Cardoso (PSDB).
+
+Apesar das derrotas nas eleições presidenciais, a bancada do PT na Câmara dos Deputados aumentava ano a ano. Essa tendência culminou em 2002: o partido elegeu a maior bancada da Câmara (91 deputados) e Lula obteve mais de 60% dos votos no segundo turno.
+
+Entre 2003 e 2010, Lula governou o país num período de crescimento econômico e avanços sociais. O escândalo de corrupção do Mensalão, que levou lideranças importantes do partido influentes no governo federal a serem acusadas de corrupção e posteriormente condenadas, marcou a passagem de Lula pelo governo federal. Ainda assim, ao final de seu mandato, a popularidade de Lula estava em [87%](http://g1.globo.com/politica/noticia/2010/12/popularidade-de-lula-bate-recorde-e-chega-87-diz-ibope.html), facilitando a eleição de sua Ministra-chefe da Casa Civil, Dilma Rousseff (PT), como presidente em 2010. 
+
+O primeiro governo Dilma foi marcado pelas manifestações de junho de 2013, pela deflagração da Operação Lava-Jato e pelos primeiros sinais da crise econômica que se agravaria em 2015. Mesmo se reelegendo para mais um mandato, o segundo governo de Dilma foi marcado pelo acirramento das crises econômica e política, além de denúncias de corrupção contra diversos políticos do alto escalão do governo. A crise culminou no impedimento da presidente e marcou o fim da era petista na presidência.
+
+Em 2018 o partido conseguiu que Fernando Haddad chegasse ao segundo turno, porém foi derrotado por Jair Bolsonaro, então do PSL. Mesmo perdendo a eleição, o PT elegeu a maior bancada na Câmara dos Deputados. Sua presidente hoje é Gleisi Hoffmann, deputada federal pelo Paraná.
+
+---
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-27-pt/pt.Rmd
