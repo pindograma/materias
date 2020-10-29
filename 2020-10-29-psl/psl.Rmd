@@ -1,0 +1,577 @@
+---
+title: "Partidos em números: PSL"
+author: "Fernanda Nunes"
+date: "29/10/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PSL"
+cor <- filter(party_palette, party_name == party)$party_color
+cor_continua <- "Blues"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+Nesta edição da série **Partidos em Números**, falaremos de um partido pequeno que ganhou destaque no cenário nacional nos últimos 2 anos: o Partido Social Liberal, que elegeu o presidente Jair Bolsonaro em 2018.
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, 1)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(candidatos, levels = c(1,0))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Municípios com candidato a\nprefeito pelo partido em 2020",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none",
+    panel.background = element_blank()
+  )
+```
+
+O PSL tem candidatos a prefeito em 712 municípios e apoia candidatos em outras 1266 cidades pelo país. No total, está presente em 1.978 cidades, e a região Nordeste é a de menor concentração de candidatos, o que reflete o padrão de votação nas eleições presidenciais de 2018. O Amapá se destaca na região Norte pelo número alto de municípios com candidatos. No Centro Oeste, São Paulo, Paraná e Santa Catarina, também há maior presença de candidatos do PSL.
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 4))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Em 2020, o PSL lidera coligações com 26 dos outros 32 partidos. Partidos como MDB, PODE, PP e PSDB formam a maioria das coligações, enquanto 5 partidos de esquerda (PCB, PCO, PSOL, PSTU e UP) não participam de nenhuma coligação. 
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+A maioria das alianças foi feita com partidos de centro e de direita. O partido formou chapas com 27 partidos, com destaque para o MDB, PP, PSD e DEM. Além disso, nas eleições de 2020, o PSL tem quase o dobro de alianças (1266) do que candidatos próprios (712).
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(5,10,20,30),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Candidatos a vereador por município em 2020",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+A maior concentração de candidatos a vereador pelo PSL está nas regiões Sul e Sudeste do país. No Centro Oeste, Goiás se destaca por ter mais cidades com candidatos do PSL. Norte e Nordeste têm a menor frequência de candidatos a vereador pelo PSL -- em Roraima, apenas na capital Boa Vista.
+
+```{r, fig.height=6, fig.width=9}
+perfil <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+
+ggplot(perfil, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+A maioria dos candidatos do PSL em 2020 é composta por homens (67,36%) e se declara branca (53,63%); uma minoria de 44,94% se declara preta ou parda. Neste ano, mulheres compõem apenas 32,6% do total de candidatos concorrendo pelo partido.
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey50",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+Historicamente, o PSL recebeu pouquíssimos recursos do Fundo Partidário. Vale lembrar que 95% dessa verba é distribuída proporcionalmente às agremiações, de acordo com a representatividade de cada uma no Congresso e 5% são distribuídos igualmente entre os partidos. Entre 2010 e 2014, o PSL tinha poucos nomes no Congresso. A eleição de Jair Bolsonaro em 2018 trouxe grande sucesso nas urnas para o partido, que elegeu a segunda maior bancada da Câmara, com 52 deputados e 4 senadores. Isso explica o enorme salto no valor recebido do Fundo. Em 2020, o PSL recebeu, além do Fundo Partidário, quase 200 milhões de reais do Fundo Eleitoral.
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 1.5)+
+  geom_point(color = cor, size = 2)+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+É um partido médio em número de filiados e cresceu muito nos últimos anos, mais do que outros partidos de direita no Brasil. Durante a última década, a quantidade de eleitores filiados ao PSL mais do que duplicou: houve um aumento de 158% entre 2010 e 2020 e 80% desde 2016. No gráfico acima, não está incluído o número de filiados em 2020, devido a inconsistências na plataforma de dados do TSE (principalmente nos números de outros partidos). 
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+O PSL, como todos os partidos do país, vinha envelhecendo desde 2010. A partir de 2018, houve um crescimento na proporção das faixas etárias com menos de 45 anos. Isso deve principalmente ao grande aumento no número de filiados após a entrada de Jair Bolsonaro no partido. O partido foi um dos que mais [atraiu jovens conservadores](https://pindograma.com.br/2020/10/02/jovens.html) nos últimos anos.
+
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5,
+    color = pg_yellow
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.32,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+O PSL tem uma minoria de mulheres filiadas. A queda na porcentagem de mulheres entre 2018 e 2020 está atrelada ao aumento de 80% no número total de filiados: nesses 2 anos, uma quantidade muito grande de homens se juntou ao PSL, enquanto mulheres também entraram mas em proporção significativamente menor. Isso acabou diminuindo bastante a porcentagem de mulheres filiadas ao partido com um todo. Essa tendência é contrária à maioria dos outros partidos, que veem a diferença em seus números de filiados homens e mulheres diminuir.
+
+```{r fig.height=6, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(200,300,400,500),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+De acordo com dados de 2020, o Amapá tem a maior densidade de filiados ao PSL: são 1.506 a cada 100 mil eleitores, seguido pelo Tocantins, com 529. O PSL tem baixa concentração de filiados em estados do Nordeste, mas os dois estados com concentração mais baixa são Pará e Rio Grande do Sul. Vale lembrar que os estados do Sudeste dominam em números absolutos de filiados.
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(.03, .06, .1, .15),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Estados no Sudeste -- São Paulo, Rio e Espírito Santo -- têm mais presença de deputados estaduais do PSL nas suas legislaturas, formando bancadas consideráveis em alguns desses estados. No Paraná e em Santa Catarina as bancadas também estão entre as maiores do estado. Já os estados do Centro Oeste, Norte e Nordeste elegeram menos deputados do partido, concentrando os estados que, assim como o Distrito Federal, não elegeram representantes do partido.
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(.05, .1, .15, .2),
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+As regiões Sudeste e Sul elegeram a maior parte dos deputados federais do PSL, com 29 e 10 representantes, respectivamente. Norte e Nordeste têm a menor proporção: em 8 estados dessas regiões, nenhum candidato à Câmara do PSL foi eleito. Em termos proporcionais ao seus números de vagas no Congresso Nacional, Rio de Janeiro, Santa Catarina e Mato Grosso do Sul foram os estados com mais presença do PSL.
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O ano de 2018 foi o primeiro em que o PSL teve sucesso na corrida eleitoral para o Senado, com 4 nomes, todos no Sudeste e Centro-Oeste
+
+```{r, fig.height=7, fig.width=9}
+governadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+
+ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  annotate('text', label = 'Antonio Denarium\n(hoje sem partido)',
+           family = 'Fantasque', color = "grey10",
+           x = -70.5, y = 4, size = 3.5)+
+  annotate('curve', curvature = -.15, x = -65.5,
+           xend = -62, y = 5, yend = 4.8,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Coronel Marcos Rocha',
+           family = 'Fantasque', color = "grey10",
+           x = -67, y = -17, size = 3.5)+
+  annotate('curve', curvature = .15, x = -67,
+           xend = -63, y = -16, yend = -13.5,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Comandante Moisés\n(hoje afastado)',
+           family = 'Fantasque', color = "grey10",
+           x = -42, y = -31, size = 3.5)+
+  annotate('curve', curvature = .15, x = -43,
+           xend = -48, y = -29, yend = -27.5,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+2018 foi o ano da sua história em que o PSL mais elegeu governadores, com 3 nomes: Coronel Marcos Rocha em Rondônia, Antonio Denarium no Amapá e Comandante Moisés em Santa Catarina. Destes, apenas Rocha continua em exercício. Denarium se desfiliou do PSL e Moisés está afastado do cargo, pois é alvo de um processo de impedimento.
+
+--- 
+
+#### História
+
+O PSL foi fundado em outubro de 1994 e obteve seu registro no TSE em 1998. Desde a sua fundação, defende em seu programa a não-intervenção do Estado na economia e apoio à iniciativa privada.
+
+O empresário recifense Luciano Caldas Bivar foi seu principal quadro até 2018, quando Jair Bolsonaro (sem partido desde novembro de 2019) se filiou à legenda. Bivar foi presidente da legenda desde seu registro até o presente, com a exceção de licenças para concorrer à Câmara dos Deputados — entre março e outubro de 2018, a presidência foi ocupada por Gustavo Bebianno, que seria Ministro da Secretaria-Geral da Presidência por pouco mais de um mês no início do governo Bolsonaro. 
+
+Historicamente, o PSL teve pouca representação no Congresso: Bivar foi o único deputado federal eleito pelo partido em 1998. Em 2002 e 2014, o partido elegeu apenas um nome para a Câmara. Até 2018, não tinha elegido nenhum senador.
+
+Em 2006, o partido lançou Bivar como candidato presidencial, que terminou em último lugar nas eleições, com menos de 1% dos votos. Nas eleições seguintes, de 2010 e 2014, o PSL não lançou nenhum candidato ao cargo mais alto do executivo, mas apoiou a candidatura de Eduardo Campos e Marina Silva, então do Partido Socialista Brasileiro, no pleito de 2014. No segundo turno, o PSL apoiou Aécio Neves (PSDB).
+
+Em 2018, o partido teve a sua maior virada em termos de visibilidade, com a filiação de Bolsonaro, que ganhava destaque no cenário nacional. Nas eleições de 2018, o partido elegeu a segunda maior bancada da Câmara, com 52 nomes, atrás apenas do [PT](https://pindograma.com.br/2020/10/27/pt.html). Esse mesmo ciclo eleitoral foi o primeiro em que o PSL conquistou cadeiras no Senado, representado por 4 senadores.
+
+A ideologia defendida pelo partido também passou por mudanças em anos recentes. Entre 2015 e 2018, abrigou o Livres, uma corrente mais liberal, que defendia inclusive a união homoafetiva e a descriminalização da maconha. Após disputas internas com correntes mais conservadoras e a filiação de Bolsonaro, o Livres se desligou do partido e passou a existir como movimento suprapartidário. O PSL passou, então, a defender pautas sociais mais conservadoras fazendo oposição ao “politicamente correto” e a políticas de inclusão por meio de cotas. No entanto, manteve-se constante na defesa de um Estado pequeno e liberalismo econômico, com ênfase em pautas de segurança nacional e proteção de liberdades individuais. Em novembro de 2019, o presidente Jair Bolsonaro se desfiliou do partido. Após a saída do presidente, o PSL continuou crescendo em número de filiados, e manteve a agenda mais conservadora. Resta saber se o sucesso nas urnas em 2018 se repetirá em 2020, dessa vez sem Bolsonaro.
+
+---
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-29-psl/psl.Rmd
