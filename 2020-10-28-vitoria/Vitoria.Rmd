@@ -1,0 +1,287 @@
+---
+title: "Vitória"
+author: "Pedro Siemsen"
+date: "18/10/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(sf)
+
+source('../theme.R')
+load('vitoria.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+A eleição municipal de 2020 em Vitória, capital do Espírito Santo, ainda não
+tem um favorito claro. De acordo com uma análise do _Pindograma_ dos últimos
+pleitos na cidade, porém, bairros de alta renda preferiram dar votos para o
+grupo político de Fabrício Gandini (Cidadania) em eleições passadas. Enquanto
+isso, Delegado Pazolini (Republicanos), João Coser
+([PT](https://pindograma.com.br/2020/10/27/pt.html)) e Capitão Assumção
+(Patriota) terão de disputar entre si os votos dos bairros de menor renda. 
+
+---
+
+Em 2016, o prefeito Luciano Rezende foi reeleito pelo Cidadania (antigo PPS) no
+segundo turno, concorrendo contra Amaro Neto (Solidariedade). Ele obteve 51,19%
+dos votos válidos, mas os votos da cidade foram marcadamente divididos entre
+bairros com renda mais alta e renda mais baixa.
+
+```{r fig.height=4}
+bairros = st_read('bairros/bairros.shp', quiet = T) %>%
+  st_transform(31984)
+
+ggplot() +
+  ggtitle('Concentração de Votos em Luciano Rezende\n(Prefeito, 2016)') +
+  geom_sf(data = st_transform(st_intersection(lrezende16, bairros), 4326), aes(fill = cand), lwd = 0) +
+  annotate('curve', curvature = -.15, x = -40.287,
+            xend = -40.28, y = -20.25, yend = -20.26,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Aeroporto',
+            color = "grey10",
+            x = -40.298, y = -20.25, size = 3.5, family = 'Fantasque') +
+  annotate('curve', curvature = -.15, x = -40.32,
+            xend = -40.335, y = -20.325, yend = -20.323,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Centro',
+            color = "grey10",
+            x = -40.313, y = -20.325, size = 3.5, family = 'Fantasque') +
+  scale_fill_gradient(low = 'white', high = pg_orange, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+```{r fig.height=4}
+ggplot() +
+  ggtitle('Concentração de Votos em Amaro Neto\n(Prefeito, 2016)') +
+  labs(caption = 'Fonte: Base de locais de votação do Pindograma, TSE') +
+  geom_sf(data = st_transform(st_intersection(amaroneto16, bairros), 4326), aes(fill = cand), lwd = 0) +
+  annotate('curve', curvature = -.15, x = -40.287,
+            xend = -40.28, y = -20.25, yend = -20.26,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Aeroporto',
+            color = "grey10",
+            x = -40.298, y = -20.25, size = 3.5, family = 'Fantasque') +
+  annotate('curve', curvature = -.15, x = -40.32,
+            xend = -40.335, y = -20.325, yend = -20.323,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Centro',
+            color = "grey10",
+            x = -40.312, y = -20.325, size = 3.5, family = 'Fantasque') +
+  scale_fill_gradient(low = 'white', high = pg_green, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+Como mostram os mapas, Rezende teve forte presença em bairros de alto poder
+aquisitivo a leste do Centro, como Praia do Canto, Jardim Camburi e Jardim da
+Penha, assim como no próprio Centro. Amaro Neto, por outro lado, concentrou
+mais votos em regiões de menor renda -- seja nos arredores do Centro, seja na
+Zona Oeste, em bairros como São Pedro, Santo Antônio e Maruípe. 
+
+Em 2020, a corrida para prefeitura da capital capixaba tem um candidato que
+pode angariar votos como herdeiro político de Luciano Rezende: o deputado
+estadual **Fabrício Gandini** (Cidadania). Gandini é apontado por Rezende como
+seu sucessor e já serviu como Secretário de Gestão e Planejamento da
+Prefeitura, além de já ter sido eleito vereador três vezes. Gandini concorreu
+para deputado estadual em 2018 obtendo votos nas seguintes regiões:
+
+```{r}
+ggplot() +
+  ggtitle('Concentração de votos em Fabrício Gandini\n(Deputado Estadual, 2018)') +
+  labs(caption = 'Fonte: Base de locais de votação do Pindograma, TSE') +
+  geom_sf(data = st_transform(st_intersection(gandini18, bairros), 4326), aes(fill = cand), lwd = 0) +
+  annotate('curve', curvature = -.15, x = -40.287,
+            xend = -40.28, y = -20.25, yend = -20.26,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Aeroporto',
+            color = "grey10",
+            x = -40.296, y = -20.25, size = 3.5, family = 'Fantasque') +
+  annotate('curve', curvature = -.15, x = -40.32,
+            xend = -40.335, y = -20.325, yend = -20.323,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Centro',
+            color = "grey10",
+            x = -40.314, y = -20.325, size = 3.5, family = 'Fantasque') +
+  scale_fill_gradient(low = 'white', high = pg_orange, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+Gandini teve força eleitoral na região a leste do aeroporto da cidade, que
+engloba o Jardim Camburi e a zona industrial do porto Tubarão. Diferente de
+Rezende, porém, Gandini não teve tantos eleitores no Centro ou nos bairros mais
+ricos como Praia do Canto e Jardim da Penha. O deputado estadual terá de atrair
+mais eleitores que escolheram seu aliado Rezende em 2016. Sua campanha também
+[aposta em projetos de investimento em
+áreas](https://www.facebook.com/watch/?v=262575401841975) onde seu antecessor
+não teve tantos votos,  como Santo Antônio e São Pedro. Mesmo assim, ele é um
+dos favoritos no
+[agregador de pesquisas](https://pindograma.shinyapps.io/agregador/)
+do _Pindograma_, estando em primeiro lugar com 21% das intenções de voto.
+
+Já **Delegado Pazolini** (Republicanos) teve pouco apoio nos bairros ricos da
+cidade quando se elegeu deputado estadual em 2018. Suas bases eleitorais foram
+nas regiões de São Pedro, no extremo norte da ilha de Vitória, e Bento
+Ferreira, que fica próxima ao Centro. O delegado [poderá contar com o apoio do
+ex-candidato Amaro
+Neto](https://eshoje.com.br/republicanos-recebe-pazolini-e-ja-tem-nomes-fortes-em-serra-e-vitoria/),
+que mudou para o Republicanos em 2018. 
+
+```{r}
+ggplot() +
+  ggtitle('Concentração de votos em Delegado Pazolini\n(Deputado Estadual, 2018)') +
+  labs(caption = 'Fonte: Base de locais de votação do Pindograma, TSE') +
+  geom_sf(data = st_transform(st_intersection(pazolini, bairros), 4326), aes(fill = cand), lwd = 0) +
+  annotate('curve', curvature = -.15, x = -40.287,
+            xend = -40.28, y = -20.25, yend = -20.26,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Aeroporto',
+            color = "grey10",
+            x = -40.296, y = -20.25, size = 3.5, family = 'Fantasque') +
+  annotate('curve', curvature = -.15, x = -40.32,
+            xend = -40.335, y = -20.325, yend = -20.323,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Centro',
+            color = "grey10",
+            x = -40.314, y = -20.325, size = 3.5, family = 'Fantasque') +
+  scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+A 18 dias das eleições, Pazolini está em terceiro lugar nas pesquisas, com 10%
+das intenções de voto. Resta ver se ele de fato conseguirá concentrar os votos
+dos apoiadores de Amaro Neto em 2016, que somados a alguns avanços nas regiões
+ricas, poderia lhe dar uma chance de vitória. 
+
+Empatado em primeiro lugar nas pesquisas, Vitória conta também com um velho
+conhecido: João Coser (PT), prefeito da cidade entre 2005 e 2013. Coser
+concorreu ao Senado em 2014, mas perdeu a eleição. Seus resultados eleitorais
+de então indicam que ele disputaria espaço com Pazolini:
+
+```{r}
+ggplot() +
+  ggtitle('Concentração de votos em João Coser\n(Senador, 2014)') +
+  labs(caption = 'Fonte: Base de locais de votação do Pindograma, TSE') +
+  geom_sf(data = st_transform(st_intersection(coser14, bairros), 4326), aes(fill = cand), lwd = 0) +
+  annotate('curve', curvature = -.15, x = -40.287,
+            xend = -40.28, y = -20.25, yend = -20.26,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Aeroporto',
+            color = "grey10",
+            x = -40.296, y = -20.25, size = 3.5, family = 'Fantasque') +
+  annotate('curve', curvature = -.15, x = -40.32,
+            xend = -40.335, y = -20.325, yend = -20.323,
+            arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+            color = "grey30") +
+  annotate('text', label = 'Centro',
+            color = "grey10",
+            x = -40.314, y = -20.325, size = 3.5, family = 'Fantasque') +
+  scale_fill_gradient(low = 'white', high = '#ff6961', labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+Naquela eleição, o petista teve muitos votos em bairros populares, como Bento
+Ferreira, São Pedro e Santo Antônio. Já em bairros nobres como a Praia do Canto
+e o Jardim da Penha, Coser teve poucos votos. Considerando que o contexto
+político mudou radicalmente desde 2014, com a derrocada do PT, é difícil prever
+se eles poderão reconquistar seus antigos eleitores. Sua campanha reforça [os
+aspectos positivos da gestão do
+petista](https://www.facebook.com/joaoccoser/photos/a.217510108414115/1873029079528868/)
+entre 2005-2013 para atingir esse objetivo. Porém, segundo [uma pesquisa
+eleitoral divulgada pela
+Futura](https://www.folhavitoria.com.br/politica/blogs/guia-eleicoes-2020/wp-content/uploads/2020/10/R_Eleicoes-2020_1a-Rodada_Vitoria_V00.pdf)
+no início de outubro, Coser tem a maior rejeição de todos os candidatos,
+inclusive entre eleitores de baixa renda.
+
+Além dos três primeiros colocados, ainda é necessário considerar três outros
+candidatos. A vereadora **Neuzinha** (PSDB) apela a uma base similar à de
+Rezende e Gandini, mas também se vale de um discurso de renovação política e
+mudança da atual gestão. Já **Capitão Assumção**, que recebeu muitos votos em
+bairros nos bairros da Nova Palestina e Bento Ferreira na eleição de 2018, deve
+disputar votos com Delegado Pazolini, seguindo uma linha ainda mais à direita e
+[contando com o apoio direto do presidente Jair Bolsonaro
+](https://www.agazeta.com.br/es/politica/com-elogios-a-bolsonaro-assumcao-e-confirmado-candidato-em-vitoria-0920)
+(sem partido). O Capitão foi uma das figuras protagonistas do motim da Polícia
+Militar no Espírito Santo em 2017 e [chegou a ser preso
+brevemente](https://congressoemfoco.uol.com.br/especial/noticias/aliado-de-bolsonaro-capitao-assumcao-se-entrega-a-policia-militar-no-espirito-santo/)
+por seu envolvimento com o levante. Por fim, o atual vice-prefeito
+**Sérgio Sá** (PSB) aposta em [críticas aos elementos negativos da atual gestão
+](https://www.facebook.com/watch/?v=903905610141000) como uma carta para
+angariar votos, disputando diretamente com Gandini pelo espólio político da
+atual gestão.
+
+---
+
+**Dados usados na matéria**: Locais de Votação (_Pindograma_); Votação por Seção
+Eleitoral (Tribunal Superior Eleitoral).
+
+**Contribuiu com Dados**: Daniel Ferreira.
+
+**Créditos da imagem**: X.
+
+Para reproduzir os números da matéria, o código pode ser encontrado [aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-10-28-vitoria/Vitoria.Rmd
