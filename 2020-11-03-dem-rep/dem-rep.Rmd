@@ -1,0 +1,1021 @@
+---
+title: "Democratas e Republicanos: uma comparação pelos dados"
+author: "João Costa"
+date: "03/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+dem <- "DEM"
+cor_dem <- filter(party_palette, party_name == dem)$party_color
+cor_dem_continua <- "Blues"
+party <- "REPUBLICANOS"
+cor <- filter(party_palette, party_name == party)$party_color
+cor_continua <- "Reds"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Em 2020, novembro é o mês das eleições, e não são só os brasileiros que vão às urnas. Nos Estados Unidos, a população também votará, escolhendo o próximo presidente do país. A mídia brasileira tem dado a devida atenção à corrida pela Casa Branca, e muito tem se falado sobre Republicanos e Democratas. Isso pode ter deixado muitos brasileiros se perguntando se realmente conhecem os dois partidos. Eles são liberais ou conservadores? Governo ou oposição? Estão na Câmara? E no Senado? Quem são os Republicanos e Democratas de que tanto falam? 
+
+Para a sorte de nossos leitores, o _Pindograma _já está preparado para responder a essas perguntas… mas não sobre os partidos estadunidenses. Afinal, já temos nossos próprios Republicanos e Democratas no Congresso Nacional. Será que eles são tão diferentes entre si quanto os partidos de Donald Trump e Joe Biden? Confira nessa edição especial do Partidos em Números sobre o Republicanos e o Democratas.
+
+---
+
+#### História
+
+Apesar da alcunha de _Grand Old Party_ (‘Grande Velho Partido’), o partido Republicano estadunidense foi fundado depois do partido Democrata. No Brasil, o Democratas também tem uma história mais antiga que o Republicanos. 
+
+A origem do DEM está ligada à primeira eleição presidencial depois do fim da ditadura, que ainda foi indireta. O PDS — partido formado por antigos membros da ARENA, partido governista da ditadura — lançara Paulo Maluf como candidato a presidente, com o apoio do último ditador do regime, João Figueiredo. O nome de Maluf não era consenso no partido e levou à formação de uma dissidência: a Frente Liberal. Como o nome sugere, a legenda colocou em seu [primeiro programa](fgv.br/cpdoc/acervo/dicionarios/verbete-tematico/democratas-dem) a defesa do liberalismo econômico. O partido de Joe Biden também é tido como liberal nos Estados Unidos, mas lá o termo é usado para se referir a progressistas.
+
+A Frente Liberal logo se tornou um partido, conhecido pela sigla PFL. Na eleição de 1987, o partido compôs a segunda maior bancada da Câmara dos Deputados e, mais tarde, seria um dos principais aliados do governo de Fernando Henrique Cardoso (PSDB) no Congresso. Quando seus aliados do [PSDB](https://pindograma.com.br/2020/11/02/psdb.html) perderam a eleição em 2002, o PFL manteve a segunda maior bancada na Câmara dos Deputados, ficando à frente do [PMDB](https://pindograma.com.br/2020/10/21/mdb.html) mas atrás do [PT](https://pindograma.com.br/2020/10/27/pt.html), a quem fez oposição.
+
+Em 2007, a legenda decidiu mudar seu nome para Democratas. Pouco depois, em 2011, uma dissidência do partido levou à fundação do PSD, o que enfraqueceu a posição do DEM no cenário nacional. Atualmente, o DEM é um importante aliado do governo Bolsonaro e tem em seus quadros tanto o Presidente da Câmara dos Deputados, Rodrigo Maia, quanto o do Senado, Davi Alcolumbre. O presidente da legenda é o atual prefeito de Salvador, ACM Neto.
+
+Já o Republicanos tem origem mais recente. Fundado inicialmente como Partido Municipalista Renovador em 2003, o partido recebeu seu registro no TSE em 2005 e logo mudou o nome para Partido Republicano Brasileiro. Uma das figuras importantes do início do partido foi o vice-presidente de Lula (PT), José Alencar – até então filiado ao Partido Liberal (PL). O partido permaneceu na base aliada do PT até o impedimento de Dilma Rousseff, quando parte do PRB votou a favor do afastamento da presidente.
+
+Desde seu início, o partido foi ligado a figuras da Igreja Universal do Reino de Deus;  o atual presidente do partido, o deputado federal Marcos Pereira, é bispo da igreja. O partido se define como [conservador e defensor dos valores cristãos](https://republicanos10.org.br/sobre-o-republicanos/), algo que está em linha com a típica base eleitoral do partido de Donald Trump. Em 2019,  o partido mudou seu nome para Republicanos. Tem entre seus quadros o [candidato à prefeitura de São Paulo, Celso Russomanno](https://pindograma.com.br/2020/10/14/russomanno.html), e o prefeito do Rio de Janeiro, Marcelo Crivella. É aliado do governo de Jair Bolsonaro (sem partido), com quem [Donald Trump simpatiza](https://twitter.com/realDonaldTrump/status/1166357258726498304).
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == dem)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor_dem, size = 1.5)+
+  geom_point(color = cor_dem, size = 2)+
+  coord_cartesian(ylim = c(1060000, 1125000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 0.001, decimal.mark = ",",
+      big.mark = ".", scale = 1/1000000, suffix = "M"
+      )
+  )+
+  labs(
+    title = str_c(dem,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE",
+    subtitle = "Valores em milhões de filiados"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 1.5)+
+  geom_point(color = cor, size = 2)+
+  scale_y_continuous(
+    labels = scales::label_number(accuracy = 1, decimal.mark = ",", big.mark = ".")
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+    #subtitle = "Valores em milhares de filiados"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+Diferente de seus equivalentes estadunidenses, apenas o Democratas pode ser considerado um partido grande, tendo mais de 1 milhão de filiados. A perda de filiados a partir de 2011 está ligada à fundação do PSD, uma dissidência do partido fundada naquele ano por Gilberto Kassab. Após a dissidência, o Democratas parece ter estabilizado seu número de filiados, seguindo um padrão comum a outros partidos tradicionais que aumentam apenas em anos de eleições municipais. O Republicanos, por outro lado, é um partido médio que registra grande crescimento, especialmente intenso em 2012 e 2016, mas ainda presente em outros anos.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == dem) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(dem,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+Em termos de idade, os partidos invertem os padrões norte americanos, onde[ Biden lidera com folga as pesquisas entre jovens](https://www.forbes.com/sites/jackbrewster/2020/10/31/exclusive-poll-biden-steady-with-under-30-voters-heading-into-election-day-with-one-weakness/?sh=581d6eab60d0). Mesmo considerando o envelhecimento geral dos partidos brasileiros, os filiados ao DEM sempre foram mais velhos que os do Republicanos, sendo que a grande maioria do partido tem mais de 45 anos. Já o Republicanos tem três vezes mais filiados com menos de 34 anos do que o DEM e uma base mais jovem que a média nacional.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == dem)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor_dem)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.4,.6))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.4,.6))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+Mais uma vez, o Democratas se mostra um partido mais tradicional que o Republicanos, tendo uma maioria masculina mas aproximando-se do equilíbrio a cada ano. O Republicanos, em contrapartida, é um de apenas dois partidos brasileiros majoritariamente femininos — o outro é o Partido da Mulher Brasileira (PMB). Por esse motivo, a tendência no partido é o crescimento da representação masculina, em direção a um equilíbrio entre os sexos.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == dem) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(500, 750, 1000, 1500),
+    palette = cor_dem_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(350, 500, 650, 800),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Enquanto o Meio-Oeste estadunidense vota no partido de Donald Trump, o DEM domina o Centro-Oeste brasileiro, tendo a sua maior proporção de filiados no Mato Grosso, com 2.196 a cada 100 mil eleitores. Santa Catarina e Tocantins também se destacam. Enquanto isso, o Republicanos tem concentrações menores de filiados por ser um partido menor. As taxas mais altas de filiação ao partido, como no Amazonas, seriam consideradas taxas médias para o DEM. Fora da região, o Republicanos destaca-se no Mato Grosso do Sul. O Sul e o Sudeste têm os menores números proporcionais de filiados ao partido.
+
+---
+
+#### Financiamento
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == dem)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor_dem)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 100000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 100000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+Os gráficos do Fundo Partidário revelam as diferentes trajetórias dos dois partidos. O DEM era um dos maiores partidos do país até a onda de desfiliações e dissidências iniciada em 2011, custando-lhe o posto de segundo maior beneficiário do Fundo Partidário. Já o Republicanos teve um ritmo de crescimento constante, saindo dos patamares mais baixos para os mais altos, recebendo até mais do que o DEM em 2019. 
+
+Em contraste com as [campanhas bilionárias](https://epoca.globo.com/mundo/eleicao-nos-eua-2020-quanto-custa-corrida-para-casa-branca-24725951) dos Estados Unidos, o Democratas e o Republicanos brasileiros receberam, respectivamente, R\$ 120 milhões e R\$ 100 milhões pelo Fundo Eleitoral de 2020.
+
+---
+
+#### Eleições 2020
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == dem, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, 1)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(candidatos, levels = c(1,0))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor_dem, "grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem, "Municípios com candidato a\nprefeito pelo partido em 2020",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none",
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, 1)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(candidatos, levels = c(1,0))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Municípios com candidato a\nprefeito pelo partido em 2020",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none",
+    panel.background = element_blank()
+  )
+```
+
+[Candidatos a prefeito 2020]
+
+A diferença de capilaridade dos dois partidos fica evidente neste mapa. Mesmo com pouca presença em alguns estados como o Piauí e o Pará, o DEM apresenta candidatos por todo o país, especialmente no Centro-Oeste e no Tocantins. O Republicanos é mais limitado em seu alcance. 
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == dem) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == dem,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == dem)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor_dem) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==dem, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", dem,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 4))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020\nlideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Republicanos e Democratas no Brasil não têm problema de apoiarem as candidaturas uns dos outros –– coisa impensável para os estadunidenses. Inclusive, ambos os partidos coligaram-se também com a grande maioria dos outros partidos brasileiros. Suas chapas receberam apoio de quase todos os partidos. A diferença entre os dois está na quantidade: o DEM lançou 1.113 candidatos próprios, enquanto o Republicanos lançou apenas 818.
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == dem) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == dem,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == dem)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor_dem) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==dem, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", dem,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Quando se trata de dar apoio, a história muda um pouco, pois a preferência é dada a grandes partidos como o MDB, PSDB, PP e PSD. No total, o DEM apoia 1.795 chapas e o Republicanos, 1.454.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == dem, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(5,10,20,30),
+    palette = cor_dem_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem, "Candidatos a vereador por município em 2020",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(5,10,20,30),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Candidatos a vereador por município em 2020",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+A força do DEM no Centro-Oeste fica clara no mapa de vereadores, assim como a presença constante do partido na maior parte do território nacional. Os estados do Nordeste chamam atenção por terem poucos municípios com candidatos do Democratas, com exceção da Bahia e do Maranhão. Para o Republicanos, o Norte e o Sudeste são regiões de maior força do partido, com exceção dos estados do Acre e de Minas Gerais. A presença é mais modesta no resto do país.
+
+```{r, fig.height=6, fig.width=9}
+perfil <- cand20 %>%
+  filter(PARTIDO == dem) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+Apesar de ter quase o mesmo número de filiadas que filiados, essa equidade de gênero não reflete as candidaturas do Republicanos. No partido, apenas uma em cada três das candidaturas são femininas, proporção similar à do DEM. Ambos os partidos, porém, têm menos candidaturas de brancos que de outras raças juntas.
+
+---
+
+#### Resultados em 2018
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == dem, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    palette = cor_dem_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == "PRB", CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(.03, .06, .09),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O Republicanos marca presença em quase todas as Assembleias Legislativas do país, ficando fora em apenas 4 estados. Já o DEM fica fora de 6 estados, mas é bem forte na Bahia, em Goiás e no Maranhão. 
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == dem, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_dem_continua, direction = 1
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == "PRB", CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Tratando-se do Congresso Nacional, o melhor resultado do DEM foi no Tocantins. Estados do Centro-Oeste também elegeram muitos deputados do partido, embora o Mato Grosso não tenha eleito nenhum. O partido não teve eleitos em 11 estados, principalmente no Norte e no Nordeste. Já o Republicanos mostrou que é uma força eleitoral no Norte do país, especialmente no Amazonas. Novamente, Brasília contradiz Washington e os democratas têm menos congressistas que os republicanos.  
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == dem, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(cor_dem, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == "PRB", CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(cor,"grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Na contramão dos Estados Unidos mais uma vez, o Democratas é mais forte no Senado que o Republicanos. O DEM elegeu 7 senadores para ocupar o cargo nesta legislatura, enquanto o Republicanos só conseguiu eleger um candidato. No entanto, hoje apenas 5 senadores em exercício do mandato são do DEM, e 3 do Republicanos.
+
+```{r, fig.height=7, fig.width=9}
+governadores <- eleicoes18 %>%
+  filter(PARTIDO == dem, CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(cor_dem, "grey90"))+
+  annotate('text', label = 'Ronaldo\nCaiado',
+           family = 'Fantasque', color = "grey10",
+           x = -41.5, y = -12, size = 3.5)+
+  annotate('curve', curvature = -.15, x = -42,
+           xend = -46.5, y = -14, yend = -17.5,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Mauro Mendes',
+           family = 'Fantasque', color = "grey10",
+           x = -66, y = -15, size = 3.5)+
+  annotate('curve', curvature = .30, x = -66,
+           xend = -59.5, y = -16.5, yend = -17.5,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(dem,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+governadores <- eleicoes18 %>%
+  filter(PARTIDO == "PRB", CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c("grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+
+Em vez de dividirem o país ao meio como acontece nos Estados Unidos, DEM e Republicanos competiram com vários outros partidos pelas 27 unidades federativas do Brasil. O Democratas elegeu dois representantes no Centro-Oeste, em Goiás e no Mato Grosso. Já o Republicanos não lançou nenhuma candidatura própria — algo impensável nos Estados Unidos —, mas elegeu um vice-governador no Maranhão.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-03-dem-rep/dem-rep.Rmd
