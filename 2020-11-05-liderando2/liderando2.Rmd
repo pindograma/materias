@@ -1,0 +1,137 @@
+---
+title: "Os prefeitos campeões de reeleição que concorrem em 2020"
+author: "Pedro Siemsen"
+date: "26/10/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(gt)
+
+source('../theme.R')
+source('constants.R')
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r}
+lp1 = read_csv('leading_party_previous.csv')
+lp2 = read_csv('leading_party.csv')
+
+lp2_comp = lp2 %>%
+  semi_join(lp1, by = 'city')
+
+parties1 = lp1 %>%
+  count(party)
+
+parties2 = lp2 %>%
+  count(party) %>%
+  left_join(party_palette, by = 'party')
+
+parties2_comp = lp2_comp %>%
+  count(party)
+
+pf = parties1 %>%
+  left_join(parties2_comp, 'party') %>%
+  mutate(diff = n.y - n.x) %>%
+  left_join(party_palette, by = 'party')
+```
+
+Há 9 dias, o Pindograma publicou uma matéria mostrando quais partidos lideravam
+nas mais de 500 cidades listadas em nosso [agregador de pesquisas][2]. Hoje,
+voltamos aos mesmos municípios para ver como (e se) as corridas mudaram nos
+últimos dias. 
+
+O quadro geral das corridas permanece o mesmo. Depois das corridas em que os
+eleitores ainda estão indecisos ou pretendem anular seus votos, o Centrão e
+associados ainda são os partidos que mais lideram nas intenções de voto.
+Partidos de centro-direita continuam com mais favoritos que os de esquerda.
+Enquanto isso, legendas mais ideológicas seguem com poucos líderes nas
+pesquisas. (Note-se que consideramos todos os candidatos em empate técnico com
+o candidato em primeiro lugar como líderes).
+
+```{r}
+pf %>%
+  select(party_name, n.x, n.y, diff) %>%
+  mutate(diff = ifelse(diff >= 0, paste0('+', diff), diff)) %>%
+  rename(`27/ago` = n.x, `5/nov` = n.y, `Mudança` = diff) %>%
+  gt(rowname_col = 'party_name') %>%
+  tab_header('Número de candidatos liderando pesquisas em eleições municipais') %>%
+  cols_align('center') %>%
+  theme_pindograma_table() %>%
+  theme_pindograma_table_stub()
+```
+
+A principal mudança é que 12 corridas agora têm um candidato como líder das
+intenções de voto, em vez de votos brancos, nulos ou indecisos. Os partidos que
+não lideravam em nenhuma cidade há 9 dias continuam sem liderar cidade
+alguma -- é o caso da Rede Sustentabilidade e do Partido Novo.
+
+```{r}
+centrao = c(15, 55, 11, 25, 22, 14, 19, 77, 90, 70, 10, 20)
+centrao_count = parties2_comp %>%
+  filter(party %in% centrao) %>%
+  pull(n) %>%
+  sum()
+
+esquerda = c(13, 40, 12, 65, 50)
+esquerda_count = parties2_comp %>%
+  filter(party %in% esquerda) %>%
+  pull(n) %>%
+  sum()
+
+direita = c(45, 43, 17, 51, 23)
+direita_count = parties2_comp %>%
+  filter(party %in% direita) %>%
+  pull(n) %>%
+  sum()
+```
+
+Somando ganhos e perdas, a esquerda e centro-esquerda (PT, PSOL, PSB, PDT, PC
+do B) continuam com o mesmo número de lideranças, `r pn(esquerda_count)`. A direita e
+centro-direita (PSDB, PV, PSL, Patriota, Cidadania) agora lideram em 7 novas
+cidades totalizando `r pn(direita_count)` corridas também. Partidos associados ao Centrão
+(Republicanos, PP, PTB, MDB, PODE, PSC, PL, DEM, PSD, Avante, Solidariedade,
+PROS) foram o grupo que mais cresceu, indo para `r pn(centrao_count)` lideranças.
+
+Também tivemos novas pesquisas em cidades para as quais ainda não havia
+sondagens 9 dias atrás. Mesmo incluindo elas, o quadro não destoa muito do que
+já havíamos visto:
+
+```{r fig.height=6}
+ggplot(parties2) +
+  geom_col(aes(reorder(party_name, n), n, fill = party_color)) +
+  scale_fill_identity(guide = F) +
+  coord_flip() +
+  labs(
+    title = "Partidos liderando corridas eleitorais em 2020 (5/11)",
+    caption = "Fonte: Agregador de Pesquisas do Pindograma"
+  ) +
+  theme_pindograma() +
+  xlab('') + ylab('Número de cidades') +
+  theme(axis.text.y = element_text(size = 12))
+```
+
+---
+
+**NOTA**: O _Pindograma_ assume, para os cálculos dessa matéria, que a margem
+de erro de todas as pesquisas é de 3%.
+
+**Dados utilizados na matéria**: Resultados de Pesquisas Eleitorais
+(_Pindograma_).
+
+**Contribuíram com dados**: Daniel Ferreira e Pedro Fonseca.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-05-liderando2/liderando2.Rmd
+
+[2]: https://pindograma.shinyapps.io/agregador
