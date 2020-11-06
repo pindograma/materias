@@ -1,0 +1,492 @@
+---
+title: "Partidos em números: PSOL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PSOL"
+cor <- filter(party_palette, party_name == party)$party_color
+cor_continua <- "YlOrRd"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+A série **Partidos em Números** continua com um partido que busca firmar seu lugar na esquerda brasileira: o Partido Socialismo e Liberdade.
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, 1)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(candidatos, levels = c(1,0))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, "grey50"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Municípios com candidato a\nprefeito pelo partido em 2020",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none",
+    panel.background = element_blank()
+  )
+```
+O PSOL tem candidaturas em apenas 347 municípios. Com algumas exceções, o partido é principalmente urbano. São Paulo, Rio de Janeiro e Bahia são os estados com mais candidatos a prefeito do partido.
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+O partido é ideológico em suas coligações, algo incomum na política brasileira. Recebe apoio de apenas 8 partidos para 51 de seus 347 candidatos. Os destaques são o PCB e o PT, seguidos pela UP e o PC do B. Os únicos partidos de esquerda que não apoiam candidaturas do PSOL este ano são o PCO e o PSTU. Outros partidos de centro-esquerda como o PDT, PSB e Rede têm pouquíssima presença nas coligações do PSOL.
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+As 93 chapas que o PSOL apoia são um pouco menos ideológicas que os partidos dos quais aceita apoio e incluem até alguns do centrão, como PL, PP e PSD. O principal aliado ainda é o PT e outros partidos de esquerda recebem menos apoio.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(5,10,20,30),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Candidatos a vereador por município em 2020",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+A distribuição de candidatos à vereança do partido é similar ao mapa acima para as prefeituras. Cidades maiores são o foco do partido, em especial as capitais. Em Roraima só há candidatos na capital Boa Vista.
+
+```{r, fig.height=6, fig.width=9}
+perfil <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+A diversidade racial das candidaturas pessolistas chama atenção. Apenas 38,2% dos candidatos são brancos e 60,2% são pretos ou pardos. No entanto, o partido ainda não apresenta um equilíbrio de gênero –– mulheres são apenas 36,3% das candidatas, apesar de comporem mais de 47% do partido.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 50000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+O PSOL é um partido pequeno, e isso fica evidente na quantidade de dinheiro que a legenda recebe do Fundo Partidário. O partido tem crescido nos últimos anos e em 2018 elegeu sua maior bancada no Congresso (10 deputados), aumentando suas verbas para o ano seguinte.
+
+Para as campanhas de 2020, o PSOL recebeu também R$40.634.516,50 do Fundo Eleitoral.
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 2)+
+  geom_point(color = cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+Desde 2008, o PSOL cresceu progressivamente, padrão que se reforça antes de eleições. O partido caminha para ser um partido médio, mas ainda está no grupo das agremiações com um número pequeno de filiados.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+O PSOL é o [partido mais jovem](https://pindograma.com.br/2020/10/02/jovens.html) do Brasil (desconsiderando a recém-fundada Unidade Popular, que ainda não participou de nenhuma eleição). Mais da metade dos filiados ao PSOL têm menos de 45 anos e um em cada três pessolistas tem até 34 anos.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.37,.49))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+Apesar do PSOL ainda ter maioria masculina, a diferença de gênero de seus filiados vem diminuindo a cada biênio, mais que em partidos [maiores](https://pindograma.com.br/2020/10/21/mdb.html) e [mais](https://pindograma.com.br/2020/11/02/psdb.html) [tradicionais](https://pindograma.com.br/2020/11/03/dem-rep.html).
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(100, 200, 300, 400),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Proporcionalmente ao número de eleitores por estado, o Amapá tem o maior número de filiados ao PSOL: 2.198 a cada 100 mil eleitores. O Pará, o Acre, o Distrito Federal e o Rio Grande do Norte também se destacam neste mapa. No entanto, em números absolutos, o PSOL é mais forte em São Paulo, no Rio de Janeiro e na Bahia.
+
+---
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(0.02, 0.04, 0.06),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+A presença do partido nas Assembleias Legislativas é mais forte no Rio de Janeiro, São Paulo, Amapá, Distrito Federal e Rio Grande do Norte. Além destes, o PSOL tem deputados em mais 6 estados, mas está fora do Legislativo na maior parte da Federação, sem representantes em 16 estados.
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+A concentração do PSOL no Sudeste fica clara neste mapa. Apenas no Pará e no Rio Grande do Sul o partido elegeu deputados fora da região. O Rio de Janeiro é o estado que mais elegeu pessolistas proporcionalmente, um grande feito considerando que a bancada fluminense é a terceira maior do Congresso.
+
+O PSOL nunca elegeu nenhum governador e não há nenhum senador filiado ao partido em 2020, por isso não incluímos os mapas aqui como já é tradição na série.
+
+--- 
+
+#### História
+
+O PSOL faz parte de um grupo de partidos fundados mais recentemente na história política brasileira, recebendo seu registro definitivo no Tribunal Superior Eleitoral em 2005. A legenda surgiu em meio a discordâncias de um grupo de parlamentares do Partido dos Trabalhadores com decisões tomadas pela direção partidária nos primeiros anos da presidência de Lula, que teve início em 2003.
+
+Ainda antes da eleição de 2002, um grupo de petistas liderado pela então senadora alagoana Heloísa Helena criticou a escolha de José Alencar, então do PL, para ser vice de Lula, vendo a escolha como uma [desvirtuação da linha ideológica ](https://www1.folha.uol.com.br/fsp/brasil/fc2602200208.htm)do partido. Mesmo com a vitória nas eleições, as tensões dentro do PT cresceram. Seguindo o exemplo da senadora, outros parlamentares — o sergipano João Fontes, o paraense João Batista Araújo, o Babá, e a gaúcha Luciana Genro — também passaram a criticar medidas do governo abertamente. Dentre as escolhas mais polêmicas estavam a indicação do então [tucano](https://pindograma.com.br/2020/11/02/psdb.html) Henrique Meirelles à presidência do Banco Central, o apoio ao [peemedebista](https://pindograma.com.br/2020/10/21/mdb.html) José Sarney à presidência do Senado e a privatização de bancos estaduais. 
+
+As divergências foram tantas que em dezembro de 2003, o diretório nacional do PT expulsou Heloísa Helena, Babá, Genro e Fontes do partido após eles terem votado contra a orientação da legenda na votação de uma reforma da previdência. Na época, os parlamentares receberam apoio de diversos intelectuais de esquerda e de segmentos da militância petista insatisfeitos com o governo. No ano seguinte, o grupo fundou em Brasília o Partido Socialismo e Liberdade, ou PSOL.
+
+Desde então, o partido sempre lançou candidatos a presidente e sua corrida de maior sucesso foi a primeira, em 2006, quando Heloísa Helena ficou em terceiro lugar com 6,85% dos votos. O partido se colocava como uma oposição à esquerda dos governos petistas, mas foi contra o impedimento de Dilma Rousseff e a prisão de Lula. Atualmente, o partido é presidido por Juliano Medeiros. Nas eleições de 2020, o candidato do PSOL à prefeitura de Belém do Pará Edmilson Rodrigues [lidera as intenções de voto](https://pindograma.com.br/2020/11/06/liderando2.html). Já em São Paulo, o candidato à presidência em 2018, Guilherme Boulos, concorre à prefeitura, com chances de chegar ao segundo turno.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-06-psol/psol.Rmd
