@@ -1,0 +1,564 @@
+---
+title: "Partidos em números: PDT"
+author: "João Costa"
+date: "13/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PDT"
+cor <- filter(party_palette, party_name == party)$party_color
+cor_continua <- "Oranges"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+A série **Partidos em Números** continua com o único partido brasileiro fundado no estrangeiro, o Partido Democrático Trabalhista ou PDT.
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, 1)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(candidatos, levels = c(1,0))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, "grey80"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Municípios com candidato a\nprefeito pelo partido em 2020",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none",
+    panel.background = element_blank()
+  )
+```
+
+O Ceará, o Maranhão e o Rio Grande do Sul são os estados que mais concentram candidatos a prefeito pelo PDT. O partido tem candidatos em todos os estados, mas a região Norte e os outros estados do Nordeste têm um número pequeno quando comparados aos estados do Sul e Sudeste.
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+O partido que mais apoiou candidatos do PDT em 2020 foi o [PT](https://pindograma.com.br/2020/10/27/pt.html). Depois do PT, o PSB e [MDB](https://pindograma.com.br/2020/10/21/mdb.html) são os principais aliados da legenda. O Centrão é o próximo grupo que mais apoia o PDT, mas o partido fez alianças com quase todos os partidos do Brasil, com exceção do [Novo](https://pindograma.com.br/2020/11/10/novo-patri.html) e de partidos de esquerda radical.
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+O gráfico de apoio do PDT a outros partidos é semelhante ao de cima, mas aqui o Centrão tem mais apoio que o PT e o PSB, sendo MDB, PSD e PP os que mais foram apoiados pela legenda. Os demais partidos tiveram poucas chapas integradas pelo PDT.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(5,10,20,30),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Candidatos a vereador por município em 2020",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O Ceará, o Maranhão e o Rio Grande do Sul são os estados com maior concentração de candidatos a vereador pelo PDT. Isso é semelhante ao que acontece no mapa  de candidatos a prefeito.
+
+```{r, fig.height=6, fig.width=9}
+perfil <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+Os candidatos do PDT em 2020 são em sua maioria pretos, pardos, indígenas ou amarelos, sendo que brancos representam 49,44% das candidaturas totais. Quando se trata de gênero, no entanto, o partido ainda está mais desequilibrado em relação à população brasileira: apenas um a cada três candidatos é mulher.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 100000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+Refletindo sua posição como um dos maiores partidos do país, o PDT recebeu em torno de 5% do valor distribuído pelo Fundo Partidário em 2019. Este valor é similar ao que recebia antes de 2014, indicando que os anos de 2014 a 2018 foram atípicos para o partido.
+
+Em 2020 o partido recebeu também R$103.314.544,11 para distribuir entre seus candidatos nas eleições municipais como parte do Fundo Eleitoral. 
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 2)+
+  geom_point(color = cor, size = 2.5)+
+  coord_cartesian(ylim = c(1100000, 1300000))+
+  scale_y_continuous(
+    labels = scales::label_number_si(accuracy = 0.01, decimal.mark = ",")
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE",
+    subtitle = "Valores em milhões de filiados"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+O PDT é o quinto maior partido do Brasil em número de filiados. A base do partido geralmente só tem crescimento significativo antes de eleições municipais.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+O PDT é um partido com uma base mais velha. A grande maioria de seus filiados têm entre 45 e 69 anos, sendo que menos de 10% do partido tem menos de 35 anos.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.4,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+Assim como a maioria dos partidos deste tamanho, o PDT ainda é composto em sua maioria por homens, mas a proporção de mulheres no partido vem aumentando.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(500, 1000, 1500, 2000),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Provavelmente pelo legado de Leonel Brizola, o estado que tem a maior concentração de filiados ao PDT é o Rio Grande do Sul, onde o número chega a 2.782 filiados a cada 100 mil eleitores. Outros estados com muitos pedetistas são Amapá, Roraima, Rio de Janeiro, Mato Grosso do Sul e Espírito Santo.
+
+---
+
+#### Eleições 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(0.025, 0.05, 0.15, 0.3),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 0.1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PDT está presente em quase todas as Assembleias Legislativas do país, ficando fora apenas nos estados de Roraima, Tocantins, Rio Grande do Norte, Paraíba e Sergipe. Os Estados com maior presença do partido são também o Ceará, Maranhão e Rio Grande do Sul.
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(0.05, 0.099, 0.25),
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+A bancada do PDT pelo Ceará é a mais forte de todo o país, e o Nordeste é a região que mais concentra seus deputados. Devido ao baixo número de deputados pelo Acre e por Rondônia, o partido parece representar uma bancada maior nestes estados, mesmo tendo apenas um deputado em cada um destes estados. A região Norte é onde o partido tem menos deputados eleitos.
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Nas duas últimas eleições gerais, o PDT elegeu 6 senadores por todas as regiões do país, exceto o Sudeste. Atualmente, devido a trocas de legenda, o partido conta com apenas 3 membros no Senado, de Rondônia, do Maranhão e do Ceará.
+
+```{r, fig.height=7, fig.width=9}
+governadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  annotate('text', label = 'Waldez Goés',
+           family = 'Fantasque', color = "grey10",
+           x = -41.5, y = 0, size = 3.5)+
+  annotate('curve', curvature = .15, x = -44,
+           xend = -49, y = 1, yend = 1.5,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+
+Atualmente, o único governador do PDT é Waldez Goés, do [Amapá](https://brasil.estadao.com.br/noticias/geral,sem-energia-eletrica-amapa-vira-zona-de-guerra,70003506183).
+
+---
+
+#### História
+
+O PDT é único entre os partidos do Brasil, pois sua fundação ocorreu fora do Brasil, em Lisboa.
+
+Em 1979, o político Leonel Brizola encontrava-se no exílio devido à ditadura militar. O gaúcho fora governador de seu estado até o golpe de 1964 pelo Partido Trabalhista Brasileiro. O PTB de então — trabalhista e de centro-esquerda — era o partido do legado de Getúlio Vargas e do então presidente João Goulart. Com o processo de abertura política da ditadura, Brizola — ainda em exílio — começou a movimentar lideranças trabalhistas brasileiras para refundar o partido ao qual pertencera. No entanto, a sobrinha-neta de Getúlio, Ivete Vargas, liderava outro grupo de ex-integrantes do PTB e ganhou judicialmente o direito de usar o nome da antiga legenda.
+
+Sem poder refundar o PTB, Brizola e seu grupo fundaram outro partido, que chamaram de Partido Democrático Trabalhista, ou PDT, registrado oficialmente em 1981. Em seu manifesto, o PDT afirmava a “defesa da democracia, do nacionalismo e do socialismo” e reivindicava o legado trabalhista e as posições de esquerda da década de 1960.
+
+Brizola foi a principal figura do partido em seus primeiros anos e se elegeu governador do Rio de Janeiro em 1982, na primeira eleição após o fim do bipartidarismo. Com o fim da ditadura militar em 1985, o PDT apoiou Tancredo Neves para a presidência. Já em 1989, na primeira eleição direta para presidente, Brizola se lançou candidato. O pedetista terminou em terceiro lugar, ficando atrás de Lula (PT), que recebeu seu apoio no segundo turno. 
+
+	Brizola se elegeria governador do Rio de Janeiro novamente em 1990. Em 1994, se candidatou novamente à presidência, mas ficou apenas em quinto lugar. A partir desta derrota, Brizola começou a perder força no partido, embora ainda o comandasse. 
+
+O PDT foi opositor do governo de Fernando Henrique Cardoso nos dois mandatos. Em 2002, apoiou a candidatura presidencial de Ciro Gomes. Apesar da derrota, o PDT passou a integrar o governo de Lula. Foi governista em ambos os mandatos de Lula e integrou a coligação de Dilma Rousseff nas suas corridas presidenciais de 2010 e 2014. O partido se posicionou oficialmente contra o impedimento da presidente, mas alguns de seus parlamentares votaram a favor da deposição. 
+
+Desde 2015, quando se filiou ao PDT, Ciro Gomes é a principal liderança do partido. Foi o candidato à presidência em 2018, quando terminou terceiro lugar recebendo 12,47% dos votos. O partido passou a fazer parte da oposição quando Jair Bolsonaro (então do [PSL](https://pindograma.com.br/2020/10/29/psl.html), hoje sem partido) assumiu a presidência da república. Atualmente, o PDT é presidido por Carlos Lupi.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-14-pdt/pdt.Rmd
