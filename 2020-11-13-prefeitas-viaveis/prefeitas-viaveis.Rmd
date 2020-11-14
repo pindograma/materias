@@ -1,0 +1,171 @@
+---
+title: "prefeitas-viaveis"
+author: "Fernanda Nunes"
+date: "13/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+
+source('../theme.R')
+load('./data/prefeitas-viaveis.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+pn_2 = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 4)
+```
+
+As eleições municipais de 2020 tiveram um [recorde](https://www.camara.leg.br/noticias/698770-candidaturas-femininas-crescem-em-2020-mas-ainda-nao-representam-a-populacao-brasileira/) de candidaturas femininas. Este ano, elas compõem [33,2%](https://www.gazetadopovo.com.br/eleicoes/2020/candidatas-mulheres-recorde-barreiras-participacao-feminina/) do total: `r pn(n_mulheres_2020)` candidatas disputam vereanças e prefeituras pelo país. Em 2016, elas representavam 32,79% do total.
+
+No entanto, esses números não indicam, necessariamente, que mais mulheres serão eleitas em 2020. Neste ano, por exemplo, mulheres representam apenas `r pn_2(prop_f_20)`% dos candidatos a prefeito, um modesto aumento desde 2016, quando elas eram `r pn_2(prop_f_16)`% do total. É basicamente um retorno à proporção de 2012: `r pn_2(prop_f_12)`%
+
+Além disso, olhar apenas para a proporção de mulheres entre os candidatos a prefeito pode não refletir o que está ocorrendo em 2020. Por isso, decidimos investigar quantas mulheres chegaram perto de vencer a disputa em anos anteriores, e quantas estão no caminho certo nas eleições neste ano. Apesar de termos mais candidatas, as mulheres não parecem ter uma vantagem maior do que em anos anteriores, e a pandemia de coronavírus trouxe novos desafios para essa corrida eleitoral.
+
+---
+
+#### Como se mede uma candidatura competitiva?
+
+O _Pindograma_ analisou a disputa eleitoral até o momento e comparou-a com ciclos eleitorais de anos anteriores utilizando dados do [agregador de pesquisas](https://pindograma.shinyapps.io/agregador/), que reúne mais de 6.000 pesquisas eleitorais feitas no Brasil desde 2012. O agregador indica como as candidatas do sexo feminino estão indo nos pleitos e possbilita a comparação de seu desempenho em relação aos rivais do sexo masculino.
+
+Unimos dois critérios para medir a competitividade de uma candidatura. Primeiro, consideramos candidaturas que atingiram pelo menos 10% da intenção de voto a partir de setembro do ano da eleição. Segundo, consideramos os candidatos que apareceram entre os três primeiros colocados na disputa pela prefeitura, também a partir de setembro. Caso um candidato atinja qualquer um desses critérios, consideramos sua candidatura competitiva.
+
+
+Aqui, é importante fazer duas ressalvas. Primeiro, pesquisas têm margens de erro, mesmo que pequenas. Segundo, nem todas as cidades do país têm pesquisas publicadas.
+
+Dos 5570 municípios brasileiros, foram analisados `r n_mun_12` em 2012, `r n_mun_16` em 2016 e `r n_mun_20` em 2020. A amostra tem uma leve tendência a sobre representar candidaturas femininas, já que cidades mais populosas, onde pesquisas eleitorais são mais comuns, também têm mais mulheres concorrendo. 
+
+---
+
+#### O desempenho das candidatas e dos candidatos
+
+```{r, fig.height=6, fig.width=9}
+ggplot(compet,
+       aes(SEXO, n,
+           fill = factor(GRUPO, levels = c("Qualquer", "Competitiva", "Eleita"))
+       )
+)+
+  geom_col(position = "dodge")+
+  scale_fill_manual(values = c(pg_orange, pg_blue, pg_green))+
+  facet_wrap(~ANO, scales = "fixed", nrow = 1)+
+  labs(
+    title = "Candidaturas à prefeitura em municípios com pesquisa (2012-2020)",
+    y = "Número de candidaturas",
+    fill = "" 
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_text(margin = margin(r = 15)),
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 12),
+    legend.position = "bottom"
+  )
+```
+
+Em 2012, `r pn(n_cand_12)` candidatos apareciam nas pesquisas. Destes, `r m_comp_12$n` homens e `r f_comp_12$n` mulheres tinham candidaturas competitivas. Eles representaram, respectivamente `r m_comp_12$prop_g %>% pn_2()`% e `r f_comp_12$prop_g %>% pn_2()`% daqueles que consideramos ter chances reais de eleição.
+
+No ciclo eleitoral seguinte, das `r pn(n_cand_16)` pessoas que disputaram prefeituras nas cidades em que pesquisas são publicadas, `r pn(n_comp_16)` tiveram candidaturas competitivas: `r m_comp_16$n %>% pn()` homens e `r f_comp_16$n %>% pn()` mulheres. A proporção entre os dois sexos se manteve parecida: eles representavam `r m_comp_16$prop_g %>% pn_2()`%  e elas `r f_comp_16$prop_g %>% pn_2()`% .
+
+Em 2020, não há diferença significativa. Novamente, houve um aumento no número de pesquisas, que agora incluem `r pn(n_cand_20)` candidatos. Neste ano, `r m_comp_20$n %>% pn()` homens e `r f_comp_20$n %>% pn()` mulheres se encaixam nos critérios de candidaturas mais competitivas, totalizando `r pn(n_comp_20)`. As proporções não sofreram grandes alterações: `r m_comp_20$prop_g %>% pn_2()`% e `r f_comp_20$prop_g %>% pn_2()`%.
+
+Além disso, a proporção de candidatos competitivos em relação ao total de cada sexo é parecida, com uma leve vantagem para as mulheres: em torno de 74% das candidaturas femininas eram competitivas em 2012 contra 68% das masculinas, diferença que diminuiu mas permaneceu presente em 2016.
+
+Porém, nos dois anos elas acabaram sendo eleitas em menor proporção. Em 2016, por exemplo, 28% dos homens que estavam concorrendo venceram a eleição, comparado com 20% das candidaturas femininas.
+
+2020 é o primeiro ano em que, de acordo com nossos critérios, as candidaturas masculinas são proporcionalmente mais competitivas: 43% contra 41% entre as mulheres – resta ver se eles mantém o melhor desempenho nas eleições.
+
+
+```{r, fig.height=6, fig.width=9}
+ggplot(filter(compet, SEXO == "Feminina"),
+       aes(factor(ANO), n,
+           fill = factor(GRUPO, levels = c("Qualquer", "Competitiva", "Eleita"))
+       )
+)+
+  geom_col(position = "dodge")+
+  geom_text(
+    aes(label = n), position = position_dodge(0.9), vjust = 1.5,
+    family = "Fantasque", fontface = "bold", 
+    color = pg_light_gray, size = 6
+  )+
+  scale_fill_manual(values = c(pg_orange, pg_blue, pg_green))+
+  labs(
+    title = "Desempenho das candidatas à prefeitura\nem municípios com pesquisa (2012-2020)",
+    fill = "" 
+  )+
+  theme_pindograma()+
+  theme(
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = "bottom"
+  )
+```
+
+No gráfico acima, percebe-se um aumento no número total de candidatas à prefeitura, principalmente em 2020 — lembrando que há mais pessoas concorrendo, de ambos os sexos. Talvez por esse aumento geral, a quantidade de candidaturas femininas competitivas não acompanhou o crescimento de candidatas. Pelo contrário: houve um pequeno decréscimo de `r f_comp_16$n` para `r f_comp_20$n` aspirantes à prefeitas com chances reais neste ano.
+
+---
+
+#### Dificuldades e 2020
+
+Noemí Araujo, articuladora política voluntária da ONG [Elas no Poder](https://elasnopoder.org/), explica que as dificuldades para a participação política das mulheres começam dentro de casa. Mulheres costumam ser responsáveis pelo trabalho doméstico e cuidado com os filhos em maior frequência do que homens, o que deixa menos tempo disponível para se dedicar a uma campanha política.
+
+Em 2020, a pandemia do coronavírus tende a agravar essa situação. Apesar da falta de dados sobre o tema, Araujo diz que o risco de saúde pública é algo que afeta as candidatas com quem a ONG interage no dia-a-dia. “Se ela é uma líder no seu lar e responsável pela gestão da sua família, ela vai pensar 2 ou 3 vezes antes de se expor e contaminar sua família”. Em eleições municipais, o contato corpo-a-corpo é mais importante do que em outros pleitos, explica Araujo.
+
+Além de questões sociais e de saúde pública, o financiamento também é chave para campanhas políticas. Desde 2018, a legislação eleitoral obriga que 30% da verba do fundo eleitoral e do fundo partidário sejam dedicadas a candidaturas de mulheres. No entanto, a menos de um mês das eleições deste ano, [22 dos 33](https://congressoemfoco.uol.com.br/eleicoes/quase-metade-dos-partidos-ainda-nao-repassou-verba-minima-a-mulheres/) partidos brasileiros, ou 2 a cada 3 das agremiações, ainda não haviam repassado a verba mínima a candidatas mulheres exigida por lei.
+
+Segundo Araújo, a ausência dessa verba aumenta a disparidade financeira nas campanhas, e aquelas que contam com menos recursos se tornam menos competitivas.
+
+“As mulheres já entram nessa disputa eleitoral sem apoio financeiro, que é um dos principais pontos de impulsionamento da sua campanha”. Apesar de poderem contar com trabalho de voluntários, na maior parte dos casos isso não é suficiente para produzir uma campanha bem-sucedida.
+
+Além disso, em 2020 o STF determinou que partidos devem dividir o dinheiro público de campanha de forma proporcional ao número de candidatos negros, [regra que também está sendo descumprida](https://g1.globo.com/politica/eleicoes/2020/eleicao-em-numeros/noticia/2020/11/09/maioria-dos-partidos-descumpre-regra-eleitoral-sobre-financiamento-de-campanha-e-repassa-menos-recursos-para-negros-e-mulheres.ghtml https://congressoemfoco.uol.com.br/eleicoes/quase-metade-dos-partidos-ainda-nao-repassou-verba-minima-a-mulheres/ ). Ou seja, mulheres negras podem acabar em dupla desvantagem financeira.
+
+---
+
+**Eleitas**
+
+```{r, fig.height=6, fig.width=9}
+ggplot(eleitos_sexo, 
+       aes(SEXO, n, fill = factor(Eleita, levels = c("Eleita", "Não Eleita", "Concorrendo"))))+
+  geom_col(position = "stack")+
+  geom_text(
+    aes(y = n, label = n), position = position_stack(0.9), vjust = 1,
+    family = "Fantasque",
+    color = pg_light_gray, size = 5
+  )+
+  facet_wrap(~ANO)+
+  labs(
+    title = "Número de prefeitos eleitos e candidatos por sexo (2012-2016)",
+    fill = ""
+  )+
+  coord_cartesian(ylim = c(0, 16000))+
+  scale_fill_manual(values = c(pg_green, pg_orange, pg_blue))+
+  theme_pindograma()+
+  theme(
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = "bottom"
+  )
+```
+
+Por todo o país, `r eleitas_12$n` prefeitas foram eleitas em 2012 e `r eleitas_16$n` em 2016. Apesar de mais campanhas de conscientização sobre os [efeitos positivos](https://www.oxfam.org.br/blog/falta-de-representatividade/) de representatividade, as eleições de 2020 não parecem ser muito diferentes de anos anteriores em relação ao seu potencial de aumentar a presença de grupos diversos em prefeituras pelo país.
+
+---
+
+**Dados usados na matéria**: Resultados de Eleições (Tribunal Superior
+Eleitoral/Cepespdata); Candidatos Eleições 2020 (TSE).
+
+**Contribuíram com dados**: Antonio Piltcher e Daniel Ferreira.
+
+**Créditos da imagem**: Agência Brasil.
+
+Para reproduzir os números da matéria, o código pode ser encontrado [aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-13-prefeitas-viaveis/prefeitas-viaveis.Rmd
