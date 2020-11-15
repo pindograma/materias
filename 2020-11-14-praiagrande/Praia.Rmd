@@ -1,0 +1,157 @@
+---
+title: "Praia Grande"
+author: "Pedro Fonseca"
+date: "18/10/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(sf)
+
+source('../theme.R')
+load('praia.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+A Praia Grande, cidade litorânea a 40 minutos de São Paulo, apresenta um
+cenário político dividido pela primeira vez em sua história recente. A
+candidata indicada pelo prefeito Alberto Mourão (PSDB) está à frente em todas
+as pesquisas eleitorais feitas no município. Contudo, o opositor Danilo Morgado
+(PSL) demonstrou rápida ascensão nas pesquisas eleitorais, que indicam um
+possível [segundo turno pela primeira vez na história da
+cidade](https://www.atribuna.com.br/eleicoes/chini-x-morgado-praia-grande-pode-ter-segundo-turno-pela-primeira-vez-em-sua-hist%C3%B3ria-1.126776). 
+
+Mourão, o atual prefeito, foi eleito pela primeira vez em 1992. Desde 1996, vem
+fazendo a indicação de seus sucessores, que foram todos eleitos. No entanto,
+existem chances de as eleições de 2020 não serem tão fáceis quanto as
+anteriores.
+
+```{r}
+ggplot() +
+  ggtitle('Alberto Mourão conquistou toda a Praia Grande em 2016') +
+  geom_sf(data = mourao, aes(fill = cand), lwd = 0) +
+  scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+A aposta de Mourão esta vez é em Raquel Chini (PSDB). Pela primeira vez na
+história do município, uma mulher apresenta os maiores índices de intenção de
+voto na corrida eleitoral — 29%, de acordo com o [agregador de
+pesquisas](https://pindograma.shinyapps.io/agregador/) do _Pindograma_.
+
+Raquel Chini iniciou a sua vida no poder público em 1993, quando foi convidada
+por Mourão a assumir a Secretaria de Obras. Após algumas migrações, a sua
+última atuação foi na Secretaria de Transportes. De acordo com o seu [site
+oficial de campanha](http://raquel45.com.br/plano-de-governo/), a candidata
+terá como desafio aperfeiçoar e dar continuidade aos feitos e conquistas do
+município das últimas décadas.
+
+Já Danilo Morgado é, de acordo com o agregador de pesquisas do _Pindograma_, o
+principal concorrente de Raquel, com 16% nas pesquisas. Ex-assessor do senador
+Major Olímpio (PSL-SP), se apresenta como a principal voz da oposição frente às
+duas décadas de Mourão no poder. E não há como negar a sua presença em eventos
+e feiras por todas as regiões da cidade durante a campanha.
+
+Morgado vem falando muito sobre a disparidade de atenção dada a áreas
+diferentes da cidade. O candidato acusa Mourão de ter dado atenção maior à
+região da orla e de ter abandonado os bairros a oeste da Rodovia SP-55, que
+concentram a população de menor renda. Entre suas propostas estão a
+implementação de um restaurante que forneça refeições por um preço acessível, a
+criação de um Hospital da Mulher e melhoramentos no Hospital Irmã Dulce. Também
+diz que fará [uso de suas conexões
+políticas](https://www.diariodolitoral.com.br/praia-grande/menos-shows-e-mais-saude-diz-pre-candidato-a-prefeitura-de-praia/129717/)
+e influência enquanto ex-assessor parlamentar para ajudar a cidade.
+
+Após um de seus caminhões ser apreendido por propaganda eleitoral irregular,
+Danilo afirmou que “[não é de hoje que sou perseguido pelos meus adversários
+políticos](https://www.atribuna.com.br/noticias/policia/candidato-a-prefeito-tem-caminh%C3%A3o-apreendido-por-suposta-propaganda-irregular-em-praia-grande-1.125226)”.
+
+Já o vereador Delegado Comin (PODE) ocupa o 3º lugar na corrida eleitoral da
+cidade — alcançando 9% das intenções. No último [debate do Grupo A
+Tribuna](https://www.atribuna.com.br/eleicoes/candidatos-de-praia-grande-abordam-%C3%A1reas-priorit%C3%A1rias-em-debate-do-grupo-tribuna-1.126161),
+o candidato indicou que pretende aumentar o número de guardas municipais e PMs
+na cidade, respondendo às constantes reclamações de moradores de que só existe
+policiamento em áreas próximas à orla. Nas eleições para vereador, Comin teve
+apoio concentrado no bairro da Vila Caiçara.
+
+```{r}
+ggplot() +
+  ggtitle('Concentração de Votos em Delegado Comin\n(Vereador, 2016)') +
+  geom_sf(data = st_transform(comin, 4326), aes(fill = cand), lwd = 0) +
+  scale_fill_gradient(low = 'white', high = pg_green, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+Para entender melhor o quadro eleitoral da cidade, o _Pindograma_ conversou com
+Nilton Almeida, professor universitário, munícipe e candidato a vereador na
+cidade pelo PP. Perguntado sobre a popularidade de Mourão, respondeu que “não
+há como ser contra o Mourão. Ele está aí há anos. [Praia Grande realmente
+cresceu](https://www.atribuna.com.br/cidades/praiagrande/praia-grande-ganha-6-mil-novos-moradores-e-se-consolida-como-3%C2%AA-cidade-mais-populosa-da-regi%C3%A3o-1.65446)
+e isso é notório. Estando aqui desde 2009, vejo esse crescimento. A construção
+civil cresce a cada dia na cidade”.
+
+No entanto, pontuou que "existem áreas que foram deixadas às margens por Mourão
+enquanto gestor. Até hoje, o Hospital Irmã Dulce tem sérios problemas de
+gestão, por exemplo. [O terreno onde está instalado o hospital será
+leiloado](https://www.atribuna.com.br/cidades/praiagrande/justi%C3%A7a-determina-leil%C3%A3o-de-terreno-do-hospital-irm%C3%A3-dulce-em-praia-grande-1.127315).
+Outro recente episódio foi a [contratação de um falso
+médico](https://noticias.r7.com/sao-paulo/contratantes-de-falso-medico-da-praia-grande-sp-viram-alvo-do-mp-05082020)
+— onde já se viu isso? Existem certas áreas em que a prefeitura pecou enquanto
+gestora. A área da saúde é uma delas, e segurança também. A Praia Grande não é
+apenas a orla da praia — existem também outras regiões que precisam de
+segurança".
+
+Além dos três primeiros candidatos à cadeira do executivo, há dois candidatos
+que aparecem em evidência no agregador de pesquisas do _Pindograma_. Janaína
+Ballaris (PL) disputa a quarta colocação com Alexandre Cunha (Republicanos),
+com 4% e 7% das intenções de voto, respectivamente.
+
+Janaína foi eleita vereadora em 2016 e obteve a maior concentração no bairro X,
+de baixa renda. As suas principais propostas são voltadas às parcelas mais
+carentes da população — entre elas, revisão nos contratos de transporte público
+e a implantação do projeto Avança Praia Grande, que busca gerar de empregos
+para os munícipes prejudicados pela pandemia.
+
+Já Alexandre Cunha (Republicanos), foi vice-prefeito de Alberto Mourão entre
+2001 e 2008. Entre as propostas de Cunha estão a redução de 65 para 60 anos a
+isenção em passagens de ônibus; a reorganização das Unidade de Saúde da
+Família; e o projeto Fábrica do Povo, um programa de capacitação da população
+local através de espaços de uso cooperativo.
+
+Ao que tudo indica, Alberto Mourão ainda é o grande eleitor na Praia Grande.
+Diante de momentos turbulentos como a pandemia, o prefeito fez uma gestão
+popular — [tem hoje 80% de
+aprovação](https://www.atribuna.com.br/eleicoes/alberto-mour%C3%A3o-%C3%A9-aprovado-por-quase-80-da-popula%C3%A7%C3%A3o-em-praia-grande-1.120016)
+— e provavelmente conseguirá transferir o seu eleitorado para Raquel. No
+entanto, chama a atenção que justamente em 2020 — em uma corrida bem menos marcada
+pelo apelo da "nova política" que a de 2016 — os opositores de Mourão
+ganhem força. Restará investigar o porquê.
+
