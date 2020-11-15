@@ -1,0 +1,174 @@
+---
+title: "Candidaturas coletivas"
+author: "Sophia Costa"
+date: "14/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(geobr)
+library(gt)
+
+source('../theme.R')
+load('./coletivas.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+pn_2 = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 4)
+
+```
+
+---
+
+Em meio a pedidos de [renovação](https://pindograma.com.br/2020/10/02/jovens.html) e mudança na política brasileira, as candidaturas coletivas aparecem como uma perspectiva de mudança na condução do processo político. Esse tipo de candidatura está mais presente que nunca nas eleições de 2020 e tem recebido maior cobertura da mídia. Majoritariamente de esquerda e localizadas no Sudeste, este ano elas também têm se espalhado para outras regiões — caso da [Bancada Diversas (PSOL-BA)](https://facebook.com/111831053970371) — e para partidos de centro e de direita, a exemplo do [Coletivo Igreja (PL-PE)](https://m.facebook.com/ProjetoSouIgreja/).
+
+---
+
+#### Mandato coletivo: origem e distribuição pelo Brasil
+
+Numa candidatura coletiva, um grupo de pessoas se une para concorrer a um cargo eletivo e, se eleitas, o assumem juntas. Mandatos coletivos são uma modalidade de representação política ainda nascente e não formalizada, por isso cada mandato funciona de forma um pouco diferente. Embora na urna só apareça o nome de uma das pessoas da candidatura coletiva, as outras – chamadas de coparlamentares – podem assumir cargos de assessoria e o grupo divide entre si agendas, salário, verba de gabinete e pessoal.
+
+O caráter coletivo do mandato também pauta o processo de tomada de decisão: em um mandato tradicional, a parlamentar vota apenas de acordo com sua consciência e interesses; já em bancadas coletivas, ela deve consultar também suas colegas de cargo para então tomar uma decisão.
+
+
+Em resposta à popularização desse tipo de candidatura, há um projeto de emenda à Constituição ([PEC 379/2017](https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=2162014)) que reconhece institucionalmente as candidaturas e mandatos coletivos nas disputas eleitorais e do exercício do Poder Legislativo.
+
+O descontentamento com formas tradicionais da política pode ter motivado a popularização das candidaturas coletivas: desde 2010, houve aproximadamente 110 candidaturas compartilhadas para os cargos de vereador, deputado estadual, deputado federal e senador. Em 2012, concorreram somente dois mandatos coletivos no Brasil inteiro. Já na eleição municipal seguinte, foram 35. Este ano, são `r sum(coletivas_by_state$n)` candidaturas coletivas e, destas, `r coletivas_by_state %>% filter(SG_UF == "SP") %>% .$n` — mais de um terço — estão no estado de São Paulo.
+
+Para identificar as candidaturas coletivas, o _Pindograma_ vasculhou os dados de candidaturas do TSE usando as palavras-chave "bancada", "coletivo" e "coletiva". Depois, excluímos candidaturas explicitamente relacionadas ao "transporte coletivo". É bem possível que esse número seja maior, já que o TSE não as categoriza de maneira diferente das candidaturas individuais.
+
+Apesar de ser mais popular na região, o mandato compartilhado não está presente só no Sudeste. Em 2020, depois de São Paulo, Pernambuco é o estado com o maior número de candidaturas compartilhadas, totalizando `r coletivas_by_state %>% filter(SG_UF == "PE") %>% .$n`. Porém, essas candidaturas são apenas `r coletivas_by_state %>% filter(SG_UF == "SP") %>% mutate(n_prop = 100*n_prop) %>% .$n_prop %>% pn()`% e `r coletivas_by_state %>% filter(SG_UF == "PE") %>% mutate(n_prop = 100*n_prop) %>% .$n_prop %>% pn()`% do total de candidaturas em cada estado, respectivamente. Ainda é difícil explicar o porquê, mas as candidaturas coletivas não têm uma presença significativa fora desses dois estados.
+
+```{r}
+table <- coletivas_by_state %>% filter(n > 8) %>% arrange(desc(n)) %>% 
+  mutate(n_prop = format(round(1000*n_prop, digits = 1), decimal.mark = ",")) %>% 
+  rename(Estado = SG_UF, `Candidaturas Coletivas` = n, `a cada 1.000 candidaturas` = n_prop)
+
+table %>% gt() %>% 
+  theme_pindograma_table() %>%
+  tab_style(cell_fill(color = pg_light_gray), cells_body())
+```
+
+```{r, fig.height=7, fig.width=9}
+ggplot()+
+  geom_sf(data = states, aes(fill = n)) +
+  scale_fill_distiller(palette = 'Oranges', direction = 1)+
+  labs(
+    title = "Número de candidaturas coletivas por estado em 2020",
+    fill = "Candidaturas"
+  )+
+  theme_pindograma()+
+  theme(
+    panel.background = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank(),
+    )
+```
+```{r fig.height=7, fig.width= 9}
+ggplot()+
+  geom_sf(data = states, aes(fill = n_prop*1000)) +
+  scale_fill_distiller(
+    palette = 'Oranges', direction = 1,
+    )+
+  labs(
+    title = "Proporção de candidaturas coletivas entre\no total de candidaturas por estado em 2020",
+    fill = "CCs por 1.000\ncandidaturas"
+  )+
+  theme_pindograma()+
+  theme(
+    panel.background = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank()
+    )
+```
+
+#### Mandatos coletivos e partidos
+
+Antes da proliferação das candidaturas coletivas, alguns políticos já incorporavam a lógica participativa em seus mandatos — [caso](https://www.raps.org.br/2020/wp-content/uploads/2019/11/mandatos_v5.pdf) de Durval Ângelo, deputado estadual em Minas Gerais pelo PT de 1995 a 2018, que definia seus votos com base em conselhos populares.
+
+Em 2016, [algumas das primeiras candidaturas](https://www.raps.org.br/2020/wp-content/uploads/2019/11/mandatos_v5.pdf) efetivamente coletivas foram eleitas — como a do vereador João Yuji pelo antigo partido PTN (hoje Podemos), em Alto Paraíso (GO) e a [Gabinetona](https://gabinetona.org/site/), em Belo Horizonte (MG), pelo PSOL. Dois anos depois, foram eleitas as co deputadas [Juntas (PSOL-PE)](https://www.juntascodeputadas.com.br/) e a [Mandata Ativista (PSOL-SP)](https://www.bancadaativista.org/mandata-ativista.html), sendo esta a candidatura coletiva com [mais votos](https://www.raps.org.br/2020/wp-content/uploads/2019/11/mandatos_v5.pdf) na história do Brasil. Nas eleições municipais de 2020, essa modalidade de mandato se difundiu ainda mais, e está distribuída entre 24 partidos:
+
+
+```{r fig.height=7, fig.width= 9}
+ggplot(coletivas_colored, aes(x = fct_infreq(SG_PARTIDO), fill = party_color)) +
+  geom_bar() +
+  coord_flip(ylim = c(0, 105)) +
+  scale_fill_identity()+
+  labs(
+    title = "Candidaturas coletivas por partido em 2020",
+    y = "Número de candidaturas"
+  )+
+  theme_pindograma()+
+  theme(axis.title.y = element_blank())
+```
+
+Figura 3: Distribuição de candidaturas coletivas em partidos nas eleições municipais de 2020
+
+	Embora as candidaturas coletivas tenham conquistado algum espaço nos partidos mais tradicionais de centro-direita como MDB e PSDB, elas ainda se concentram majoritariamente nos de esquerda, como PT e PSOL. Apenas neste último encontram-se `r coletivas %>% filter(SG_PARTIDO == "PSOL") %>% count() %>% .$n` das `r coletivas %>% count() %>% .$n` — ou duas a cada cinco — das bancadas coletivas registradas este ano. 
+
+#### Candidaturas coletivas não tradicionais
+
+**Coletivo Igreja**
+
+Em contraste com a maioria das candidaturas coletivas — sudestinas e de esquerda —, o Coletivo Igreja concorre pelo Partido Liberal (PL) ao cargo de vereador em Goiana (PE). Composto por três mulheres e três homens, ele reúne um professor, líderes religiosos e uma empreendedora, todos adeptos do catolicismo.
+
+A bancada propõe ideias voltadas ao bem comum com enfoque participativo, como a implementação de eleições diretas para os diretores de escolas municipais. Em sua página do Facebook, o Coletivo Igreja exibe declarações de apoio de membros da comunidade, incluindo líderes religiosos.
+
+Conforme explicam em um de seus [vídeos](https://www.facebook.com/ProjetoSouIgreja/videos/358094088583359/), decidiram lançar sua campanha para atender ao desejo da população de Goiana de que a política fosse feita de uma forma diferente — sem amarras, visando ao bem comum. Neste sentido, o Coletivo se orgulha de não usar dinheiro do Fundo Eleitoral ou doações de empresas. 
+
+Organizar-se em um grupo pode ser crucial para grupos que não recebem esses recursos, pois o formato coletivo facilita alternativas de financiamento de campanha, como as vaquinhas. Além disso, articular-se com outras pessoas pode ajudá-los a atingir mais eleitores e conseguir mais votos. 
+
+![Os integrantes do Coletivo Igreja](images/coletivo-igreja.png)
+	Figura 4: Os integrantes do Coletivo Igreja
+
+**Bancada Diversas**
+
+Outro exemplo de candidatura coletiva fora de São Paulo é a Bancada Diversas, que concorre pelo PSOL ao cargo de vereador em Salvador (BA).
+
+Liana Barreira, integrante do grupo, relata que ele foi formado para atuar nas causas sociais, buscando evitar o personalismo cometido por outras bancadas — inclusive de esquerda. Para Liana, “a única maneira de fazer isso era numa chapa coletiva”. Como muitas candidaturas coletivas de esquerda, a Bancada Diversas enfatiza a diversidade de pautas e de identidades que ela representa. Segundo Liana, seu mandato não possui nenhum perfil definido. “A gente foi aliando coisas, as particularidades de cada um, e decidiu que era hora de juntar o público, que era hora de dar tudo que a gente puder [para] resolver problemas no lado social”. 
+
+Assim, em seu grupo de oito integrantes, há um co parlamentar militante pelos direitos dos animais, outra que é defensora da causa das mães solteiras e ainda ativistas das pautas LGBTQ+. O único aspecto em comum entre os oito, para Liana, é que “somos todos de esquerda brutal”.
+
+
+![Os integrantes da Bancada Diversas](images/bancada-diversas.png)
+
+Figura 5: Os integrantes da Bancada Diversas
+
+Liana afirma que a ideia da sua bancada tem sido bem recebida em Salvador. “A gente é um movimento, antes de ser uma chapa. A gente tá ajudando muita gente muito antes de ter pensado em [levar] para frente uma chapa para concorrer. A nossa vantagem é que é muito, muito, muito diferente”. 
+
+O otimismo de Liana e de parte do eleitorado encontra respaldo nas [produções acadêmicas](https://anaiscbc.emnuvens.com.br/anais/article/view/312) que sustentam o mandato coletivo como uma ferramenta para fortalecer a conexão entre os representantes e a sociedade, aumentando a participação política. Embora ainda seja cedo para averiguar o sucesso das candidaturas coletivas em 2020, estas, segundo Liana, vieram para ficar. “É uma tendência de agora para agora e para o futuro”.
+
+---
+
+As candidaturas coletivas ainda representam uma parcela ínfima do total de candidaturas em 2020. Mesmo assim, sua capacidade de visibilizar candidatos alheios à política tradicional, através de fontes alternativas de financiamento e do alcance a múltiplos públicos de uma vez, pode dar ascensão a novas figuras na política nacional.
+
+Elas surgiram como resposta à crise de representatividade no Brasil, causada pela falta de confiança em políticos e instituições de nossa democracia. Nessas eleições e nas próximas, podem se consolidar como uma alternativa aos mandatos comuns e aproximar o eleitorado de seus representantes eleitos.
+
+---
+
+**Dados usados na matéria**: Candidatos Eleições 2020 (Tribunal Superior
+Eleitoral).
+
+**Contribuíram com dados**: Daniel Ferreira e Antonio Piltcher.
+
+**Créditos da imagem**: Agência Brasil.
+
+Para reproduzir os números da matéria, o código pode ser encontrado [aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-14-mandatos-coletivos/mandatos-coletivos.Rmd
