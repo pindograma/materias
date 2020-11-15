@@ -1,0 +1,504 @@
+---
+title: "asd"
+author: "dtf"
+date: "13/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(cowplot)
+library(fastDummies)
+library(sf)
+
+source('../theme.R')
+load('./renda_voto.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+```{r}
+big_cities = read_csv('ends_bn3.csv')
+
+vitoria_map = (mapas_16_dist %>%
+  filter(name == 'VITÓRIA'))$mp[[1]]
+vitoria_bound = vitoria_map %>%
+  filter(renda <= quantile(renda, .2, na.rm = T)) %>%
+  nrow()
+
+vitoria_he = mapas_16_dist %>%
+  filter(name == 'VITÓRIA') %>%
+  pull(high_end) * 100
+
+vitoria_le = 100 - (mapas_16_dist %>%
+  filter(name == 'VITÓRIA') %>%
+  pull(low_end) * 100)
+```
+
+
+Nenhuma eleição municipal nos últimos 12 anos [dividiu tanto os
+eleitores](https://pindograma.com.br/2020/10/28/vitoria.html) de alta e baixa
+renda quanto a de Vitória (ES) em 2016. Entre os `r pn(vitoria_bound)` locais de votação mais ricos
+da cidade, o então prefeito Luciano Rezende (PPS) levou, em média, `r pn(vitoria_he)`% dos
+votos no segundo turno. Já nos `r pn(vitoria_bound)` locais de menor renda, o
+apresentador de tevê Amaro Neto (SD) -- uma espécie de Datena capixaba --
+conquistou, em média, `r pn(vitoria_le)`% dos eleitores.
+
+O caso de Vitória é emblemático de um fenômeno maior no Brasil: o voto de classe
+nas eleições municipais. Através de um levantamento inédito, o _Pindograma_
+descobriu que a renda tem influência sobre o voto na maioria das grandes cidades
+brasileiras — as com mais de 200.000 habitantes.
+
+Para cada eleição municipal realizada nas `r pn(nrow(big_cities))` grandes
+cidades entre 2008 e 2016, dividimos a cidade em dois grupos: os locais 20% mais
+ricos e os 20% mais pobres, de acordo com a renda média per capita. Para cada um
+desses grupos, calculamos o voto médio no candidato vencedor da eleição. Então,
+calculamos a diferença entre como os dois grupos votaram.
+
+```{r}
+sp_he_08 = mapas_08_dist %>%
+  filter(name == 'SÃO PAULO') %>%
+  pull(high_end) * 100
+sp_le_08 = mapas_08_dist %>%
+  filter(name == 'SÃO PAULO') %>%
+  pull(low_end) * 100
+sp_diff_08 = abs(sp_he_08 - sp_le_08)
+
+sp_he_12 = mapas_12_dist %>%
+  filter(name == 'SÃO PAULO') %>%
+  pull(high_end) * 100
+sp_le_12 = mapas_12_dist %>%
+  filter(name == 'SÃO PAULO') %>%
+  pull(low_end) * 100
+sp_diff_12 = abs(sp_he_12 - sp_le_12)
+
+sp_he_16 = mapas_16_dist %>%
+  filter(name == 'SÃO PAULO') %>%
+  pull(high_end) * 100
+sp_le_16 = mapas_16_dist %>%
+  filter(name == 'SÃO PAULO') %>%
+  pull(low_end) * 100
+sp_diff_16 = abs(sp_he_16 - sp_le_16)
+
+sp_lower_diff = min(c(sp_diff_08, sp_diff_12, sp_diff_16))
+sp_higher_diff = max(c(sp_diff_08, sp_diff_12, sp_diff_16))
+
+recife_he_08 = mapas_08_dist %>%
+  filter(name == 'RECIFE') %>%
+  pull(high_end) * 100
+recife_le_08 = mapas_08_dist %>%
+  filter(name == 'RECIFE') %>%
+  pull(low_end) * 100
+recife_diff_08 = abs(recife_he_08 - recife_le_08)
+
+recife_he_12 = mapas_12_dist %>%
+  filter(name == 'RECIFE') %>%
+  pull(high_end) * 100
+recife_le_12 = mapas_12_dist %>%
+  filter(name == 'RECIFE') %>%
+  pull(low_end) * 100
+recife_diff_12 = abs(recife_he_12 - recife_le_12)
+
+recife_he_16 = mapas_16_dist %>%
+  filter(name == 'RECIFE') %>%
+  pull(high_end) * 100
+recife_le_16 = mapas_16_dist %>%
+  filter(name == 'RECIFE') %>%
+  pull(low_end) * 100
+recife_diff_16 = abs(recife_he_16 - recife_le_16)
+
+recife_higher_diff = max(c(recife_diff_08, recife_diff_12, recife_diff_16))
+
+cities_no_diff = big_cities %>%
+  filter(diff08 < .05 & diff12 < .05 & diff16 < .05) %>%
+  nrow()
+```
+
+A intensidade do voto de classe varia muito de cidade a cidade. Em São Paulo,
+essa diferença ficou entre `r pn(sp_lower_diff)` e `r pn(sp_higher_diff)` pontos percentuais nas últimas três
+eleições municipais. Já no Recife, ela não passou de `r pn(recife_higher_diff)` pontos percentuais em
+2008, 2012 e 2016. Somente `r pn(cities_no_diff)` das `r pn(nrow(big_cities))` cidades com mais de 200.000 habitantes
+mantiveram uma diferença abaixo de 5 pontos percentuais nas três eleições
+municipais desde 2008. Entre elas, São Luís (MA) era a única capital.
+
+Ao contrário do que ocorre em outras eleições brasileiras, a presença do PT nos
+pleitos municipais raramente teve efeito sobre o voto de classe. Geralmente, são
+políticos mais personalistas -- como Ratinho Jr. em Curitiba -- que têm bases
+eleitorais coladas a grupos socioeconômicos particulares.
+
+Além disso, as cidades com maior polarização entre eleitores de alta e baixa
+renda geralmente são maiores e têm desigualdade econômica mais elevada. A
+despeito desses fatores, a associação entre renda e voto é menor no Nordeste.
+
+##### O voto de classe nas capitais brasileiras
+
+Os gráficos abaixo -- onde cada ponto representa um local de votação -- permitem
+visualizar a escala do voto de classe em algumas capitais. **Quanto mais plana a
+curva, mais parecido é o comportamento eleitoral entre as faixas de renda, e
+quanto mais acentuada a curva, maior a clivagem entre as classes**.
+
+As áreas de menor renda de **São Paulo** deram, em média, mais que o dobro de votos
+ao PT que as áreas mais ricas -- em parte pelo legado das gestões petistas de
+Luiza Erundina e Marta Suplicy; em parte pelo apelo de Lula junto ao eleitorado
+de menor renda. Mesmo assim, a renda [não é o único
+fator](https://pindograma.com.br/2020/09/18/polarizacoes.html) relevante nas
+eleições paulistanas: como mostram os gráficos, cada faixa de renda tem uma
+diversidade interna enorme em seus padrões de voto.
+
+```{r fig.height=3, fig.width = 8}
+make_plot = function(mapa, tit, winner, lmost, mid) {
+  if (lmost) {
+    yl = 'Votos no Vencedor'
+  } else {
+    yl = ''
+  }
+  
+  if (mid) {
+    xl = 'Renda Média\n(milhares de reais)'
+  } else {
+    xl = '\n'
+  }
+  
+  ggplot(mapa, aes(x = renda, y = cand)) +
+    labs(subtitle = tit) +
+    geom_point(color = pg_blue, alpha = .5, shape = 16) +
+    geom_smooth(color = pg_orange, se = F) +
+    theme_pindograma() +
+    theme(axis.text = element_text(size = 10), axis.title = element_text(size = 13)) +
+    theme(axis.title.y = element_text(face = 'bold', margin = margin(t = 0, r = 2, b = 0, l = 0))) +
+    theme(axis.title.x = element_text(margin = margin(t = 2, r = 0, b = 0, l = 0))) +
+    theme(plot.subtitle = ggtext::element_markdown(size = 14)) +
+    theme(plot.title.position = 'panel') +
+    scale_x_continuous(labels = function(x) x/1000, limits = c(100, min(c(max(mapa$renda), 5000)))) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(.1, .9)) +
+    xlab(xl) + ylab(yl)
+}
+
+m08 = (mapas_08_dist %>% filter(name == 'SÃO PAULO'))$mp[[1]] %>% filter(renda >= 300)
+m12 = (mapas_12_dist %>% filter(name == 'SÃO PAULO'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'SÃO PAULO'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**Kassab (DEM)** x<br>Marta (PT)', 'Kassab', T, F),
+  make_plot(m12, '**Haddad (PT)** x<br>Serra (PSDB)', 'Haddad', F, T),
+  make_plot(m16, '**Doria (PSDB)** x<br>Outros', 'Doria', F, F), ncol = 3)
+```
+
+Em **Belém**, o quadro é parecido. Em 2008, José Priante (PMDB) teve apoio de Lula
+no segundo turno e conseguiu um desempenho médio melhor entre eleitores de menor
+renda, embora muitos desses eleitores também tenham apoiado seu oponente, Duciomar
+Costa (PTB). Desde 2012, o quadro se repete na disputa entre Zenaldo Coutinho
+(PSDB) e o ex-prefeito pelo PT Edmilson Rodrigues, hoje no PSOL. Edmilson
+contou, nas últimas duas eleições, com o apoio de Lula, Dilma e dos que se viram
+beneficiados por sua gestão enquanto prefeito — em sua maior parte, eleitores de
+menor renda.
+
+```{r fig.height=3, fig.width = 8.5}
+m08 = (mapas_08_dist %>% filter(name == 'BELÉM'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'BELÉM'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'BELÉM'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**Duciomar (PTB)** x<br>Priante (PMDB)', 'Duciomar', T, F),
+  make_plot(m12, '**Zenaldo (PSDB)** x<br>Edmilson (PSOL)', 'Zenaldo', F, T),
+  make_plot(m16, '**Zenaldo (PSDB)** x<br>Edmilson (PSOL)', 'Zenaldo', F, F), ncol = 3)
+```
+
+Já no **Rio**, o voto de classe foi determinado por outras dinâmicas. Tanto Eduardo
+Paes (então no PMDB) quanto o então pastor da Igreja Universal Marcelo Crivella
+(PRB) tinham prestígio popular na Zona Oeste da cidade — o primeiro por ter sido
+subprefeito na região e o segundo por conta do alto índice de evangélicos na
+área. Isso lhes garantiu, em média, um apoio maior entre eleitores de menor
+renda, embora o comportamento eleitoral deles [também seja
+heterogêneo](https://pindograma.com.br/2020/09/07/favelas.html).
+
+```{r fig.height=3, fig.width = 8}
+m08 = (mapas_08_dist %>% filter(name == 'RIO DE JANEIRO'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'RIO DE JANEIRO'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'RIO DE JANEIRO'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**E. Paes (PMDB)** x<br>Gabeira (PV)', 'E. Paes', T, F),
+  make_plot(m12, '**E. Paes (PMDB)** x<br>Outros', 'E. Paes', F, T),
+  make_plot(m16, '**Crivella (PRB)** x<br>Freixo (PSOL)', 'Crivella', F, F), ncol = 3)
+```
+
+Mas se São Paulo, Rio e Belém ainda tinham uma diferença eleitoral significativa
+dentro de cada faixa de renda, esse não foi o caso em **Vitória**. Na capital
+capixaba, em 2008 e 2016, os bairros de maior renda deram votação expressiva a
+Luciano Rezende, e os de menor renda, a seu oponente — quase sem exceção.
+
+```{r fig.height=3, fig.width = 8.5}
+m08 = (mapas_08_dist %>% filter(name == 'VITÓRIA'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'VITÓRIA'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'VITÓRIA'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**Coser (PT)** x<br>L. Rezende (PPS)', 'Coser', T, F),
+  make_plot(m12, '**L. Rezende (PPS)** x<br>L. Paulo (PSDB)', 'L. Rezende', F, T),
+  make_plot(m16, '**L. Rezende (PPS)** x<br>A. Neto (SD)', 'L. Rezende', F, F), ncol = 3)
+```
+
+##### Desigualdade de renda e população
+
+```{r eval=F}
+# Para reproduzir a regressão que serviu de base a essa análise, usar o seguinte
+# código. NOTA: O arquivo ends_bn3.csv usou a mesma lógica do arquivo
+# gen_rdata.R, mas computou valores para todas as cidades com mais de 200.000
+# habitantes, e não somente as capitais.
+
+tab3563 = read_csv('tabela3563.csv')
+tabgini = read_csv2('ginibr.csv', col_types = cols(codigo_ibge6 = col_character())) %>%
+  select(codigo_ibge6, `2010`) %>%
+  rename(gini = `2010`)
+
+reg_data = big_cities %>%
+  mutate(codigo_ibge6 = str_sub(codigo_ibge, 1, 6)) %>%
+  mutate(state = str_sub(codigo_ibge, 1, 2)) %>%
+  pivot_longer(c('diff08', 'diff12', 'diff16')) %>%
+  rename(year = name) %>%
+  left_join(tab3563, 'codigo_ibge') %>%
+  left_join(tabgini, 'codigo_ibge6') %>%
+  left_join(sround, by = c('codigo_ibge' = 'COD_MUN_IBGE', 'year')) %>%
+  left_join(reel, by = c('codigo_ibge' = 'COD_MUN_IBGE', 'year'))
+
+lm(value ~ logpop + rendamediana + year_diff08 + year_diff12 + state_11 +
+     state_12 + state_13 + state_14 + state_15 + state_16 + state_17 +
+     state_21 + state_22 + state_23 + state_24 + state_25 + state_26 +
+     state_27 + state_28 + state_29 + state_31 + state_32 + state_33 +
+     state_41 + state_42 + state_43 + state_50 + state_51 + state_52 +
+     has_reel + gini + has_second_round,
+   data = dummy_cols(reg_data, select_columns = c('year', 'state'))) %>%
+  summary()
+```
+
+É certo que dinâmicas locais influenciam a escala do voto de classe nessas
+cidades. Mas ao analisar as `r nrow(big_cities)` cidades com 200.000 habitantes
+ou mais, alguns padrões emergem. Segundo o levantamento do _Pindograma_, cidades
+onde a associação entre renda e voto é maior tendem a ter mais habitantes e mais
+desigualdade de renda — independente do ano da eleição, do estado onde se passa
+a corrida, da renda média do município ou de se algum candidato busca a
+reeleição.
+
+É simples entender por que a desigualdade de renda, medida pelo [índice de
+Gini](https://pt.wikipedia.org/wiki/Coeficiente_de_Gini), poderia aumentar a
+discrepância entre o voto de diferentes classes. Quanto maior a distância entre
+ricos e pobres, maior tenderia a ser a diferença de prioridades políticas entre
+ambos os grupos, levando a padrões de voto mais divergentes.
+
+Por outro lado, é mais difícil identificar por que cidades mais populosas
+geralmente têm um voto de classe mais intenso. Segundo Guilherme Russo,
+pesquisador da Fundação Getúlio Vargas, "cidades maiores tendem a ter mais
+candidatos", o que poderia, talvez, aumentar a polarização política nessas
+cidades e também a clivagem entre o voto de ricos e pobres. No entanto, ainda é
+pouco claro o que leva à associação entre população e o voto de classe.
+
+##### A força do personalismo
+
+Algo que foge a esses padrões são as eleições disputadas por certas figuras
+personalistas -- aquelas marcadas mais por suas personalidades do que por sua
+ideologia ou programa político.
+
+Em 2008 e 2016, **Curitiba** foi uma cidade eleitoralmente bem homogênea: houve
+pouca diferença entre como votaram os locais de maior e menor renda. Mas em
+2012, Ratinho Jr. (PSC) -- filho do apresentador de tevê Ratinho -- teve muito
+mais apelo que Gustavo Fruet (PDT) entre os eleitores de menor renda.
+
+```{r fig.height=3, fig.width = 8}
+m08 = (mapas_08_dist %>% filter(name == 'CURITIBA'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'CURITIBA'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'CURITIBA'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**Richa (PSDB)** x<br>Outros', 'Richa', T, F),
+  make_plot(m12, '**Fruet (PDT)** x<br>Ratinho Jr. (PSC)', 'Fruet', F, T),
+  make_plot(m16, '**Greca (PMN)** x<br>Leprevost (PSD)', 'Greca', F, F), ncol = 3)
+```
+
+**Campo Grande** apresentou um caso parecido: em 2012, o radialista Alcides
+Bernal (PP) se elegeu prefeito em uma corrida na qual renda foi determinante
+para o voto. Bernal apresentava o
+['Refazenda'](https://www.facebook.com/cidade97/videos/a-maior-audi%C3%AAncia-do-r%C3%A1dio-refazenda-com-lucas-de-lima/1381813105251694/),
+programa que mistura música sertaneja com notícias locais, e o [Balanço
+Geral](https://www.campograndenews.com.br/cidades/tv-record-tira-mais-um-apresentador-da-concorrente-05-13-2009),
+noticiário criminal da TV Record.
+
+Segundo Tito Machado, professor de geografia na Universidade Federal do Mato
+Grosso do Sul, os programas de Bernal tinham pouca audiência nos "bairros de
+classe mais alta", mas eram extremamente populares entre eleitores de menor
+renda. Arrastado por seu prestígio, Bernal venceu o prefeito Edson Giroto (PMDB)
+no segundo turno, com votação concentrada nos locais mais pobres da cidade.
+
+```{r fig.height=3, fig.width = 8}
+m08 = (mapas_08_dist %>% filter(name == 'CAMPO GRANDE'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'CAMPO GRANDE'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'CAMPO GRANDE'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**N. Trad Filho (PMDB)** x<br>Outros', 'N. Trad Filho', T, F),
+  make_plot(m12, '**A. Bernal (PP)** x<br>E. Giroto (PMDB)', 'A. Bernal', F, T),
+  make_plot(m16, '**M. Trad (PSD)** x<br>R. Modesto (PSDB)', 'M. Trad', F, F), ncol = 3)
+```
+
+Mas não são somente os comunicadores que têm esse tipo de apelo personalista.
+Iris Rezende (PMDB), ativo na política goiana desde 1949, é muito mais popular
+entre eleitores de menor renda que entre os mais ricos, embora goze de
+popularidade alta entre estes também.
+
+```{r}
+iris_top_08 = mapas_08_dist %>%
+  filter(name == 'GOIÂNIA') %>%
+  pull(low_end) * 100
+```
+
+Conhecido como "tocador de obras" e pelos
+["mutirões"](http://www.fgv.br/cpdoc/acervo/dicionarios/verbete-biografico/iris-resende-machado)
+organizados durante seus governos, Iris recebeu `r pn(iris_top_08)`% dos votos dos
+locais 20% mais pobres de **Goiânia** em 2008. Em 2012, seu aliado Paulo Garcia (PT)
+não teve tanto apoio entre os eleitores de menor renda, e obteve uma votação
+mais uniforme entre as faixas de renda. De volta ao pleito em 2016, Iris teve,
+novamente, desempenho alto entre a população com menos poder aquisitivo.
+
+```{r fig.height=3, fig.width = 8}
+m08 = (mapas_08_dist %>% filter(name == 'GOIÂNIA'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'GOIÂNIA'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'GOIÂNIA'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**Iris (PMDB)** x<br>Outros', 'Iris', T, F),
+  make_plot(m12, '**P. Garcia (PT)** x<br>Outros', 'P. Garcia', F, T),
+  make_plot(m16, '**Iris (PMDB)** x<br>Vanderlan (PSB)', 'Iris', F, F), ncol = 3)
+```
+
+Entretanto, o apelo de figuras personalistas não está restrito aos eleitores de menor
+renda. Quando concorreram na cabeça de chapa à prefeitura de **Florianópolis**,
+Esperidião e Ângela Amin (PP) conseguiram apoio consideravelmente maior entre os
+mais ricos. Já na corrida de 2012, entre César Souza Júnior (PSD) e Gean
+Loureiro (PMDB), o voto de classe foi bem menos pronunciado.
+
+```{r fig.height=3, fig.width = 8}
+m08 = (mapas_08_dist %>% filter(name == 'FLORIANÓPOLIS'))$mp[[1]] %>% filter(renda >= 700)
+m12 = (mapas_12_dist %>% filter(name == 'FLORIANÓPOLIS'))$mp[[1]] %>% filter(renda >= 700)
+m16 = (mapas_16_dist %>% filter(name == 'FLORIANÓPOLIS'))$mp[[1]] %>% filter(renda >= 700)
+
+plot_grid(
+  make_plot(m08, '**D. Berger (PMDB)** x<br>E. Amin (PP)', 'D. Berger', T, F),
+  make_plot(m12, '**César Jr. (PSD)** x<br>Gean (PMDB)', 'César Jr.', F, T),
+  make_plot(m16, '**Gean (PMDB)** x<br>A. Amin (PP)', 'Gean', F, F), ncol = 3)
+```
+
+
+##### Petismo e antipetismo
+
+A associação entre o [antipetismo e eleitores de renda mais
+alta](https://www.scielo.br/scielo.php?script=sci_arttext&pid=S0104-62762016000300638)
+levou muitos a esperar que a presença de candidatos do PT influenciassem o voto
+de classe nas eleições municipais. No entanto, não é o que indicam os casos
+estudados pelo _Pindograma_.
+
+Em Vitória, a disputa entre João Coser (PT) e Luciano Rezende (PPS) em 2008 foi,
+de fato, bastante polarizada. Mas a corrida entre Rezende e Amaro Neto (SD) em
+2016 teve uma clivagem de classe ainda maior, embora o PT [não tenha
+apoiado](https://www.cbnvitoria.com.br/cbn_vitoria/reportagens/2016/10/pt-veta-apoio-de-partidarios-a-amaro-e-luciano-em-vitoria-1013985358.html)
+nenhum dos dois candidatos.
+
+Um padrão semelhante ocorreu em **Manaus**. A corrida de 2012, na qual Vanessa
+Grazziotin (PCdoB) teve apoio explícito da presidente Dilma na disputa contra
+Arthur Virgílio (PSDB), teve uma clivagem de classe semelhante à das corridas de
+2008 e 2016, nas quais o PT ficou neutro.
+
+```{r fig.height=3, fig.width = 8.5}
+m08 = (mapas_08_dist %>% filter(name == 'MANAUS'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'MANAUS'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'MANAUS'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**Amazonino (PMDB)** x<br>Serafim (PSB)', 'Amazonino', T, F),
+  make_plot(m12, '**Artur Virgílio (PSDB)** x<br>V. Grazziotin (PCdoB)', 'Artur', F, T),
+  make_plot(m16, '**Artur Virgílio (PSDB)** x<br>Marcelo (PR)', 'Artur', F, F), ncol = 3)
+```
+
+Mesmo onde o PT teve destaque nas últimas três eleições para prefeito, as
+dinâmicas de classe variaram com o pleito. Em 2008, Raimundo Angelim (PT) foi
+eleito prefeito de **Rio Branco** no primeiro turno, contra Sérgio Petecão (PMN) e
+Tião Bocalom (PSDB). Angelim foi, à época, mais popular nos locais mais ricos
+que nas áreas de menor renda. Já em 2016, durante o auge da onda antipetista,
+Marcus Alexandre (PT) venceu Eliane Sinhasique (PMDB) na capital acreana, com
+apoio bem distribuído por todas as faixas de renda.
+
+```{r fig.height=3, fig.width = 8}
+m08 = (mapas_08_dist %>% filter(name == 'RIO BRANCO'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'RIO BRANCO'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'RIO BRANCO'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**R. Angelim (PT)** x<br>Outros', 'R. Angelim', T, F),
+  make_plot(m12, '**M. Alexandre (PT)** x<br>Bocalom (PSDB)', 'Marcus', F, T),
+  make_plot(m16, '**M. Alexandre (PT)** x<br>E. Sinhassique (PMDB)', 'Marcus', F, F), ncol = 3)
+```
+
+Para Luiz Domingos, pesquisador da Universidade Federal do Paraná, é fraca a
+hipótese de que "o sistema partidário estaria enraizado nos municípios conforme
+as classes". Para ele, isso "depende da força do PT na região; na identidade que
+a população desenvolveu com relação ao partido historicamente". Na maior parte
+das capitais brasileiras, essa identidade não parece ter se desenvolvido na
+política local.
+
+##### A cidade sem voto de classe
+
+Na maioria das grandes cidades brasileiras, o voto de classe teve uma influência
+importante sobre o comportamento eleitoral em pelo menos uma eleição. Mas há
+algumas exceções à regra, da qual **São Luís** (MA) é o maior exemplo.
+
+```{r fig.height=3, fig.width = 8}
+m08 = (mapas_08_dist %>% filter(name == 'SÃO LUÍS'))$mp[[1]]
+m12 = (mapas_12_dist %>% filter(name == 'SÃO LUÍS'))$mp[[1]]
+m16 = (mapas_16_dist %>% filter(name == 'SÃO LUÍS'))$mp[[1]]
+
+plot_grid(
+  make_plot(m08, '**Castelo (PSDB)** x<br>Dino (PCdoB)', 'Castelo', T, F),
+  make_plot(m12, '**Edivaldo (PTC)** x<br>Castelo (PSDB)', 'Edivaldo', F, T),
+  make_plot(m16, '**Edivaldo (PDT)** x<br>E. Braide (PMN)', 'Edivaldo', F, F), ncol = 3)
+```
+
+A capital maranhense é uma cidade altamente polarizada -- em 2012, alguns locais
+de votação deram mais de 70% do voto ao vencedor Edivaldo Holanda Jr. (PTC),
+enquanto outros deram menos de 30%. Porém, a renda tem pouca influência sobre
+essa polarização.
+
+Para Arinaldo Martins, professor de sociologia da Universidade Federal do
+Maranhão, "a elite [de São Luís] é diferente. A classe média alta é formada de
+trabalhadores liberais como advogados e psicólogos, além de muitos servidores
+públicos. Eu tenho a impressão que a nossa classe alta é diferente da de outras
+cidades com mais negócios e indústria e bem mais de esquerda [que a de outros
+lugares]".
+
+Segundo Arinaldo, isso leva a uma disputa na qual grupos políticos rivais
+disputam eleitores entre segmentos sociais diferentes. Nem a família Sarney, nem
+o PCdoB de Flávio Dino, nem o PDT maranhense -- grupo que [domina São
+Luís](http://www.joinpp.ufma.br/jornadas/joinpp2019/images/trabalhos/trabalho_submissaoId_669_6695ccab1149dc34.pdf)
+desde a redemocratização -- têm uma base colada a um estrato socioeconômico
+específico.
+
+É possível que uma dinâmica parecida diminua a incidência do voto de classe em
+outras cidades — particularmente no Nordeste, onde o voto de classe é menos
+comum.
+
+---
+
+**Dados usados na matéria**: Resultados de Eleições (Tribunal Superior
+Eleitoral/Cepespdata); Locais de Votação (_Pindograma_); Renda Mediana por
+Município (Censo 2010/IBGE); Coeficiente Gini por Município
+(Censo 2010/IBGE/Datasus); Estimativa de População por Município (IBGE).
+
+**Contribuiu com a reportagem**: Francisco Ricci.
+
+Para reproduzir os números da matéria, o código pode ser encontrado [aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-14-votoclasse/RendaVoto.Rmd
