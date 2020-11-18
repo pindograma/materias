@@ -1,0 +1,200 @@
+---
+title: "asd"
+author: "Francisco Ricci"
+date: "07/09/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(cowplot)
+
+source('../theme.R')
+load('abstencoes.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+```{r}
+diff1 = get_abstention(without_bio_20) - get_abstention(without_bio_18)
+diff2 = get_abstention(with_bio_20) - get_abstention(with_bio_18)
+diff3 = get_abstention(abstention_20) - get_abstention(abstention_18)
+
+min_pct_increase = min(c(diff1, diff2, diff3)) * 100
+max_pct_increase = max(c(diff1, diff2, diff3)) * 100
+```
+
+No primeiro turno das eleições de 2020, o número de abstenções [chamou a
+atenção da mídia e de comentaristas
+políticos](http://g1.globo.com/globo-news/videos/v/eleicao-municipal-de-2020-bate-recorde-de-abstencoes-no-pais/9029136/).
+A abstenção noticiada foi de 23,1% — um aumento de 2,81 pontos percentuais em
+relação à última eleição.
+
+No entanto, o _Pindograma_ investigou esses dados mais a fundo. Segundo nosso
+levantamento, a abstenção realmente aumentou algo entre `r pn(min_pct_increase)` e
+`r pn(max_pct_increase)` pontos percentuais em 2020. Já o número de eleitores
+que faltaram às urnas foi menor do que a cifra que vem sendo divulgada, e
+provavelmente está mais próxima de 20%.
+
+##### Os erros do cadastro eleitoral
+
+Há vários fatores que podem ter determinado a abstenção em 2020: do medo de
+infecção pelo coronavírus a [falhas no aplicativo
+e-Título](https://www.correiobraziliense.com.br/politica/2020/11/4888950-eleitores-relatam-problemas-no-acesso-ao-aplicativo-e-titulo-do-tse.html).
+Porém, há outra causa para o alto número de eleitores faltantes no Brasil: a
+desatualização do cadastro eleitoral do TSE. À medida que eleitores registrados
+morrem, eles não deveriam mais contar como eleitores. No entanto, o TSE tem
+dificuldade em retirar os mortos do cadastro, dado o atraso das notificações de
+falecimento expedidas por cartórios.
+
+Assim, sobram muitos eleitores falecidos nos cadastros do TSE, que inflam o
+número total de eleitores. Em 2010, por exemplo, o TSE [contabilizava mais
+eleitores](https://pindograma.com.br/2020/09/27/disenfranchisement.html) entre
+18 e 69 anos que o Censo Demográfico. E dado que a abstenção é calculada com
+base no eleitorado registrado pelo TSE, isso leva a uma taxa de abstenção
+artificialmente alta.
+
+Esse problema vem sendo corrigido com o recadastramento biométrico. Ao forçar
+todos os eleitores de `r pn(nrow(hist_all))` municípios brasileiros a se
+recadastrarem na última década, o TSE excluiu muitos eleitores mortos do
+cadastro, corrigindo a distorção na taxa de abstenção dessas localidades. Isso
+fica evidente quando comparamos as taxas de abstenção nas cidades com e sem
+biometria:
+
+```{r}
+abstention_pop = pop_summary(abstention_20_with_vars) %>%
+  left_join(abstention_20, 'codigo_tse') %>%
+  mutate(abstention_rate = abstention / eleitores) %>%
+  left_join(hist_all, 'codigo_tse') %>%
+  mutate(has_bio = !is.na(UF))
+
+abstention_age = age_over_50_summary(abstention_20_with_vars) %>%
+  left_join(abstention_20, 'codigo_tse') %>%
+  mutate(abstention_rate = abstention / eleitores) %>%
+  left_join(hist_all, 'codigo_tse') %>%
+  mutate(has_bio = !is.na(UF))
+
+plot1 = ggplot(abstention_pop %>% mutate(pop = log(pop)), aes(x = pop, y = abstention_rate, color = has_bio)) +
+  geom_point(shape = 16, size = .5, alpha = .3) +
+  geom_smooth(se = F) +
+  scale_color_manual(values = c(pg_orange, pg_blue), labels = c('Sem Biometria', 'Com Biometria')) +
+  theme_pindograma() +
+  theme(legend.position = 'bottom', legend.title = element_blank()) +
+  theme(axis.title.x = element_text(size = 12)) +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
+  ylab('Taxa de Abstenção em 2020') + xlab('População (escala logarítmica)') +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(subtitle = 'Abstenção e número de\nhabitantes') +
+  theme(plot.title.position = 'panel') +
+  theme(plot.subtitle = element_text(face = 'bold', color = pg_dark_gray, hjust = 0.5, margin = margin(b = 3), size = 14))
+
+plot2 = ggplot(abstention_age, aes(x = over_50, y = abstention_rate, color = has_bio)) +
+  geom_point(shape = 16, size = .5, alpha = .3) +
+  geom_smooth(se = F) +
+  scale_color_manual(values = c(pg_orange, pg_blue), labels = c('Sem Biometria', 'Com Biometria')) +
+  theme_pindograma() +
+  theme(legend.position = 'bottom', legend.title = element_blank()) +
+  theme(axis.title.x = element_text(size = 12)) +
+  ylab('') + xlab('% de habitantes com + de 50 anos') +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(subtitle = 'Abstenção e fração de\nhabitantes mais velhos') +
+  theme(plot.title.position = 'panel') +
+  theme(plot.subtitle = element_text(face = 'bold', color = pg_dark_gray, hjust = 0.5, margin = margin(b = 3), size = 14))
+
+plot_grid(plot1, plot2, ncol = 2) +
+  labs(#title = 'Abstenção em Cidades com e sem Recadastramento Biométrico',
+       #subtitle = '(cada cidade é um ponto)',
+       caption = 'Fonte: TSE/Cepespdata, Censo 2010/IBGE') +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 5, 0),
+                                  face = 'bold')) +
+  theme(plot.subtitle = element_text(color = pg_dark_gray, hjust = 0.5, margin = margin(b = 3))) +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray))
+```
+
+##### A abstenção real em 2020
+
+Entre 2016 e 2020, a abstenção nas eleições brasileiras cresceu em todas as
+cidades, aumentando nos municípios onde houvera o recadastramento e também nos
+que não haviam passado pelo processo:
+
+```{r}
+abstentions = tibble(
+  grp = c(rep('withbio', 3), rep('withoutbio', 3), rep('average', 3)),
+  ano = c(2016, 2018, 2020, 2016, 2018, 2020, 2016, 2018, 2020),
+  abstention = c(
+    get_abstention(with_bio_16),
+    get_abstention(with_bio_18),
+    get_abstention(with_bio_20),
+    get_abstention(without_bio_16),
+    get_abstention(without_bio_18),
+    get_abstention(without_bio_20),
+    get_abstention(abstention_16),
+    get_abstention(abstention_18),
+    get_abstention(abstention_20)
+  )
+)
+
+ggplot(abstentions, aes(x = factor(ano), y = abstention, group = grp, color = grp)) +
+  ggtitle('Abstenção em Cidades com e sem Recadastramento Biométrico') +
+  geom_line(size = 2) +
+  scale_color_manual(values = c(pg_yellow, pg_blue, pg_green), labels = c('Todas as cidades', 'Cidades com biometria', 'Cidades sem biometria')) +
+  geom_point(color = pg_orange, shape = 16, size = 4) +
+  theme_pindograma() +
+  theme(legend.position = 'bottom', legend.title = element_blank()) +
+  ylab('Taxa de Abstenção') + xlab('') +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(caption = 'Fonte: TSE/Cepespdata')
+```
+
+```{r}
+abs_cuiaba_18 = abstention_18 %>% filter(COD_MUN_TSE %in% c('91677', '90670')) %>% get_abstention() * 100
+abs_cuiaba_20 = abstention_20 %>% filter(codigo_tse %in% c('91677', '90670')) %>% get_abstention() * 100
+```
+
+O aumento da abstenção é significativo: o número de eleitores que não votaram
+aumentou entre `r pn(min_pct_increase)` e `r pn(max_pct_increase)` pontos
+percentuais entre 2018 e 2020, independentemente do recadastramento. Mesmo nos
+municípios com recadastramento recente — onde seria esperado que a abstenção
+diminuísse por causa da atualização nos registros eleitorais e a "limpa" de
+eleitores falecidos — a abstenção cresceu. Nas cidades vizinhas de Cuiabá e
+Várzea Grande (MT), os dois maiores municípios que passaram pelo recadastramento
+depois do pleito de 2018, a abstenção cresceu de `r pn(abs_cuiaba_18)`% para
+`r pn(abs_cuiaba_20)`%.
+
+Mesmo assim, a taxa de abstenção oficial de 23,4% parece exagerada. Nas
+cidades que passaram pelo recadastramento, onde o eleitorado registrado é mais
+próximo da população real, a abstenção é de
+**`r pn(get_abstention(with_bio_20) * 100)`%**. É bem provável que a taxa real
+de abstenção pelo país esteja mais próxima desse número que dos números
+amplamente divulgados pela mídia e pelo TSE.
+
+Em resumo, a abstenção teve um aumento significativo entre 2018 e 2020, mas a
+proporção de eleitores que faltaram às urnas não é tão alta quanto vem sendo
+noticiada. É possível que boa parte dos eleitores que são contabilizados como
+ausentes ainda sejam pessoas mortas que ainda constam nos cadastros eleitorais.
+Como sempre, é necessário cautela antes de aceitar os dados de órgãos públicos
+sem pensar duas vezes.
+
+---
+
+**Dados utilizados na matéria**: Estatísticas do Eleitorado (Tribunal Superior
+Eleitoral); Resultados de Eleições (Tribunal Superior Eleitoral/Cepespdata);
+Dados de Recadastramento Biométrico (Tribunal Superior Eleitoral).
+
+**Contribuiu com dados**: Daniel Ferreira.
+
+Para reproduzir os números citados, os dados e o código podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-17-abstencoes/Abstencoes.Rmd
