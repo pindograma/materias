@@ -1,0 +1,221 @@
+---
+title: "asd"
+author: "Francisco Ricci"
+date: "07/09/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(gt)
+
+source('../theme.R')
+load('rating_update.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Desde seu  lançamento, o _Pindograma_ disponibiliza aos leitores [nosso ranking
+de institutos de pesquisa](https://pindograma.com.br/ranking.html). Com base em
+`r pn(nrow(filter(model_polls_2, year != 2020)))` pesquisas eleitorais
+publicadas a três semanas ou menos dos últimos quatro pleitos (2012 a 2018),
+construímos a primeira avaliação objetiva dos institutos de pesquisa
+brasileiros. Agora, com os resultados do primeiro turno das eleições de 2020 em
+mãos, chegou a hora de atualizar esta avaliação.
+
+Este ano, a equipe do _Pindograma_ — especialmente nosso assistente de
+pesquisa, Pedro Fonseca — coletou `r pn(nrow(filter(model_polls_2, year == 2020)))`
+novas pesquisas que entraram no cálculo da nota dos institutos. A comparação
+destas pesquisas com o resultado das eleições mostra que:
+
+```{r}
+average_capital_error = model_polls_2 %>%
+  filter(SG_UE %in% cap$codigo_tse) %>%
+  filter(year == 2020) %>%
+  pull(mm3) %>%
+  mean()
+
+average_error = model_polls_2 %>%
+  filter(year == 2020) %>%
+  pull(mm3) %>%
+  mean()
+```
+
+* O erro médio dos institutos de pesquisa nas capitais este ano foi de
+  **`r pn(average_capital_error)` pontos percentuais** — próximo da margem de
+  erro de 3 pontos percentuais que os institutos geralmente declaram. Foi um
+  desempenho melhor que o de 2016 e parecido com o de 2012.
+
+* Já no país como um todo, o erro médio foi de **`r pn(average_error)` pontos
+  percentuais**. Foi um desempenho pior que o das duas eleições municipais
+  anteriores.
+
+* A maioria dos institutos de pesquisa mantiveram suas posições no nosso
+  ranking. No entanto, algumas empresas tiveram um aumento sensível no seu
+  desempenho em 2020.
+
+O ranking atualizado pode ser consultado no [link de
+sempre](https://pindograma.com.br/ranking.html), e o ranking anterior passa
+para o nosso [arquivo](/ranking-v1.html). Abaixo, mais detalhes sobre o que
+mudou nas pesquisas deste ano.
+
+##### Desempenho das pesquisas
+
+A grosso modo, há duas formas de avaliar o desempenho de uma pesquisa
+eleitoral. Podemos verificar se ela indicou corretamente quem venceria a
+eleição ou podemos avaliar quão distantes as intenções de voto ficaram dos
+resultados finais do pleito.
+
+O problema do primeiro critério é que ele é frequentemente injusto ao comparar
+pesquisas diferentes. Imagine que uma pesquisa tenha dado 49% das intenções de
+voto para o candidato Bob e 51% para a candidata Alice. Se Bob acaba vencendo
+com 52% dos votos, é injusto tratar essa pesquisa como tão "errada" quanto
+outra pesquisa que tenha dado 40% das intenções de voto para Bob e 60% para
+Alice.
+
+Por esse motivo, o principal indicador que usamos para avaliar o desempenho de
+uma pesquisa é o **erro percentual médio**. Basicamente, calculamos a diferença
+entre as intenções de voto de uma pesquisa e os resultados da eleição para cada
+candidato. A seguir, calculamos uma média (ajustada) dessas diferenças. Uma
+pesquisa com erro médio de 1 ponto percentual é excelente. Já uma pesquisa com
+erro médio de 10 pontos percentuais terá cometido um erro crasso ao avaliar as
+intenções de voto.
+
+Por essa métrica, o desempenho do mercado de pesquisas melhorou nas capitais,
+mas piorou no país como um todo:
+
+```{r}
+global_error = model_polls_2 %>%
+  filter(year %in% c(2012, 2016, 2020)) %>%
+  filter(first_round) %>%
+  group_by(year) %>%
+  summarize(avg = mean(mm3))
+
+cap_error = model_polls_2 %>%
+  filter(year %in% c(2012, 2016, 2020)) %>%
+  filter(first_round) %>%
+  filter(SG_UE %in% cap$codigo_tse) %>%
+  group_by(year) %>%
+  summarize(avg = mean(mm3))
+
+tibble(
+  `Ano` = global_error$year,
+  `Erro Médio (capitais)` = cap_error$avg,
+  `Erro Médio (Brasil)` = global_error$avg
+) %>%
+  gt(rowname_col = 'Ano') %>%
+  tab_header(title = 'Erro Médio de Pesquisas Eleitorais (Primeiro Turno)') %>%
+  theme_pindograma_table() %>%
+  theme_pindograma_table_stub() %>%
+  tab_style(cell_fill(color = pg_light_gray), cells_body())
+```
+
+Há duas hipóteses que podem explicar esse descompasso. A primeira é que nos
+anos anteriores, pesquisas de baixa qualidade publicadas no interior do país
+não chegavam à Internet e, por isso, não eram indexadas pelo _Pindograma_. Em
+2020, pode ter sido mais fácil encontrar esses levantamentos, que podem ter
+aumentado a média de erro das pesquisas deste ano. A segunda hipótese é que,
+este ano, o eleitor das cidades do interior tenha demorado mais para decidir o
+seu voto, dificultando o trabalho das pesquisas no geral. Esta demora pode ser
+um reflexo das campanhas menos presenciais devido à pandemia.
+
+De toda forma, os efeitos da Covid sobre as pesquisas eleitorais não parece ter
+sido muito grande. Não houve um [aumento da
+abstenção](https://pindograma.com.br/2020/11/17/abstencoes.html) a ponto de
+criar um abismo entre as intenções de voto e os resultados das eleições. Os
+institutos também parecem ter lidado bem com mudanças no perfil de quem
+responde as pesquisas eleitorais durante a pandemia — pesquisas feitas em ponto
+de fluxo, por exemplo, poderiam ter sido facilmente enviesadas, dado que menos
+pessoas estão saindo de casa. Mas não foi o que aconteceu.
+
+```{r}
+model_polls_2 %>%
+  filter(year == 2020) %>%
+  inner_join(cap, c('SG_UE' = 'codigo_tse')) %>%
+  group_by(nome_municipio) %>%
+  summarize(avg = mean(mm3)) %>%
+  arrange(avg) %>%
+  mutate(nome_municipio = str_to_title(nome_municipio)) %>%
+  rename(Cidade = nome_municipio, `Erro Médio` = avg) %>%
+  filter(Cidade %in% c(
+    'São Paulo', 'Rio De Janeiro', 'Salvador', 'Fortaleza', 'Belo Horizonte',
+    'Manaus', 'Curitiba', 'Recife', 'Goiânia', 'Belém'
+  )) %>%
+  gt() %>%
+  tab_header(title = 'Erro Médio de Pesquisas Eleitorais nas dez maiores capitais (Primeiro Turno, 2020)') %>%
+  theme_pindograma_table() %>%
+  theme_pindograma_table_stub() %>%
+  tab_style(cell_fill(color = pg_light_gray), cells_body())
+```
+
+**Resultados do Ranking**
+
+O erro percentual médio funciona razoavelmente bem para estimar a utilidade das
+pesquisas eleitorais como um todo no Brasil. No entanto, é injusto usá-lo por
+si só para comparar o desempenho de pesquisas diferentes.
+
+É natural, por exemplo, que uma pesquisa feita a cinco dias da eleição tenha um
+erro percentual médio maior que outra feita na véspera do pleito. Também não é
+justo comparar pesquisas feitas em pleitos mais estáveis com outras feitas em
+municípios nos quais um número maior de eleitores decide seu voto na frente da
+urna. O papel do Ranking de Institutos de Pesquisa do _Pindograma_ é levar
+fatores como esse em consideração para estabelecer uma comparação mais justa
+entre as empresas de pesquisa brasileiras.
+
+Os resultados do ranking atualizado com dados de 2020 confirmam, em grande
+parte, os resultados do levantamento anterior. Na primeira versão do ranking,
+cada instituto recebeu uma nota entre **A**, **B+**, **B**, **B-**, **C** e
+**D**. Após a atualização, apenas um instituto mudou duas notas no ranking: o
+Paraná Pesquisas, que pulou da nota B para A. De resto, nenhum instituto
+melhorou ou piorou sua classificação em mais de uma nota. O primeiro colocado
+no ranking, o [Instituto
+Opinião](https://pindograma.com.br/2020/09/07/nilton.html), manteve sua
+posição. Da mesma forma, os maiores institutos do país — Ibope e Datafolha —
+continuam entre as melhores empresas de pesquisa.
+
+```{r}
+malujoa_error = simple_rating %>%
+  filter(company_id == '20592128000107') %>%
+  pull(avg)
+```
+
+A atualização também revelou novos institutos cujo desempenho pífio [merece
+investigação](https://pindograma.com.br/2020/09/07/pesquisas-falsas.html). É o
+caso do instituto matogrossense Olhar Dados, também conhecido como Malujoa
+Comunicações. As pesquisas da empresa tiveram um erro médio de
+**`r pn(malujoa_error)` pontos percentuais**, um novo recorde de mau desempenho
+no ranking do _Pindograma_.
+
+**Metodologia**
+
+Os critérios do ranking permaneceram exatamente [os
+mesmos](https://pindograma.com.br/2020/09/07/ranking.html) que utilizamos para
+calcular a nota dos institutos antes da eleição de 2020. Apenas os dados foram
+atualizados.
+
+Isso não quer dizer que a metodologia do ranking seja irretocável. O
+_Pindograma_ está certo de que uma análise mais criteriosa das pesquisas
+eleitorais de 2020 irá inspirar mudanças em alguns dos critérios que utilizamos
+para avaliar os institutos. No entanto, esse tipo de análise requer, mais de
+duas semanas; e julgamos que uma atualização do Ranking antes do segundo turno
+seria valiosa para nossos leitores. Com ela, esperamos qualificar o debate
+sobre pesquisas eleitorais nas 57 cidades que ainda não decidiram quem as
+governará pelos próximos quatro anos.
+
+---
+
+**Dados utilizados na matéria**: Resultados de Pesquisas Eleitorais (_Pindograma_);
+Resultados de Eleições (Tribunal Superior Eleitoral).
+
+**Contribuiu com dados**: Pedro Fonseca.
+
+Para reproduzir os números citados, os dados e o código podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-20-rating-update/RatingUpdate.Rmd
