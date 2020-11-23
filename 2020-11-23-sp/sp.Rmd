@@ -1,0 +1,172 @@
+---
+title: "São Paulo"
+author: "João Costa"
+date: "23/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(sf)
+library(ggplot2)
+
+source('../theme.R')
+load('sp.Rdata')
+sp <- sp20_all %>% filter(!is.na(cand_45) & !is.na(cand_50))
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+As disputas pelo segundo turno em 2020 estão sendo mais curtas que o normal e os candidatos têm pouco tempo para fazerem campanha. Em São Paulo, o prefeito tucano Bruno Covas busca manter sua liderança, enquanto seu rival pessolista Guilherme Boulos tenta recuperar a distância e virar a eleição a seu favor.
+
+Ambos os candidatos tiverem os melhores desempenhos em bairros centrais e de alta renda e, por isso, terão de disputar os eleitores de bairros periféricos, onde outros candidatos como o republicano Celso Russomanno e o petista Jilmar Tatto tiveram votações expressivas.
+
+Com o primeiro turno encerrado, o _Pindograma _gerou mapas de votação por seção eleitoral dos seis candidatos mais votados da capital paulista. Ao contrário de [mapas por zona eleitoral](https://especiaisg1.globo/sp/sao-paulo/eleicoes/2020/mapas/apuracao-zona-eleitoral-prefeito/sao-paulo/1-turno/?_ga=2.194204141.1519030973.1605462522-88558072-07ef-0a26-7a49-2eec58640d4f), que englobam partes grandes da cidade, estes mapas revelam a votação dos candidatos em cada quarteirão de São Paulo.
+
+O primeiro mapa, que exibe a votação de **Bruno Covas** ([PSDB](https://pindograma.com.br/2020/11/02/psdb.html)), mostra que o prefeito teve uma votação expressiva por toda a cidade, como era esperado pelas [pesquisas de intenção de voto](https://pindograma.shinyapps.io/agregador/).
+
+Apesar de ter vencido em todas as zonas eleitorais da cidade, as regiões que mais votaram em Covas estão concentradas no Centro-Sul e Oeste da cidade e são lugares de mais alta renda. As regiões mais distantes do Centro, assim como a própria região da Sé, votaram menos no candidato à reeleição. É importante ressaltar, porém, que mesmo nos bairros em que a votação em Covas foi menos expressiva, esta raramente foi menor que 10%. 
+
+```{r}
+ggplot() +
+  ggtitle('Bruno Covas (PSDB)') +
+  geom_sf(data = sp, aes(fill = cand_45), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  scale_fill_distiller(palette = "Blues", direction = 1, labels = scales::percent) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+Em comparação, o segundo colocado **Guilherme Boulos** ([PSOL](https://pindograma.com.br/2020/11/06/psol.html)) teve uma votação expressiva no centro da cidade e em bairros de alta renda da Zona Oeste, assim como no entorno da Cidade Universitária. Na Zona Sul, teve focos de votação em Interlagos, Chácara Flora, na Saúde, no Capão Redondo e no Campo Limpo (bairro onde mora). Com exceção de bairros de mais alta renda como Tatuapé e Santana, o pessolista foi pouco competitivo em vários bairros das Zonas Leste e Norte, justamente em lugares onde Celso Russomanno (Republicanos) e Jilmar Tatto (PT) tiveram desempenhos melhores.
+
+```{r}
+ggplot() +
+  ggtitle('Guilherme Boulos (PSOL)') +
+  geom_sf(data = sp, aes(fill = cand_50), lwd = 0) +
+  scale_fill_gradient(low = 'white', high = '#8600aa', labels = scales::percent) +
+  #scale_fill_distiller(palette = "Purples", direction = 1, labels = scales::percent)+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+O terceiro colocado **Márcio França** (PSB) concentrou muitos de seus votos pelos bairros da Zona Norte — especialmente em Santana — e da Zona Leste, onde teve redutos no Iguatemi, na Vila Matilde e na Penha. Os pontos fracos do ex-vice-governador são os bairros nobres mais centrais e da Zona Oeste da cidade. A Zona Sul também deu menos votos para o pessebista, com exceção de alguns poucos focos.
+
+```{r}
+ggplot() +
+  ggtitle('Márcio França (PSB)') +
+  geom_sf(data = sp, aes(fill = cand_40), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  scale_fill_distiller(palette = "YlOrRd", direction = 1, labels = scales::percent)+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+O [candidato do presidente](https://www1.folha.uol.com.br/poder/2020/10/bolsonaro-pede-voto-para-russomanno-em-sao-paulo-e-da-apoio-constrangido-a-crivella-no-rio.shtml) Jair Bolsonaro (sem partido), **Celso Russomanno** ([Republicanos](https://pindograma.com.br/2020/11/03/dem-rep.html)), liderou as pesquisas por algumas semanas, mas [como aconteceu em anos passados](https://www.otempo.com.br/politica/russomanno-cai-mais-uma-vez-1.246020), não foi para o segundo turno. Os votos de Russomanno não ultrapassaram os 17% em nenhuma seção eleitoral. Como já mostramos numa [matéria anterior](https://pindograma.com.br/2020/10/14/russomanno.html), os votos do apresentador de tevê se concentram nas periferias da cidade, especialmente em bairros próximos a Guarulhos, ao ABC e a Santana de Parnaíba e Osasco na Zona Oeste. As regiões centrais tiveram uma votação pouco expressiva para o republicano.
+
+```{r}
+ggplot() +
+  ggtitle('Celso Russomanno (Republicanos)') +
+  geom_sf(data = sp, aes(fill = cand_10), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  scale_fill_distiller(palette = "Blues", direction = 1, labels = scales::percent)+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+O candidato **Arthur do Val **([Patriota](https://pindograma.com.br/2020/11/10/novo-patri.html)) também não obteve sucesso e teve votação limitada na maior parte da cidade. Nos bairros onde o youtuber teve mais sucesso, a votação flutuou em torno de 15%, como Russomanno. A maior dificuldade do candidato foi conquistar o voto dos eleitores de menor renda: as periferias deram poucos votos a Mamãe Falei. Mas, mesmo entre os bairros nobres na Zona Oeste e próximos ao Centro, o candidato raramente passou dos 6%.
+
+Foi em bairros do Centro Sul, como o Morumbi e o Brooklin, que Mamãe Falei teve o melhor desempenho — lá, passou de 12% dos votos em várias seções eleitorais. O mesmo aconteceu em bairros da Zona Leste como Jardim Anália Franco e a Vila Formosa, [próximos da residência do candidato](https://www.istoedinheiro.com.br/mamae-falei-ignora-pesquisas-e-diz-que-buscas-no-google-definem-eleicao/). 
+
+```{r}
+ggplot() +
+  ggtitle('Arthur do Val (Patriota)') +
+  geom_sf(data = sp, aes(fill = cand_51), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  scale_fill_distiller(palette = "Oranges", direction = 1, labels = scales::percent)+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+O sexto lugar foi para o candidato do PT **Jilmar Tatto**, que obteve o pior resultado na história do partido na cidade. Os votos de Tatto foram todos concentrados nas periferias mais distantes do centro da cidade, com foco na Zona Sul em bairros como Grajaú e Jardim Ângela. Tatto também teve bom desempenho no Parque Mundo Novo e na Brasilândia, bairros periféricos da Zona Norte. Nos bairros em que foi bem, Tatto recebeu uma parcela grande dos votos. Chegou a ter quase 40% da votação em algumas seções. Já nos bairros nobres do Centro Expandido, assim como os da Zona Leste e Norte, os votos ao petista foram próximos de zero. 
+
+```{r}
+ggplot() +
+  ggtitle('Jilmar Tatto (PT)') +
+  geom_sf(data = sp, aes(fill = cand_13), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  scale_fill_distiller(palette = "Reds", direction = 1, labels = scales::percent)+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank())
+```
+
+As perspectivas para o segundo turno são favoráveis para o atual prefeito e sua [reeleição](https://pindograma.com.br/2020/11/12/reeleicao.html) parece provável. Covas lidera as pesquisas de intenção de voto com [50% das intenções de voto](https://pindograma.shinyapps.io/agregador/) e a expectativa é que acumule votos de outros candidatos que perderam no primeiro turno. Russomanno declarou apoio ao tucano e, mesmo sem ter feito o mesmo por ora, é esperado que [90% dos eleitores de França](https://twitter.com/veramagalhaes/status/1328819801754656770?s=20) migrem seus votos para Covas devido a sua [proximidade com o PSDB](https://istoe.com.br/franca-diz-ter-votado-em-alckmin-com-orgulho-e-critica-doria/). Caso isso ocorra, o prefeito poderá consolidar sua liderança por todas as regiões da cidade — inclusive nos bairros periféricos em que Russomanno teve mais força. 
+
+Já a campanha de Boulos ainda aposta numa virada na próxima semana de campanha. O apoio [de Tatto](https://jovempan.com.br/noticias/brasil/apos-derrota-de-tatto-lula-declara-apoio-a-boulos-em-sao-paulo.html) e de figuras importantes do PT como o ex-prefeito Fernando Haddad e o [ex-presidente Lula](https://jovempan.com.br/noticias/brasil/apos-derrota-de-tatto-lula-declara-apoio-a-boulos-em-sao-paulo.html) podem ser o caminho para o crescimento do pessolista nas periferias. Além dos figurões do PT, o apoio de [outros partidos](https://www.bbc.com/portuguese/brasil-55018193) e [figuras da esquerda](https://noticias.uol.com.br/eleicoes/2020/11/21/boulos-mostra-mensagens-de-apoio-de-ciro-gomes-flavio-dino-lula-e-marina.htm) do país é chave para a campanha do líder do MTST cimentar a ideia de ser a candidatura de “união da esquerda”. Boulos também recebeu o apoio dos derrotados Marina Helou (Rede) e Orlando Silva (PCdoB), mas a soma da votação destes candidatos não chegou a 1% dos votos válidos do primeiro turno.
+
+---
+
+**Dados utilizados na matéria**: Locais de Votação (_Pindograma_); Votação por
+Seção Eleitoral (Tribunal Superior Eleitoral).
+
+**Contribuíram com dados**: Daniel Ferreira e Antonio Piltcher.
+
+**Créditos da imagem**: Wikimedia/Mídia Ninja; Assembleia Legislativa do Estado de São Paulo.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-23-sp/sp.Rmd
