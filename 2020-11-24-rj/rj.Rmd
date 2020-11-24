@@ -1,0 +1,186 @@
+---
+title: "São Paulo"
+author: "João Costa"
+date: "23/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(sf)
+library(ggplot2)
+
+source('../theme.R')
+load('rj.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Eduardo Paes (DEM) e Marcelo Crivella (Republicanos) se enfrentarão no segundo turno da disputa pela prefeitura do Rio de Janeiro. Para entender como os candidatos chegaram até aqui, o _Pindograma_ analisou o voto nos principais candidatos em diferentes partes da Cidade Maravilhosa. 
+
+---
+
+**Eduardo Paes** obteve a maior votação: 974 mil votos ou 37,01% dos votos válidos. Esse ano, Paes conseguiu alta votação em quase toda a cidade, embora tenha obtido um apoio sem paralelo nos bairros mais ricos. Em Ipanema, na Barra e no Leblon, o candidato poderia ter vencido no primeiro turno. Mesmo em áreas onde Paes foi pior, como o Complexo do Alemão e Jacarezinho, ele teve uma votação próxima de 20% dos votos totais.
+
+```{r, fig.height=6, fig.width=10}
+ggplot() +
+  ggtitle('Eduardo Paes (DEM)') +
+  geom_sf(data = rio20_all, aes(fill = cand_25), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  scale_fill_distiller(palette = "Blues", direction = 1, labels = scales::percent_format(accuracy = 1)) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Base de locais de votação do Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+Em segundo lugar, com 21,9% dos votos válidos, está o atual prefeito **Marcelo Crivella, **que conta com [apoio](https://noticias.uol.com.br/eleicoes/2020/11/14/crivella-tenta-usar-apoio-da-familia-bolsonaro-como-trunfo-para-2-turno.htm) de Jair Bolsonaro (sem partido). Ele recebeu pouquíssimos votos na Zona Sul da cidade mas conseguiu chegar ao segundo turno graças a sua alta votação na Zona Oeste e em algumas favelas da Zona Norte como Jacarezinho, onde conquistou aproximadamente 30% dos votos. Crivella também obteve muitos votos na Vila Militar, reduto eleitoral do bolsonarismo no Rio de Janeiro. Não por acaso, o ex-pastor da Igreja Universal contou com maior apoio onde há maior [presença de evangélicos na cidade](https://pindograma.com.br/2020/09/07/favelas.html), como é o caso dos distritos de Santa Cruz e Campo Grande.
+
+```{r, fig.height=6, fig.width=10}
+ggplot() +
+  ggtitle('Marcelo Crivella (Republicanos)') +
+  geom_sf(data = rio20_all, aes(fill = cand_10), lwd = 0) +
+  scale_fill_distiller(palette = "Greens", direction = 1,
+                       labels = scales::percent_format(accuracy = 1),
+                       breaks = c(.1, .2, .3)) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Base de locais de votação do Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+Fora do segundo turno com 11,3% dos votos, a candidata **Delegada Martha Rocha** (PDT) teve sucesso nos bairros de classe média na Zona Norte, como a Tijuca, o Méier e a Penha, bairro onde mora e foi criada.
+
+```{r, fig.height=6, fig.width=10}
+ggplot() +
+  ggtitle('Delegada Martha (PDT)') +
+  geom_sf(data = rio20_all, aes(fill = cand_12), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  scale_fill_distiller(palette = "Oranges", direction = 1,
+                       labels = scales::percent_format(accuracy = 1))+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Base de locais de votação do Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+Em quarto lugar, a candidata **Benedita da Silva** (PT) recebeu uma votação concentrada em poucas áreas. Com votação pouco abaixo dos 10% em boa parte da cidade, o voto petista ficou concentrado no bairro de classe média-alta de Laranjeiras — reduto do eleitorado de esquerda na cidade — e das favelas da Rocinha e do Vidigal.
+
+```{r, fig.height=6, fig.width=10}
+ggplot() +
+  ggtitle('Benedita da Silva (PT)') +
+  geom_sf(data = rio20_all, aes(fill = cand_13), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  scale_fill_distiller(palette = "Reds", direction = 1,
+                       labels = scales::percent_format(accuracy = 1),
+                       breaks = c(.05, .15, .25)
+                       )+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Base de locais de votação do Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+Com o apoio de bolsonaristas como a deputada [Bia Kicis](https://twitter.com/Oficialluizlima/status/1327224571351736321), **Luiz Lima** (PSL) dividiu o voto da direita na cidade, terminando com 6,85% dos votos. Com poucos votos, embora bastante distribuídos pela cidade, o candidato teve sua maior concentração de votos na Vila Militar e em partes da Barra da Tijuca. 
+
+```{r, fig.height=6, fig.width=10}
+ggplot() +
+  ggtitle('Luiz Lima (PSL)') +
+  geom_sf(data = rio20_all, aes(fill = cand_17), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  scale_fill_distiller(palette = "YlGn", direction = 1,
+                       labels = scales::percent_format(accuracy = 1),
+                       breaks = c(.03, .06, .09, .12))+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Base de locais de votação do Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+Por fim, **Renata Souza** (PSOL) conquistou apenas 3,24% dos votos, concentrados em poucas partes da cidade. A candidata, que foi [criada](http://www.alerj.rj.gov.br/(X(1)S(1wxwe5bqc5jcxl3t11ajhpqp))/Deputados/PerfilDeputado/441?Legislatura=19&AspxAutoDetectCookieSupport=1) no Complexo da Maré, teve o maior apoio em sua própria comunidade. Mas, diferente de 2016, o PSOL não conseguiu se firmar como a principal força de esquerda na cidade.
+
+```{r, fig.height=6, fig.width=10}
+ggplot() +
+  ggtitle('Renata Souza (PSOL)') +
+  geom_sf(data = rio20_all, aes(fill = cand_50), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_yellow, labels = scales::percent) +
+  scale_fill_distiller(palette = "YlOrRd", direction = 1,
+                       labels = scales::percent_format(accuracy = 1),
+                       breaks = c(.03, .06, .09))+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Base de locais de votação do Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+---
+
+Uma [reportagem recente](https://pindograma.com.br/2020/11/15/votoclasse.html) do _Pindograma_ mostrou que o voto de classe é a regra nas eleições municipais das grandes cidades brasileiras. No Rio em particular, o candidato que concentrava maior apoio entre os eleitores de menor renda venceu as últimas três eleições — fosse Eduardo Paes em 2008 e 2012, fosse Marcelo Crivella em 2016. Isso pode mudar neste pleito. Este ano, Paes, o candidato preferido pelos mais ricos, é o franco favorito para assumir a prefeitura.
+
+---
+
+**Dados utilizados na matéria**: Locais de Votação (_Pindograma_); Votação por
+Seção Eleitoral (Tribunal Superior Eleitoral).
+
+**Contribuíram com dados**: Daniel Ferreira e Antonio Piltcher.
+
+**Créditos da imagem**: Wikimedia/Mídia Ninja; Assembleia Legislativa do Estado de São Paulo.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-24-rj/rj.Rmd
