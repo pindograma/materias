@@ -1,0 +1,246 @@
+---
+title: "São Paulo"
+author: "João Costa"
+date: "23/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(sf)
+library(ggplot2)
+
+source('../theme.R')
+load('recife.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Muito mais do que uma briga de primos ou uma disputa interna à família Arraes,
+a corrida no Recife é um choque de distintas visões de esquerda. Filho do
+ex-governador Eduardo Campos e aliado do atual prefeito Geraldo Júlio
+([PSB](https://pindograma.com.br/2020/11/23/psb.html)), João Campos representa
+a continuidade e o partido que governa o estado. Já Marília Arraes, que deixou
+o PSB devido [a desentendimentos com sua
+direção](https://www.diariodepernambuco.com.br/noticia/politica/2016/02/marilia-arraes-oficializa-saida-do-psb.html),
+encontrou no [PT](https://pindograma.com.br/2020/10/27/pt.html) o espaço para
+se colocar como uma alternativa à esquerda da situação. 
+
+Para entender quais eleitores se atraem mais pelas posturas distintas, o
+_Pindograma_ gerou os mapas de votação por seção eleitoral dos principais
+candidatos do primeiro turno recifense.
+
+Em primeiro lugar com 29,13% dos votos, **João Campos** teve forte desempenho
+em regiões do centro do Recife como Recife Antigo, Santo Amaro e Paissandu,
+chegando a 40% dos votos nessas regiões. Campos também teve um bom desempenho
+em bairros periféricos, tanto no Norte quanto no Sul da cidade. Chamam a
+atenção, porém, os vazios de João em bairros nobres da Zona Norte e na praia de
+Boa Viagem, onde o candidato recebeu 10% dos votos ou menos.
+
+Na [eleição de
+2016](http://g1.globo.com/pernambuco/eleicoes/2016/noticia/2016/10/geraldo-julio-do-psb-e-reeleito-prefeito-do-recife.html),
+o atual prefeito e partidário de Campos, Geraldo Júlio, teve altíssima votação
+nestes bairros em seu segundo turno contra outro petista, João Paulo. Para
+vencer o segundo turno este ano, o socialista terá de apostar no legado do
+grupo político já no poder e no antipetismo — uma situação cuja ironia [não
+passa
+despercebida](https://www1.folha.uol.com.br/poder/2020/11/apos-apoiar-lula-livre-joao-campos-investe-no-antipetismo-para-o-2o-turno-no-recife.shtml).
+
+```{r}
+ggplot() +
+  ggtitle('João Campos (PSB)') +
+  geom_sf(data = recife_all, aes(fill = cand_40), lwd = 0) +
+  scale_fill_distiller(palette = "Oranges", direction = 1, labels = scales::percent_format(accuracy = 1)) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+Rival de Campos no segundo turno, **Marília Arraes** (PT) recebeu 27,9% dos
+votos válidos no primeiro turno. Os maiores focos de votação da petista foram
+em bairros de classe média próximos a universidades, como o entorno da
+Universidade Federal de Pernambuco e bairros centrais como Soledade e Boa
+Vista, onde Marília chegou a ter 35% dos votos. Além disso, a candidata também
+teve uma votação expressiva — em torno de 20% — em bairros de maior renda, como
+o Espinheiro e Casa Forte, indicando que eleitores de esquerda de alta renda a
+preferem. Diferente de seu primo, há poucas áreas da cidade onde Marília
+recebeu menos que 15% dos votos. 
+
+Essa distribuição por toda a cidade pode ser chave em uma vitória no próximo
+domingo. Caso Marília consiga manter a votação expressiva em bairros de maior
+renda por toda a cidade, seu oponente terá dificuldade em alcançá-la nas urnas
+— mesmo que ele tenha maior apoio nas periferias.
+
+```{r}
+ggplot() +
+  ggtitle('Marília Arraes (PT)') +
+  geom_sf(data = recife_all, aes(fill = cand_13), lwd = 0) +
+  scale_fill_distiller(palette = "Reds", direction = 1, labels = scales::percent_format(accuracy = 1)) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+Em terceiro lugar da eleição ficou **Mendonça Filho
+**([DEM](https://pindograma.com.br/2020/11/03/dem-rep.html)), com 25,1% dos
+votos válidos. Como em [eleições
+anteriores](https://pindograma.com.br/2020/10/18/recife.html), foi em bairros
+de mais alta renda da cidade, tanto ao longo da orla e na Zona Norte que o
+ex-governador teve votação expressiva, chegando a 50% dos votos em alguns
+locais de votação.
+
+O apoio de Mendoncinha poderia significar a vitória para um dos candidatos do
+segundo turno, mas o político escolheu [não tomar
+lados](https://g1.globo.com/pe/pernambuco/eleicoes/2020/noticia/2020/11/16/nao-vou-nem-as-urnas-diz-mendonca-filho-sobre-apoio-no-segundo-turno-do-recife.ghtml)
+na disputa entre os candidatos de esquerda. Sendo assim, os votos do
+ex-ministro de Temer devem se fragmentar no segundo turno entre os dois
+candidatos e a anulação. Na eleição de 2018, os mesmos bairros deram alta
+votação a Jair Bolsonaro (então no PSL, hoje sem partido), demonstrando o
+antipetismo dos eleitores. No entanto, a [nova tentativa de surfar a
+onda](https://jc.ne10.uol.com.br/politica/2020/09/11974878---mendonca-e-bolsonaro--e-bolsonaro-e-mendonca----diz-musica-de-alcymar-monteiro-doada-a-campanha-de-mendonca-filho.html)
+do bolsonarismo novamente não lhe rendeu frutos. 
+
+```{r}
+ggplot() +
+  ggtitle('Mendonça Filho (DEM)') +
+  geom_sf(data = recife_all, aes(fill = cand_25), lwd = 0) +
+  scale_fill_distiller(palette = "Blues", direction = 1, labels = scales::percent_format(accuracy = 1)) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+A candidata que recebeu o [aval do
+presidente](https://g1.globo.com/pe/pernambuco/eleicoes/2020/noticia/2020/11/09/delegada-patricia-recebe-apoio-de-bolsonaro-e-ato-causa-discordancia-com-aliados-na-chapa.ghtml)
+no primeiro turno foi Delegada Patrícia (Podemos). A delegada — novata na
+política e
+[carioca](https://jc.ne10.uol.com.br/politica/2020/10/11987630-candidata-a-prefeita-do-recife--delegada-patricia-ja-chamou-cidade-que--escolhi-pra-viver--de--recifilis.html)
+— [chegou a ameaçar o terceiro
+lugar](https://veja.abril.com.br/blog/maquiavel/delegada-cresce-nas-pesquisas-e-vira-ameaca-para-a-esquerda-no-recife/)
+de Marília e Mendoncinha, mas terminou em quarto lugar com 14,40% dos votos.
+Apesar do flerte com o bolsonarismo, a Delegada recebeu menos votos em regiões
+nobres que nas periferias da cidade. Bairros como o Ibura e o Cohab na Zona Sul
+tiveram locais de votação com 20% da votação para a candidata.
+
+```{r}
+ggplot() +
+  ggtitle('Delegada Patrícia (PODE)') +
+  geom_sf(data = recife_all, aes(fill = cand_19), lwd = 0) +
+  scale_fill_distiller(palette = "Greens", direction = 1, labels = scales::percent_format(accuracy = 1)) +
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque')) +
+  labs(caption = "Fonte: Pindograma, TSE")+
+  theme(plot.title = element_text(size = 16,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold')) +
+  theme(plot.caption.position = 'plot') +
+  theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray)) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom")
+```
+
+Fora do segundo turno, a candidata decidiu não fazer campanha para nenhum dos
+dois primos no segundo turno. Porém, a liderança do Podemos em Pernambuco
+decidiu [apoiar a chapa da
+petista](https://jc.ne10.uol.com.br/politica/2020/11/11998507-partido-da-delegada-patricia--podemos-declara-apoio-a-marilia-arraes--pt--no-segundo-turno-para-prefeita-do-recife.html)
+Marília Arraes para fazer oposição ao PSB. Os eleitores de Patricia podem ser
+decisivos no segundo turno, mas terão de escolher entre seguir o seu partido e
+fazer voto útil contra a liderança do PSB ou apoiar o partido da situação
+contra o PT. 
+
+**Os candidatos**
+
+As diferenças entre os estilos políticos dos primos transparecem nos programas
+de governo e nos aliados de cada um. Campos tem uma vice do
+[PDT](https://pindograma.com.br/2020/11/14/pdt.html), mas na sua coligação não
+faltam legendas do Centrão como
+[MDB](https://pindograma.com.br/2020/10/21/mdb.html),
+[PSD](https://pindograma.com.br/2020/11/20/psd.html),
+[Republicanos](https://pindograma.com.br/2020/11/03/dem-rep.html) e PP. Além
+disso, a "Frente Popular do Recife" não contém em seu [programa de
+governo](https://divulgacandcontas.tse.jus.br/candidaturas/oficial/2020/PE/25313/426/candidatos/447583/5_1600480344671.pdf)
+a palavra _povo_ sequer uma vez. O documento soa tecnocrático, focado em
+apresentar políticas públicas e não em convencer eleitores de um projeto
+político. Não há menção ao governador e atual prefeito, aliados impopulares de
+João.
+
+O programa do socialista contrasta com o apelativo
+[programa](https://divulgacandcontas.tse.jus.br/candidaturas/oficial/2020/PE/25313/426/candidatos/481948/5_1600548096727.pdf)
+de Marília, cuja coligação inclui o
+[PSOL](https://pindograma.com.br/2020/11/06/psol.html) do vice João Arnaldo,
+além dos nanicos PMB e PTC. O programa — com corações vermelhos de quebra de
+seção —  fala em “aprofundar a democracia” e “participação popular”. O texto
+também dedica duas páginas (de dez) para os “desafios da conjuntura”, onde se
+discute de tudo: desmatamento, “políticas genocidas do governo [federal]
+atual”, a soberania nacional e os governos Lula e Dilma, deixando o Recife para
+os últimos parágrafos.
+
+As propostas dos candidatos parecem ter [ficado em segundo
+plano](https://jc.ne10.uol.com.br/politica/2020/11/12000083-marilia-arraes-e-joao-campos-seguem-com-troca-de-farpas-e-ataques-mutuos-no-debate-da-tv-clube.html)
+na cobertura de debates, mas os programas ajudam a lançar alguma luz sobre as
+diferenças entre os dois. Campos dedica uma seção para propor incentivos ao
+empreendedorismo e o desenvolvimento da economia enquanto outra foca na
+modernização da gestão pública. Já Arraes tem uma seção diminuta sobre a
+economia, mas enfatiza a importância de reestruturar o espaço urbano e
+facilitar o acesso da população a opções de cultura, lazer e educação.
+
+Essas diferenças não se limitam às legendas dos candidatos; o segundo turno
+levou a
+[disputas](http://blogdowagnergil.com.br/vs1/2020/11/22/ciro-gomes-participa-de-carreatinha-para-reforcar-apoio-a-joao-campos/)
+[internas](https://jc.ne10.uol.com.br/politica/2020/11/12000298-deputado-federal-do-pdt--tulio-gadelha-declara-apoio-a-marilia-arraes-no-segundo-turno-do-recife.html)
+em diferentes partidos de
+[esquerda](https://jc.ne10.uol.com.br/politica/2020/11/12000298-deputado-federal-do-pdt--tulio-gadelha-declara-apoio-a-marilia-arraes-no-segundo-turno-do-recife.html),
+com políticos contrariando lideranças partidárias e rejeitando alianças
+eleitorais. A direita recifense também ficou em saia justa, pois a alternativa
+ao PSB é o PT, partido também [rejeitado por
+muitos](https://www.folhape.com.br/colunistas/folha-politica/recife-esta-entre-as-excecoes-do-pt-psb-mira-rejeicao-a-sigla/21557/).
+A esquerda fragmentada e o [apoio de algumas lideranças de
+direita](https://blogs.ne10.uol.com.br/jamildo/2020/11/20/apos-apoio-de-politicos-da-direita-a-marilia-arraes-psol-reafirma-apoio-a-candidata-e-diz-que-apoio-nao-e-alianca/)
+parecem ter favorecido Marília, que atualmente lidera as pesquisas de intenção
+de voto, de acordo com [nosso agregador de
+pesquisas](https://pindograma.shinyapps.io/agregador/).
+
+---
+
+**Dados utilizados na matéria**: Locais de votação (_Pindograma_); Resultados
+por Seções Eleitorais (Tribunal Superior Eleitoral).
+
+**Contribuiu com dados**: Daniel Ferreira.
+
+**Créditos da imagem**: Guilherme Jofili/Flickr, Arthur de Souza/Divulgação,
+Ricardo Labastier/Divulgação.
