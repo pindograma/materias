@@ -1,0 +1,599 @@
+---
+title: "Partidos em números: PSB"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PODE"
+party_title = "Podemos"
+cor <- filter(party_palette, party_name == party)$party_color
+cor_continua <- "Blues"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Nesta edição da série **Partidos em Números**, um partido pequeno de centro-direita brasileiro: o Podemos. Nos últimos anos, o partido vem ganhando força no Senado com o discurso anticorrupção e de renovação política.
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito","Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, pg_orange),
+                    labels = c("Eleito", "Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O partido lançou um total de 534 candidatos por todo o país, a sua maioria no Sudeste e Centro Oeste. Em 2020, apenas 9 desses chegaram ao segundo turno e 6 foram eleitos em municípios pelo país. São estes: Blumenau (SC); São Luís (MA); Vila Velha (ES); São Vicente (SP), Mogi das Cruzes (SP) e Taboão da Serra (SP).
+
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party_title,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+O Podemos formou coligação em 293 das suas candidaturas à prefeitura. 27 partidos fizeram parte das alianças. Ficaram fora da lista apenas o [Novo](https://pindograma.com.br/2020/11/10/novo-patri.html) e partidos de esquerda como [PCB](https://pindograma.com.br/2020/11/28/pcbdob.html) e PSTU.
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party_title,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Já nas coligações lideradas por outros partidos, há uma distribuição mais concentrada com partidos do centrão: [MDB](https://pindograma.com.br/2020/10/21/mdb.html), [PSD](https://pindograma.com.br/2020/11/20/psd.html) e [DEM](https://pindograma.com.br/2020/11/03/dem-rep.html). Novamente, pequenos partidos de esquerda e o Novo não participaram de coligações com o Podemos.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,5),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title, "Vereadores eleitos por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Em 2020, o Podemos teve maior sucesso nas regiões Norte, Centro Oeste e Sudeste, com destaque para São Paulo, Minas Gerais e Goiás. O partido elegeu poucos vereadores no Nordeste, assim como no Rio Grande do Sul.
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleito <- cand20 %>%
+  filter(PARTIDO == party, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleito, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+Entre os candidatos do Podemos, 49,1% eram brancos e 48,94% eram pretos ou pardos. Além disso, 33,34% eram mulheres.
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+O grupo de candidatos eleitos é menos representativo da população brasileira como um todo: a proporção de candidatos eleitos brancos cresce para pouco mais da metade (53,3%) e a de mulheres cai para 12,44%.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 50000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+O Podemos é um partido pequeno, o que é refletido na distribuição do Fundo Partidário. Em 2019, diversos senadores migraram para o partido, o que explica o salto na quantia recebida do Fundo.
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 2)+
+  geom_point(color = cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(party_title,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+Nos últimos anos, o partido vem crescendo. Assim como outras agremiações brasileiras, registrou maior aumento nos anos de eleições municipais.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party_title,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+O Podemos é um pouco mais jovem do que os grandes partidos tradicionais como MDB, [PT](https://pindograma.com.br/2020/10/27/pt.html) e [PSDB](https://pindograma.com.br/2020/11/02/psdb.html). Porém, também envelheceu ao longo dos anos, [tendência](https://pindograma.com.br/2020/10/02/jovens.html) comum a todos os partidos.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.37,.49))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+A proporção de mulheres filiadas ao Podemos se manteve bastante estável ao longo dos anos, e aumentou um pouco em 2019, para 44,5%.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+#    breaks = c(350, 500, 650, 800),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+A maior concentração de filiados ao Podemos está no Amapá, seguido de Roraima e Acre. Santa Catarina, Rio Grande do Sul e Piauí têm a menor quantidade de filiados ao partido a cada 100 mil eleitores.
+
+---
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.03, 0.06, 0.09, 0.12),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = .1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Rondônia elegeu 12.5% do total de deputados estaduais do Podemos, a maior proporção entre os estados do país. É seguida pela Paraíba e Sergipe.
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = .1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Mato Grosso e Rondônia foram os estados que elegeram a maior proporção dos seus deputados federais do Podemos. O partido não elegeu nenhum representante em nenhum outro estado do Norte, e também não elegeu representantes na maioria dos estados do Nordeste.
+
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party_title,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Em 2018, o Podemos conseguiu eleger apenas Oriovisto Guimarães como senador pelo Paraná. Na eleição anterior, quando ainda era PTN, o partido não teve nenhum eleito ao Senado.
+
+
+```{r, fig.height=7, fig.width=9}
+senadores_atual <- read_csv("./data/sen_pode.csv") %>% 
+  right_join(geoloc_states, by = 'UF') 
+ggplot(senadores_atual, aes(fill = factor(eleitos, levels = c(3,1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c("#005b7f",cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: Congresso em Foco",
+    title = str_c(party_title,"Bancada no Senado em dezembro de 2020",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Atualmente, no entanto, o Podemos tem 9 senadores na sua bancada, a terceira maior da Casa. O partido conta com as três cadeiras do Paraná, onde teve seu único eleito.
+
+Nenhum governador foi eleito pelo partido em 2018.
+
+---
+
+#### História
+
+O Podemos tem sua origem em 1945, com outro nome: o Partido Trabalhista Nacional. Naquele  ano, participou de eleições para a Assembleia Nacional Constituinte e, em 1946, obteve seu registro definitivo no TSE.
+
+O PTN teve atuação intensa durante a Quarta República. O principal nome do partido na época foi Jânio Quadros, que se filiou ao partido em 1954. Neste ano, Jânio foi o candidato do PTN ao governo de São Paulo e saiu vitorioso. Além de Jânio, o partido elegeu um senador e 5 deputados federais paulistas, mas teve dificuldade para se expandir em outros estados.
+
+1960 foi um ano chave para o partido, com a eleição de Jânio para presidente, parte de uma coligação com o PDC, PL, PSB e a União Democrática Nacional. Sete meses após ser eleito, renunciou ao cargo. Jânio tentou ser eleito novamente ao cargo de governador de São Paulo, em 1962, mas foi derrotado. No mesmo ano, o PTN cresceu e elegeu 9 deputados federais.
+
+Em 1965, o partido foi extinto pelo AI-2 promulgado pela ditadura militar. Foi refundado em 1995, num esforço liderado pelo jornalista e ex-deputado do MDB, Dorival de Abreu, que pretendia recriar o antigo PTN. Abreu assumiu a presidência do PTN após sua recriação. O partido conseguiu seu registro oficial no TSE em 1997.
+
+Desde sua refundação, o PTN não conseguiu recuperar sua expressividade no cenário nacional. Em 1998, lançou Thereza Ruiz à presidência, mas ela terminou em nono lugar. Mais recentemente, apoiou Dilma Rousseff (PT) à presidência em 2010 e Aécio Neves (PSDB) para o cargo em 2014.
+
+Em 2016, em meio a uma crise do sistema político e partidário, o PTN mudou seu nome para Podemos. A inspiração veio do slogan da campanha de Barack Obama à Presidência dos Estados Unidos em 2008, “Yes, we can” — “sim, nós podemos” em português. 
+
+Após a renomeação, em 2018, o senador Alvaro Dias foi candidato presidencial em 2018 e também terminou em nono lugar. Principal nome do partido, Dias defende a independência do partido e o discurso anticorrupção, especialmente [após as denúncias](https://exame.com/brasil/pps-e-ptn-anunciam-saida-da-base-aliada-do-governo-temer/) envolvendo o então presidente Michel Temer em investigações da JBS. Desde então, o Podemos cresceu no Congresso, chegando a contar [12](https://congressoemfoco.uol.com.br/legislativo/podemos-cresce-ameaca-o-mdb-e-ja-mira-presidencia-do-senado/) senadores, o que fez do partido a segunda maior bancada no Senado. Hoje, com a desfiliação de dois senadores e a cassação do mandato de Selma Arruda, é a terceira maior bancada, atrás de PSD e MDB.
+
+Em seu site oficial, o Podemos diz que “[não é esquerda, nem direita](https://www2.podemos.org.br/noticias/podemos-nao-e-esquerda-nem-direita-e-favor-do-povo/)”, mas a favor do povo. A deputada Renata Abreu, atual presidente do partido e sobrinha do co-fundador da sigla Dorival de Abreu, diz que o partido é independente, [nem de situação, nem de oposição](https://www2.podemos.org.br/noticias/podemos-nao-e-esquerda-nem-direita-e-favor-do-povo/). O partido tem três pilares, a democracia direta, participação popular e transparência. Abriga políticos conservadores nos costumes que [apoiam propostas](https://congressoemfoco.uol.com.br/legislativo/os-partidos-que-mais-apoiam-o-governo-no-camara/) do governo do presidente Jair Bolsonaro na Câmara.
+
+O número do Podemos nas urnas é 19.
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020 (TSE); Resultados eleições 2020 (TSE); Podemos no Senado (Congresso em Foco);IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-12-03-podemos/podemos.Rmd
