@@ -1,0 +1,1104 @@
+---
+title: "Partidos em números: PP e PL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PP"
+pcb <- "PL"
+cor <- filter(party_palette, party_name == party)$party_color
+pcb_cor <- filter(party_palette, party_name == pcb)$party_color
+cor_continua <- "Blues"
+pcb_cor_continua <- "BuGn"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Esta edição do **Partido em Números** traz uma comparação de duas legendas importantes do Centrão: o Progressistas (PP) e o Partido Liberal (PL).
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito","Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, pg_yellow, pg_blue),
+                    labels = c("Eleito", "Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito_b,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pg_blue, pg_orange),
+                    labels = c("Eleito","Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PP se destaca tanto em candidatos quanto em eleitos no Piauí e no Rio Grande do Sul, assim como na Bahia e em Santa Catarina em menor grau. Fora destes estados, o partido teve poucos candidatos e menos sucessos eleitorais. 
+
+O PL não concentrou um grande número de vitórias em nenhum estado, mas apresentou várias candidaturas no Pará e no Maranhão.
+
+```{r, fig.height=6, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+edges_l_b <- coligacoes %>%
+  filter(PARTIDO == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader_b <- tbl_graph(nodes = nodes, edges = edges_l_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_l_b$weight, mode = "out"),
+                    centrality_degree(weights = edges_l_b$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Como é de praxe na política brasileira, quase todos os partidos apoiaram o PP e o PL em pelo menos uma eleição, com exceção dos mais à esquerda e do partido [Novo](https://pindograma.com.br/2020/11/10/novo-patri.html). Os maiores partidos do país — [MDB](https://pindograma.com.br/2020/10/21/mdb.html), [PSDB](https://pindograma.com.br/2020/11/02/psdb.html), [PT](https://pindograma.com.br/2020/10/27/pt.html), [DEM](https://pindograma.com.br/2020/11/03/dem-rep.html) — são os que mais apoiaram suas chapas.
+
+```{r, fig.height=6, fig.width=9}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+edges_f_b <- coligacoes %>%
+  filter(LEGENDA == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower_b <- tbl_graph(nodes = nodes, edges = edges_f_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_f_b$weight, mode = "in"),
+                    centrality_degree(weights = edges_f_b$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Os laços dos 2 partidos com os outros grandes partidos do Centrão ficam mais explícitos nos números de chapas apoiadas pelo PP e PL. O PT, [PDT](https://pindograma.com.br/2020/11/14/pdt.html) e [PSB](https://pindograma.com.br/2020/11/23/psb.html) perdem vez para o MDB, PSDB, [PSD](https://pindograma.com.br/2020/11/20/psd.html), DEM. No entanto, o PL apoia mais o PP que o contrário.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,4,8),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Vereadores eleitos por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+vereador_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador_b,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,5,10),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Vereadores por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O estado com maior presença do PP nas câmaras municipais é o Rio Grande do Sul. A legenda lançou candidatos em quase todo município do estado e elegeu representantes em sua maioria. O Piauí, Santa Catarina e o Amazonas também concentraram tanto candidatos quanto eleitos do partido.
+
+Já o PL teve candidatos na maioria dos municípios do Amapá, Maranhão, Santa Catarina e São Paulo. Fora desses estados, o partido apresentou candidatos em poucas cidades e elegeu menos vereadores.
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos <- cand20 %>%
+  filter(PARTIDO == party, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand_b <- cand20 %>%
+  filter(PARTIDO == pcb) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos_b <- cand20 %>%
+  filter(PARTIDO == pcb, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+Os representantes eleitos de ambos os partidos são poucos diversos tanto em relação a gênero quanto a raça. Homens brancos são o grupo mais eleito dos 2 partidos (47,8% do PP e 42,9% do PL). Apesar de uma proporção de candidaturas femininas maior, não houve equilíbrio de gênero nos resultados eleitorais; 15,7% dos eleitos do PP são mulheres e 16,4% do PL.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 100000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+fundo_b <- fundo_partidario %>% filter(PARTIDO == pcb)
+ggplot(fundo_b, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = pcb_cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 100000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+O tamanho e a força do PP ficam evidentes pelas altas porcentagens do Fundo Partidário que o partido recebeu historicamente. Mesmo com o decréscimo em 2019, o partido ainda está entre os que mais recebem dinheiro do TSE. Já o PL teve mais variações na quantidade de dinheiro público que recebeu ao longo dos anos, mas ainda figura entre os grandes recebedores. Hoje tem uma alocação de fundos similar à do PP.
+
+Para as eleições de 2020, o PP recebeu R\$140.669.215,02 e o PL R\$117.621.670,45 do Fundo Eleitoral.
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 2)+
+  geom_point(color = cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+filiados_b <- filiacoes_total %>% filter(PARTIDO == pcb)
+ggplot(filiados_b, aes(DATA, n, group = 1))+
+  geom_line(color = pcb_cor, size = 2)+
+  geom_point(color = pcb_cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(pcb,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+O PP tem o quarto maior número de filiados no Brasil e quase o dobro de filiados do PL. Ambos os partidos crescem significativamente antes de eleições municipais, como é comum a quase todos os partidos, mas o PP teve também um crescimento antes das eleições gerais de 2018.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados_b <- filiacoes_idade %>% filter(PARTIDO == pcb) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados_b,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+Ambos os partidos têm filiados mais velhos que a média dos partidos brasileiros e a maioria de seus filiados têm entre 35 e 59 anos. No entanto, os filiados ao PL são comparativamente mais jovens.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.42,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados_b <- sexo %>% filter(PARTIDO == pcb)
+ggplot(sexo_filiados_b, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = pcb_cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.42,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+Os dois partidos seguem o mesmo padrão da maioria das legendas brasileiras; a proporção de mulheres cresce ano a ano, mas as filiadas ainda são minoria.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(500, 1000, 1500, 2000),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_b <- filiacao_estados %>% filter(PARTIDO == pcb) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_b, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(400, 600, 800, 1000),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Apesar das semelhanças nos perfis dos filiados, a distribuição dos membros dos dois partidos é diferente. O PP tem uma presença de mais de 1.000 filiados a cada 100 mil eleitores em todo estado, exceto o Rio de Janeiro. Além disso, concentra forças nos estados da região Sul, e alguns estados na região Norte.
+
+Em comparação, o PL passa de 1.000 filiados por 100 mil eleitores apenas no Mato Grosso e no Tocantins. O partido tem presença proporcional menor no Sudeste e Nordeste, concentrando mais filiados por eleitores no Norte e Centro Oeste.
+
+---
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.02, 0.06, 0.1, 0.14),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depest_b <- eleicoes18 %>%
+  filter(PARTIDO == "PR", CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(0.025, 0.05, 0.075, 0.1),
+    palette = pcb_cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = .1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Pernambuco é o estado com a maior representação do PP no legislativo estadual, com mais de um quinto dos deputados pernambucanos sendo do partido. Essa presença só se compara à presença do Progressistas no Piauí e no Amazonas. 
+
+O PL não tem uma presença tão forte em nenhum estado. Em Roraima, um em cada 10 deputados estaduais eleitos em 2018 era do partido. A legenda também tem uma presença maior no Amazonas, Piauí e em Sergipe.
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depfed_b <- eleicoes18 %>%
+  filter(PARTIDO == "PR", CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PP elegeu deputados federais em quase todos os estados do Brasil. Proporcionalmente, representa mais piauienses. O Rio Grande do Sul e a região Norte são também focos de eleição de deputados do PP.
+
+Enquanto isso, o PL elegeu mais deputados em estados do Norte e Nordeste proporcionalmente. Há apenas 5 estados onde o PL elegeu deputados.
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+senadores_b <- eleicoes18 %>%
+  filter(PARTIDO == "PR", CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores_b, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(pcb_cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PP elegeu 6 senadores em 2018 e hoje tem 7 membros em exercício no Senado. O PL possui apenas 2 senadores. Os 2 partidos não elegeram senadores no Sudeste.
+
+```{r, fig.height=7, fig.width=9}
+governadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(cor, "grey90"))+
+  annotate('text', label = 'Gladson Cameli',
+           family = 'Fantasque', color = "grey10",
+           x = -69.5, y = -16, size = 3.5)+
+  annotate('curve', curvature = -.15, x = -72,
+           xend = -71, y = -14.5, yend = -11.5,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+governadores_b <- eleicoes18 %>%
+  filter(PARTIDO == "PR", CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+ggplot(governadores_b, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c("grey90"))+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+
+O PL não elegeu nenhum governador em 2018, já o PP elegeu Gladson Cameli para o governo do Acre.
+
+---
+
+#### História
+
+Assim como a maioria das outras legendas, tanto o PP quanto o PL surgiram no contexto da redemocratização com o realinhamento de forças políticas após o fim da ditadura. Ambos os partidos se enquadram no campo da direita e têm ligações à antiga Aliança Renovadora Nacional (ARENA), o partido governista da ditadura militar. 
+
+A ligação do PP à ARENA é de continuidade. Com a volta do pluripartidarismo em 1979, tanto a ARENA quanto o MDB foram dissolvidos e novas agremiações os substituíram. Assim como o PMDB sucedeu o MDB, a ARENA também teve um sucessor legal designado: o Partido Democrático Social (PDS).
+
+Conservador e de direita, em seus primeiros anos o PDS reunia várias figuras que marcariam a política brasileira das décadas de 1980 e 1990 como José Sarney (até 1984), Fernando Collor (até 1985) e Paulo Maluf. Este último foi o candidato apresentado pelo partido nas eleições indiretas a presidente de 1985, nas quais Tancredo Neves foi escolhido presidente. 
+
+Com a vitória do MDB, o PDS passou a fazer oposição ao governo. Em 1989, Paulo Maluf terminou a corrida presidencial em quinto lugar e apoiou Fernando Collor no segundo turno. O partido passou a fazer parte da base de sustentação do presidente no Congresso, mas isso não impediu que parte de seus deputados votassem a favor do impedimento de Collor 2 anos depois.
+
+Em 1993, 13 anos após sua fundação, o PDS incorporou o Partido Democrata Cristão e passou a se chamar Partido Progressista Reformador (PPR). O PPR durou apenas 2 anos como sucessor do PDS até que, em 1995 a legenda passou por uma nova fusão, desta vez com o Partido Progressista de Alvaro Dias, fundado em 1993. Unidos, os dois grupos adotam o nome Partido Progressista Brasileiro (PPB). Apesar dos nomes, ambos eram e continuaram sendo após a união, partidos conservadores e de direita.
+
+O PPR fez oposição ao governo Itamar Franco e lançou Esperidião Amin como candidato à presidência em 1994. Apesar da derrota, o partido elegeu 3 governadores e 2 senadores, além de diversos deputados federais e estaduais. Já como PPB, o partido apoiou os 2 governos de Fernando Henrique Cardoso do PSDB. Em 2003, o partido mudou seu nome para Partido Progressista e em 2017 para apenas Progressistas, retendo a sigla.
+
+O apoio a FHC começou a longa tradição exclusivamente governista do PP, tornando-lhe uma legenda característica do Centrão. Fez parte da base de sustentação no Congresso dos governos [Lula](https://www1.folha.uol.com.br/fsp/brasil/fc0503200518.htm) (PT), [Dilma](https://politica.estadao.com.br/noticias/geral,diretorios-regionais-do-pp-comecam-a-desembarcar-do-governo-dilma,1854335) (PT) (cujo impedimento depois apoiou) e Temer (MDB). Hoje, a bancada do PP na Câmara dos Deputados é liderada por Arthur Lira e apoia o governo de Jair Bolsonaro (sem partido), que chegou a ser membro da legenda por quase 11 anos. O presidente atual do PP é Ciro Nogueira e seu número eleitoral é 11.
+
+Diferente desta ligação de continuidade do PP, os laços do PL com a ARENA são menos fortes porém ainda evidentes. O fundador do Partido Liberal, Álvaro Valle, fora deputado federal fluminense pela ARENA e permaneceu como membro do PDS até 1984, quando houve o racha que levaria à criação do PFL. A passagem de Valle no PFL foi breve devido a discordâncias com suas lideranças, o que o levou a fundar em 1985 o Partido Liberal.
+
+O PL se propunha a ser [fiel a seu nome](http://pl22.com.br/historia_do_pl.html), defendendo o fortalecimento da iniciativa privada, a austeridade fiscal, o livre comércio e condenando a censura e o radicalismo político. Em seus primeiros anos, o partido promoveu escolas de formação política a seus membros e tinha apoio de empresários e profissionais liberais de classe média.
+
+Após a eleição indireta de 1985, passou a apoiar o governo de José Sarney. Em 1989, lançou o deputado federal Guilherme Afif candidato a presidente. Afif perdeu e ficou em sexto lugar. Após votar a favor do impedimento de Collor, o partido negociou seu apoio a Itamar Franco, que concorrera ao governo de Minas Gerais pelo PL em 1986. Na eleição de 1994, o partido apoiou a chapa do tucano Fernando Henrique Cardoso. Dentro do Congresso, o PL se juntou à bancada liderada pelo PPB de Maluf.
+
+O partido rompeu com FHC em 1998 e apostou em Ciro Gomes (então no PPS) para presidente, que terminou em terceiro lugar. Num movimento similar ao PP, a quem o partido passou a se aliar frequentemente, o PL apoiou a eleição de Lula em 2002 e conseguiu emplacar o vice-presidente José Alencar, então senador pelo partido. Nos primeiros anos da década de 2000, o partido passou por uma série de fusões. Em 2003, incorporou os nanicos de centro-esquerda Partido Geral dos Trabalhadores (PGT) e o Partido Social Trabalhista (PST). Em 2006 fundiu-se ao Partido de Reedificação da Ordem Nacional (PRONA) de Enéas Carneiro, de extrema-direita, mudando o nome para Partido da República. 
+
+Essa série de fusões marcam o fim de um comprometimento do partido com o programa lançado em sua fundação. A legenda passa a ser uma característica integrante do Centrão, apoiando todos os presidentes desde Lula no Congresso. Atualmente, o PL (nome que voltou a usar em 2019) faz parte do bloco de Arthur Lira do PP na Câmara dos Deputados. Seu presidente é José Tadeu Candelária e seu número eleitoral é 22.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); Resultados eleições 2020 (TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-12-08-plpp/plpp.Rmd
