@@ -1,0 +1,498 @@
+---
+title: "Partidos em números: PP e PL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+
+source('../theme.R')
+load('pesquisas.Rdata')
+load('pesquisas_abs.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Após um primeiro turno [sem grandes
+surpresas](https://pindograma.com.br/2020/11/20/rating-update.html) no
+desempenho das pesquisas eleitorais, os institutos de pesquisa brasileiros têm
+sido alvos de críticas neste segundo turno. O Poder360
+[noticiou](https://www.poder360.com.br/eleicoes/resultados-das-pesquisas-do-ibope-nao-se-confirmaram-em-15-de-26-cidades/)
+que "resultados das pesquisas do Ibope não se confirmaram em 15 de 26 cidades".
+À [Carta
+Capital](https://www.cartacapital.com.br/politica/fora-da-curva-porque-as-pesquisas-passaram-longe-dos-resultados/),
+o cientista político Jairo Pimentel classificou os resultados como "fora da
+curva" para pior. Jornalistas até
+[fizeram](https://twitter.com/fzambeli/status/1333384862208827393)
+[piada](https://twitter.com/ceciliadolago/status/1333230138398552065) com uma
+[pesquisa
+falsa](https://piaui.folha.uol.com.br/lupa/2020/11/29/verificamos-pesquisa-datafolha-porto-alegre-2o-turno/)
+ter chegado mais perto do resultado que qualquer outra em Porto Alegre.
+
+```{r}
+error_2012 = model_polls_2 %>%
+    filter(year == 2012 & turno == 2) %>%
+    pull(mm3) %>%
+    mean()
+
+error_2016 = model_polls_2 %>%
+    filter(year == 2016 & turno == 2) %>%
+    pull(mm3) %>%
+    mean()
+
+error_2020 = model_polls_2 %>%
+    filter(year == 2020 & turno == 2) %>%
+    pull(mm3) %>%
+    mean()
+```
+
+De fato, o desempenho dos institutos de pesquisa piorou em 2020. De acordo com
+dados levantados pelo _Pindograma_, o erro médio das pesquisas de segundo turno
+foi de `r pn(error_2012)` pontos percentuais em 2012 e `r pn(error_2016)`
+pontos em 2016. Este ano, o erro subiu para **`r pn(error_2020)` pontos
+percentuais**.
+
+Para entender as razões dessa piora no desempenho das pesquisas eleitorais, o
+_Pindograma_ conversou com representantes dos institutos de pesquisa e analisou
+dados do nosso [agregador de
+pesquisas](https://pindograma.shinyapps.io/agregador). Abordamos cinco teorias
+que buscam explicar o erro dos institutos este ano e mostramos que passos as
+empresas de pesquisa e a imprensa podem tomar para informar melhor o público
+sobre o estado das corridas eleitorais.
+
+##### Cinco teorias para o erro das pesquisas, da menos à mais plausível
+
+###### _1) O eleitor de direita tímido_
+
+Quando Donald Trump venceu a eleição de 2016 nos Estados Unidos a despeito dos
+prognósticos das pesquisas, se popularizou na mídia estadunidense a chamada
+_teoria do eleitor do Trump tímido_. A ideia é que os eleitores teriam vergonha
+de dizer a estranhos pelo telefone que queriam votar em Trump e, por isso, não
+expressavam suas preferências verdadeiras aos institutos de pesquisa. Dessa
+forma, os institutos teriam subestimado as reais intenções de voto de Trump.
+
+Neste ciclo eleitoral no Brasil, o proponente dessa teoria foi ninguém menos
+que o youtuber Felipe Neto. Nas [suas
+palavras](https://twitter.com/felipeneto/status/1333165629256441859), "enquanto
+os institutos de pesquisa não entenderem que parte da população tem vergonha em
+admitir que vota em candidatos da extrema direita, vai continuar errando tudo".
+
+O problema é que essa teoria não parece valer nem nos Estados Unidos nem no
+Brasil. Na terra do Tio Sam, o site FiveThirtyEight elenca [uma série de
+provas](https://fivethirtyeight.com/features/trump-supporters-arent-shy-but-polls-could-still-be-missing-some-of-them/)
+contra a teoria do eleitor de Trump tímido. No Brasil, vale notar que as
+pesquisas presidenciais de 2018 — quando havia um candidato de extrema-direita
+concorrendo — foram mais precisas que as de 2014. Isso indica que os eleitores
+de Jair Bolsonaro não foram particularmente "tímidos" ao responderem às
+empresas de pesquisa.
+
+```{r}
+wagner_error = late_polls %>%
+    mutate(days_apart = as.numeric(
+        abs(difftime(DT_FIM_PESQUISA, if_else(turno == 1, first_round_date, second_round_date), units = 'days'))
+    )) %>%
+    mutate(one_week_prior = days_apart <= 7) %>%
+    filter(year == 2020 & one_week_prior & turno == 2 & SG_UE == 13897) %>%
+    filter(NUMERO_CANDIDATO == 90) %>%
+    mutate(diff = abs(valid_result - pct)) %>%
+    pull(diff) %>%
+    mean()
+
+crivella_error = late_polls %>%
+    mutate(days_apart = as.numeric(
+        abs(difftime(DT_FIM_PESQUISA, if_else(turno == 1, first_round_date, second_round_date), units = 'days'))
+    )) %>%
+    mutate(one_week_prior = days_apart <= 7) %>%
+    filter(year == 2020 & one_week_prior & turno == 2 & SG_UE == 60011) %>%
+    filter(NUMERO_CANDIDATO == 10) %>%
+    mutate(diff = abs(valid_result - pct)) %>%
+    pull(diff) %>%
+    mean()
+```
+
+Já em 2020, há poucos indícios de que o erro das pesquisas tenha se aplicado
+exclusivamente a candidatos de extrema-direita. Em Fortaleza, as pesquisas
+eleitorais da última semana podem ter subestimado a candidatura do bolsonarista
+Capitão Wagner (PROS) por `r pn(wagner_error)` pontos percentuais, mas, no
+Recife, subestimaram a candidatura de centro-esquerda de João Campos (PSB) por
+uma margem parecida. Apoiado por Bolsonaro, Marcelo Crivella (Republicanos)
+conquistou `r pn(crivella_error)` pontos percentuais a mais do que previam as
+pesquisas no Rio. Mas o mesmo se deu com Bruno Covas (PSDB) em São Paulo — uma
+figura pouco polêmica que dificilmente inspiraria vergonha em seus eleitores.
+
+Pelo menos um especialista não descarta completamente esse tipo de efeito no
+Brasil. Andrei Roman, diretor do instituto Atlas Intel, aposta que eleitores
+tímidos podem explicar, em parte, por que as pesquisas subestimaram os
+bolsonaristas Capitão Wagner em Fortaleza e Delegado Eguchi em Belém, que
+perderam por uma margem bem menor que a prevista pelas pesquisas. Mas em casos
+de candidatos mais moderados — como os que concorreram na maioria dos segundos
+turnos em 2020 — Roman afirma que "a chance disso é menor".
+
+###### _2) Taxas de resposta desiguais_
+
+Pesquisas eleitorais dependem da boa-vontade de estranhos. Os entrevistados têm
+de simplesmente concordar em gastar seu tempo respondendo a um questionário sem
+qualquer recompensa. Tradicionalmente, esse esquema tem funcionado para
+produzir bons resultados. Mas e se pessoas com certas preferências políticas
+tivessem uma propensão menor a responder aos entrevistadores dos institutos?
+
+Esse problema — possivelmente o maior responsável pelo viés das pesquisas [nos
+Estados
+Unidos](https://www.vox.com/policy-and-politics/2020/11/10/21551766/election-polls-results-wrong-david-shor)
+— é um dos mais difíceis de se resolver para as empresas de pesquisa. Se
+eleitores de uma candidata recusarem entrevistas mais frequentemente, as
+pesquisas podem a subestimar. E não é como se os institutos pudessem forçar
+esses eleitores a responderem os seus questionários.
+
+Antes da eleição, eu supus que as taxas de resposta desiguais pudessem
+favorecer candidatos de direita nas pesquisas presenciais. Teoricamente,
+eleitores mais preocupados com a pandemia tenderiam a recusar entrevistas com
+estranhos na porta de casa e teriam menos chance de serem interpelados na rua
+por pesquisas de ponto de fluxo. Esses eleitores, provavelmente mais críticos à
+gestão da pandemia pelo governo, estariam subrepresentados nas pesquisas, o que
+acabaria por favorecer candidatos alinhados a Bolsonaro nas projeções.
+
+Não foi o que aconteceu. Em corridas que tiveram maior participação de
+Bolsonaro — como as do Rio de Janeiro e de Fortaleza — os eleitores de
+candidatos contrários ao presidente acabaram _sobrerrepresentados_, não
+subrepresentados, nas pesquisas presenciais (e nas não-presenciais também).
+
+Isso não quer dizer que o problema das taxas desiguais de resposta possa ser
+descartado no Brasil. A ala ideológica do bolsonarismo, por exemplo, estimula
+[ampla](https://twitter.com/leandroruschel/status/1333449269739741190)
+[desconfiança](https://twitter.com/onyxlorenzoni/status/1333153837939646467)
+ante as empresas de pesquisa. Caso seguidores aguerridos do presidente se
+recusem a responder pesquisas de opinião com mais frequência, as sondagens
+eleitorais podem passar a ter, involuntariamente, um viés anti-bolsonarista.
+
+Taxas de resposta desiguais ainda são um fenômeno pouco estudado no Brasil. Por
+isso, é difícil encontrar provas de que elas estejam por trás do desempenho
+fraco das pesquisas em 2020. Para Márcia Cavallari, presidente do Ibope
+Inteligência, investigar essa possibilidade será uma das prioridades do
+instituto para entender o que aconteceu com as pesquisas em 2020.
+
+###### _3) Desatualização da base censitária_
+
+Outra teoria para o erro das pesquisas eleitorais este ano está na
+desatualização de dados demográficos, dado que o último censo foi realizado em 2010.
+Segundo a presidente do Ibope Inteligência, Márcia Cavallari, "quanto mais
+distante [de 2010], pior fica o resultado" das pesquisas. Mas por quê?
+
+Para evitar levantamentos distorcidos, os institutos de pesquisa precisam
+garantir que seus entrevistados se pareçam com o eleitorado como um todo. Os
+entrevistados por uma pesquisa não devem ser muito mais velhos, por exemplo, do
+que o resto da população. O problema é que são dados do governo que informam
+aos institutos de pesquisa o perfil de uma cidade. Se esses números estiverem
+desatualizados, os institutos podem facilmente selecionar uma amostra
+distorcida frente à população como um todo.
+
+Esse problema não afeta todas as pesquisas eleitorais da mesma forma. Nas
+**capitais**, o IBGE atualiza dados de renda e escolaridade trimestralmente
+através da Pesquisa Nacional por Amostra de Domicílios (PNAD). Já no interior,
+os dados mais recentes são os do Censo 2010. Portanto, os institutos de
+pesquisa são obrigados a estimar — com uma margem de erro — quantas pessoas se
+formaram e quantas pessoas mudaram seu perfil de renda desde 2010. Isso
+explica, em parte, por que pesquisas em capitais [têm resultados
+melhores](https://pindograma.com.br/2020/11/20/rating-update.html) que
+pesquisas no interior.
+
+Além disso, as **pesquisas presenciais** requerem que os entrevistadores
+visitem uma amostra representativa de residências. Mas a seleção de bairros que
+os pesquisadores visitarão é feita através da malha de setores censitários, que
+também não é atualizada desde 2010. Bairros novos simplesmente não aparecem
+para os institutos de pesquisa e não incluí-los pode enviesar a amostra.
+
+```{r}
+nonpres = model_polls_2 %>%
+    filter(year == 2020 & turno == 2 & SG_UE %in% cap) %>%
+    filter(is_phone | pretty_name == 'Atlas Político')
+
+nonpres_error = mean(nonpres$mm3)
+
+pres_error = model_polls_2 %>%
+    filter(year == 2020 & turno == 2 & SG_UE %in% nonpres$SG_UE) %>%
+    filter(!(is_phone | pretty_name == 'Atlas Político')) %>%
+    pull(mm3) %>%
+    mean()
+```
+
+Isso pode explicar, em parte, por que pesquisas telefônicas e por Internet
+tiveram desempenho melhor em 2020 do que as presenciais. As não-presenciais
+tiveram erro percentual médio de **`r pn(nonpres_error)` pontos percentuais**
+nas capitais em que foram realizadas, comparado a um erro de
+**`r pn(pres_error)`** entre as presenciais nas mesmas cidades.
+
+De toda forma, mesmo o erro das pesquisas não-presenciais no segundo turno de
+2020 nas capitais superou o erro médio dos anos anteriores. Para entender esta
+piora — que não pode ser atribuída à desatualização dos dados demográficos
+— precisamos de outras explicações.
+
+###### _4) Aumento da abstenção_
+
+O [crescimento da
+abstenção](https://pindograma.com.br/2020/11/17/abstencoes.html) nas eleições
+de 2020 também pode explicar uma parte do erro das pesquisas. Mesmo que a
+amostra de um instituto de pesquisas represente perfeitamente o eleitorado, o
+resultado ainda será enviesado caso parte significativa desse eleitorado deixe
+de comparecer às urnas. O mais importante para uma pesquisa é representar quem
+_vai_ votar, não quem _pode_ votar.
+
+No Brasil, o voto é obrigatório, e quem puder votar geralmente vai votar. Nas
+últimas eleições presidenciais brasileiras, a abstenção ficou [em torno de
+20%](https://agenciabrasil.ebc.com.br/politica/noticia/2018-10/taxa-de-abstencao-na-eleicao-presidencial-e-maior-desde-1998),
+enquanto nas eleições estadunidenses, onde o voto é facultativo, esse
+percentual [chegou a
+40%](https://www.census.gov/newsroom/blogs/random-samplings/2017/05/voting_in_america.html)
+em 2016. Em 2020, no entanto, a abstenção no Brasil ficou [próxima de
+30%](https://www1.folha.uol.com.br/poder/2020/11/abstencao-pelo-pais-bate-295-no-2o-turno-em-meio-a-pandemia-maior-indice-ja-registrado.shtml),
+o que pode ter gerado um descompasso inédito entre o eleitorado como um todo e
+quem efetivamente foi às urnas.
+
+Os institutos brasileiros nunca se preocuparam muito com essa discrepância.
+Andrei Roman, do Atlas Intel, diz que seu instituto não tenta identificar
+eleitores que pretendem votar de fato. O mesmo se aplica ao Ibope, que incluiu
+nas intenções de voto mesmo os entrevistados que disseram não saber se iriam
+votar. Márcia Cavallari, do Ibope, explica que o instituto não podia
+simplesmente "chegar e falar que esses caras não vão".
+
+Este ano, essa falta de tratamento para a abstenção pode ter afetado o
+resultado das pesquisas. O diretor de pesquisas do Datafolha, Alessandro
+Janoni, [escreveu na
+Folha](https://www1.folha.uol.com.br/poder/2020/11/covid-e-fe-marcam-reta-final-da-eleicao-da-pandemia.shtml)
+a um dia da eleição paulistana que "entre os jovens, segmento onde [Guilherme]
+Boulos (PSOL) tem quase 70% dos votos válidos, o medo [de votar] supera em 11
+pontos percentuais o índice verificado entre os que têm 60 anos ou mais". No
+dia seguinte, ficou claro que as pesquisas haviam superestimado Boulos.
+
+O problema fica ainda mais claro ao cruzarmos o voto em Bruno Covas com a
+abstenção em locais de votação na cidade de São Paulo. Mesmo quando controlamos
+pela renda — fator que afeta a taxa de abstenção do eleitor — Covas teve
+desempenho melhor em locais com maior abstenção. Isso sugere que algumas
+pessoas possam ter dito aos institutos de pesquisa que votariam em Boulos, mas
+deixaram de comparecer no dia da eleição:
+
+```{r}
+sp20_merged_sm = sp20_merged %>%
+  mutate(sm = forcats::fct_reorder(case_when(
+    renda.x <= 510 ~ 'Renda média até 1 salário mínimo',
+    renda.x <= 1020 ~ 'Renda média entre 1 e 2 salários mínimos',
+    renda.x <= 2550 ~ 'Renda média entre 2 e 5 salários mínimos',
+    T ~ 'Renda média acima de 5 salários mínimos'
+  ), renda.x))
+
+ggplot(sp20_merged_sm, aes(x = cand_abstencao, y = cand_45)) +
+  geom_point(color = pg_blue) +
+  geom_smooth(color = pg_orange, method = 'lm') +
+  labs(title = 'Abstenção e Votos em Bruno Covas, São Paulo, 2020',
+      subtitle = '(cada ponto é um local de votação)',
+      caption = 'Fonte: TSE, Pindograma') +
+  facet_wrap(~sm) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1), limits = c(.2, .4)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(.3, .8)) +
+  xlab('Abstenção') + ylab('Votos em Bruno Covas') +
+  theme_pindograma()
+```
+
+Embora essa explicação se aplique bem a São Paulo, padrões como este não
+aparecem tão nitidamente em cidades como Recife e Fortaleza, que também tiveram
+um erro alto nas pesquisas eleitorais. O _Pindograma_ ainda pretende publicar
+matérias sobre os padrões de abstenção nas eleições brasileiras e a dimensão de
+seu impacto nas pesquisas.
+
+###### _5) Eleitores demoraram mais para decidir o voto em 2020 que em outros anos_
+
+A resposta padrão dos institutos de pesquisa para justificar erros nas suas
+sondagens é afirmar que os eleitores mudam de ideia entre a última pesquisa e a
+hora de votar. A pesquisa seria um termômetro do momento, não uma previsão de
+quem vai ganhar a eleição.
+
+Tudo isso é verdade, mas é tão verdade para 2020 quanto para os anos
+anteriores. A indecisão do eleitor não é um fenômeno particular às eleições
+deste ano. A pergunta é se haveria algum fator em 2020 que tornaria os pleitos
+ainda mais incertos do que haviam sido nos anos anteriores.
+
+O cientista político Jairo Pimentel, pesquisador da Fundação Getúlio Vargas,
+acredita que sim. Em [entrevista à Carta
+Capital](https://www.cartacapital.com.br/politica/fora-da-curva-porque-as-pesquisas-passaram-longe-dos-resultados/),
+ele afirmou que "as informações da internet abastecem o eleitor com fatos
+contraditórios a todo momento… Essa pressão dificulta a sustentação de uma
+relação de longo prazo com um partido ou uma liderança, o que torna o eleitor
+mais suscetível ao impacto do curto prazo". Exemplos desses impactos de curto
+prazo incluem notícias publicadas ou
+[debates](https://pindograma.com.br/2020/11/29/prosodia.html) realizados a
+poucos dias do pleito.
+
+Para Andrei Roman, do Atlas Intel, o clima de polarização foi maior em 2020 que
+em 2016, o que também aumenta a incerteza anterior ao pleito.
+
+Segundo ele, a polarização aumenta a rejeição aos candidatos que chegam ao
+segundo turno e os eleitores que rejeitam ambos os candidatos demoram mais para
+decidir em quem vão votar: "boa parte do eleitorado do primeiro turno que
+pertencia aos candidatos derrotados não gostava de nenhum dos dois candidatos
+do segundo turno e, por conta disso, declarava nas pesquisas uma opção de voto
+branco ou nulo. Em torno de 70% do eleitorado da Delegada Patrícia [no] Recife
+estava nessa situação. Mas não é razoável pensar que tantos eleitores assim vão
+realmente votar branco ou nulo e acho que isso acabou não acontecendo".
+
+Essa explicação é atraente porque explica, diferentemente das teorias
+anteriores, por que o desempenho das pesquisas ficou abaixo do esperado no
+segundo turno, embora não tenha sido particularmente ruim no primeiro.
+
+A teoria também explica, em parte, por que as pesquisas subestimaram candidatos
+mais à direita em cidades como o Rio, São Paulo, Vitória, Porto Alegre,
+Fortaleza e Belém.
+
+Candidatos de esquerda derrotados no primeiro turno parecem ter facilmente
+transmitido seus votos para o candidato mais à esquerda que chegou ao segundo
+turno, como Jilmar Tatto (PT) para Guilherme Boulos em São Paulo e [Luizianne
+Lins
+(PT)](https://g1.globo.com/ce/ceara/eleicoes/2020/noticia/2020/11/23/pesquisa-ibope-fortaleza-70percent-dos-eleitores-de-luizianne-no-1o-turno-declaram-voto-em-sarto-no-2o-wagner-tem-11percent.ghtml)
+para José Sarto (PDT) em Fortaleza. Já quem votou em candidatos de centro ou de
+direita no primeiro turno parece ter demorado mais para decidir o voto no
+segundo turno. Por isso, as pesquisas podem ter sido mais imprecisas ao
+capturar as intenções desse segmento.
+
+```{r}
+undecided_20 = model_polls_2 %>%
+  filter(year == 2020 & turno == 2 & one_week_prior) %>%
+  pull(undecided) %>%
+  mean()
+
+undecided_16 = model_polls_2 %>%
+  filter(year == 2016 & turno == 2 & one_week_prior) %>%
+  pull(undecided) %>%
+  mean()
+```
+
+Entretanto, há pelo menos um fato que se contrapõe à teoria. No segundo turno
+de 2020, a proporção de eleitores que pretendiam votar nulo, em branco ou que
+se declararam indecisos na última semana foi, em média, de `r pn(undecided_20)`%. Já em 2016,
+esse número havia sido de `r pn(undecided_16)`%. Em outras palavras, o
+contingente de eleitores que ainda não haviam declarado um candidato aos
+institutos às vésperas da eleição — e que, portanto, tinham chances mais altas
+de votar imprevisivelmente — não parece ter sido maior em 2020 do que na
+eleição anterior.
+
+##### Lições para o futuro
+
+Nenhuma das cinco teorias — nem a mais plausível — é uma bala de prata que
+explica o erro das pesquisas eleitorais em todas as cidades. Mas elas sugerem
+alguns passos que tanto a imprensa quanto os institutos podem tomar para
+tornarem as sondagens mais confiáveis:
+
+###### _1) Institutos têm que implementar "modelos de probabilidade do voto"_
+
+Em países com taxas de abstenção altas, as empresas de pesquisa não se
+contentam com resultados piores. É praxe dos institutos criar técnicas para
+separar os eleitores que podem votar dos eleitores que efetivamente vão votar.
+
+A complexidade dessas técnicas pode variar de acordo com os institutos. Nos
+Estados Unidos, algumas empresas simplesmente [excluem da
+contagem](https://fivethirtyeight.com/features/politics-podcast-how-to-make-polls-better/)
+todo entrevistado que não tenha certeza se irá votar. Outros institutos tentam
+extrapolar, analisando eleições passadas, qual é o perfil do eleitor que vai às
+urnas no país. Essas técnicas são chamadas de _modelos de probabilidade de
+voto_.
+
+Os níveis de abstenção de 2020 indicam que está na hora dos institutos
+brasileiros implementarem esse tipo de modelo no país — um desafio que a
+presidente do Ibope, Márcia Cavallari, parece ter aceito.
+
+"A abstenção deixa um aprendizado pra gente melhorar pras próximas… A gente tá
+já estudando pra ver como é que a gente consegue resolver isso", diz. Para ela,
+com dados sobre o gênero, a idade e a escolaridade dos eleitores que se
+abstiveram em 2020, "já conseguimos resolver um monte de coisa". Resta ver se
+os outros institutos brasileiros pretendem seguir passos similares.
+
+###### _2) Precisamos transmitir melhor a incerteza das pesquisas_
+
+Toda pesquisa eleitoral carrega consigo uma incerteza. **Só que a "margem de
+erro" divulgada na imprensa é um índice péssimo para quantificar essa
+incerteza.** Ela dá ao público a impressão de que as pesquisas são mais
+certeiras do que realmente são e, com isso, cria uma expectativa que não
+corresponde à realidade do pleito.
+
+Como vimos, existem uma série de erros que podem afetar a qualidade das
+pesquisas — como taxas de resposta desiguais, desatualização em dados
+censitários ou a inclusão de eleitores que irão se abster. Absolutamente
+[nenhum desses erros é
+capturado](http://pollingdata.com.br/2020/08/como-avaliar-a-qualidade-das-pesquisas-de-opiniao-publica-no-brasil/)
+pela "margem de erro".
+
+A única coisa que a "margem de erro" busca quantificar é o chamado
+_[erro amostral](https://pt.wikipedia.org/wiki/Erro_amostral)_, isto é, a
+imprecisão dos levantamentos por conta de um número reduzido de entrevistados.
+Por exemplo, uma pesquisa no Rio de Janeiro com 600 entrevistados terá uma
+margem de erro maior que uma pesquisa com 2.000 entrevistados.
+
+Mas nem para isso a "margem de erro" serve bem. Praticamente todos os
+estatísticos e donos de instituto ouvidos pelo _Pindograma_ concordam que as
+margens de erro divulgadas junto com a maioria das pesquisas brasileiras têm
+[pouca validade
+estatística](https://www.ime.unicamp.br/~nancy/Cursos/me320/falaciaPesquisaEleitoral.pdf).
+Mesmo Márcia Cavallari, do Ibope, as descreve como **"margens de erro
+fictícias"**. O _Pindograma_ só as divulga no nosso agregador de pesquisas
+porque a [legislação](http://www.planalto.gov.br/ccivil_03/leis/l9504.htm)
+assim o exige, e fazemos questão de dar o mínimo destaque para este número.
+
+```{r}
+last_week_16_error = model_polls_2 %>%
+  filter(year == 2016 & turno == 2 & one_week_prior) %>%
+  pull(mm3) %>%
+  mean()
+```
+
+Hoje, o melhor indicador que temos para informar aos nossos leitores quão
+incertas são as pesquisas é o erro retrospectivo das sondagens. Em 2016, por
+exemplo, as pesquisas para prefeito feitas a uma semana do segundo turno haviam
+errado **`r pn(last_week_16_error)` pontos percentuais em média**. Mesmo que a
+qualidade das pesquisas não tivesse piorado em 2020, já era improvável que o
+resultado de uma eleição para prefeito caísse dentro de uma "margem de erro" de
+2 ou 3 pontos percentuais, como as declaradas pelo Datafolha.
+
+Pode ser difícil — se não impossível — para os institutos resolverem problemas
+como taxas de resposta desiguais ou a imprevisibilidade do eleitorado.
+Portanto, a imprensa precisa aceitar essas incertezas, transmitindo de forma
+mais realista e honesta o grau de precisão que podemos realmente esperar das
+pesquisas eleitorais.
+
+Em 2024, quando virmos uma pesquisa na última semana do pleito dando 53% dos
+votos para uma prefeitável e 47% para outra, uma virada deveria ser tratada
+como um evento quase tão provável quanto uma vitória da líder — não como uma
+possibilidade remota "no limite", ou fora, da "margem de erro".
+
+Ao mesmo tempo, é ilusório acreditar meramente que "as pesquisas erram" e que,
+por isso, vale tudo na análise política. Apesar dos erros em 2020, quase nenhum
+prefeito eleito no segundo turno foi uma surpresa completa. E desde o fim de
+outubro, as pesquisas [já nos permitiam
+prever](https://pindograma.com.br/2020/10/27/liderando1.html) que o Centrão
+seria o grande vitorioso do pleito.
+
+As pesquisas carregam incertezas, mas essas incertezas também têm limites.
+Entre uma série de pesquisas que deem 60% dos votos para um candidato e a
+opinião de um "especialista" em sentido contrário, o _Pindograma_ não hesitará
+em prever uma vitória desse candidato com chances bem altas.
+
+---
+
+**Dados utilizados na matéria**: Resultados de Pesquisas Eleitorais
+(_Pindograma_, Poder360); Locais de Votação (_Pindograma_);
+Resultados das Eleições (Tribunal Superior Eleitoral).
+
+**Contribuiu com Dados**: Pedro Fonseca.
+
+**Créditos da imagem**: Cornelius Kibelka/Flickr.
+
+Para reproduzir os números citados na matéria, o código e os dados
+podem ser acessados [aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-12-10-pesquisas-analise/Pesquisas.Rmd
