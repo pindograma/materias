@@ -27,7 +27,6 @@ theme_pindograma = function() {
     theme(plot.title = element_text(size = 16,
                                     color = pg_dark_gray,
                                     hjust = 0.5,
-                                    margin = margin(5, 0, 15, 0),
                                     face = 'bold')) +
     theme(axis.title.x = element_text(margin = margin(t=15)))+
     theme(axis.title.y = element_text(margin = margin(t=10)))+
