@@ -1,0 +1,381 @@
+---
+title: "São Paulo"
+author: "João Costa"
+date: "23/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(cowplot)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+O ciclo de debates nas eleições para prefeito de São Paulo terminaria nesta
+sexta-feira, dia 27, com um debate na Rede Globo. No entanto, o candidato
+Guilherme Boulos (PSOL) foi diagnosticado com COVID-19 e o evento com seu rival
+Bruno Covas (PSDB) foi cancelado. Já que não houve tempo para mais um debate, o
+_Pindograma_ trouxe uma análise aprofundada dos debates anteriores para
+entender o que o jeito de falar de cada candidato diz sobre eles.
+
+Durante a corrida, houve 5 debates e uma sabatina no Roda Viva que contaram com
+a presença dos dois candidatos. Com as gravações de áudio destas transmissões,
+fizemos uma análise do ritmo de fala, pausas, tom e volume de voz de cada
+candidato. Com isso, caracterizamos o jeito de falar dos candidatos e perceber
+como isso pode ser influenciado por assuntos específicos.
+
+O levantamento indica que Covas tende à cautela ao falar de seu vice, mas
+parece mais à vontade quando trata de gestão pública. Já Boulos aparenta ter
+falas mais enérgicas quando critica serviços terceirizados pela gestão atual,
+mas parece assumir um tom mais sério e cuidadoso quando discute sua atuação
+como militante. 
+
+---
+
+###### Quadro geral das falas
+
+Ouvindo as falas como um todo, os dados mostram que Boulos apresenta um ritmo
+mais rápido de fala, tom de voz mais alto e maior variação no tom de voz. Isso
+faz com que a fala do psolista fique mais "cantada" e menos monotônica, como a
+de seu rival, Bruno Covas. A fala do tucano varia menos, tem um tom geralmente
+mais baixo e é mais devagar:
+
+```{r}
+vg = read_csv('visao_geral.csv')
+
+plot1 = ggplot(vg, aes(x = candidato, y = `tom médio (média)`)) +
+  ggtitle('Tom de voz') +
+  labs(subtitle = '(em Hertz)') +
+  geom_errorbar(aes(ymin = `tom médio (média)`+`tom médio (desvio padrão)`, ymax = `tom médio (média)`-`tom médio (desvio padrão)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  annotate('curve', curvature = -.15,
+          x = 0.8, xend = 0.95,
+          y = 130, yend = 135.5,
+          arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+          color = "grey30") +
+  annotate('text', label = 'Média',
+            color = "grey10",
+            x = 0.8, y = 128, size = 3.5, family = 'Fantasque') +
+  annotate('curve', curvature = 0,
+          x = 1.3, xend = 1.05,
+          y = 145, yend = 145,
+          arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .5,
+          color = "grey30") +
+  annotate('text', label = 'Intervalo de tons\nmais usados',
+            color = "grey10",
+            x = 1.7, y = 145, size = 3.5, family = 'Fantasque', lineheight = .75) +
+  theme_pindograma() +
+  theme(plot.title.position = 'panel') +
+  xlab('') +
+  ylab('\u2190 Voz grave') +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12)) +
+  theme(axis.text.y = element_text(size = 10))
+
+plot2 = ggplot(vg, aes(x = candidato, y = `ritmo de articulação (média)`)) +
+  ggtitle('Ritmo de fala') +
+  labs(subtitle = '(em sílabas por segundo)') +
+  geom_errorbar(aes(ymin = `ritmo de articulação (média)`+`ritmo de articulação (desvio padrão)`, ymax = `ritmo de articulação (média)`-`ritmo de articulação (desvio padrão)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(plot.title.position = 'panel') +
+  xlab('') +
+  ylab('\u2190 Fala devagar') +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12))
+
+plot3 = ggplot(vg, aes(x = candidato, y = `intensidade média (média)`)) +
+  ggtitle('Volume da voz') +
+  labs(subtitle = '(em dB RMS)') +
+  geom_errorbar(aes(ymin = `intensidade média (média)`+`intensidade média (desvio padrão)`, ymax = `intensidade média (média)`-`intensidade média (desvio padrão)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(plot.title.position = 'panel') +
+  xlab('') +
+  ylab('\u2190 Volume baixo') +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12))
+
+plot4 = ggplot(vg, aes(x = candidato, y = `var. tom (média)`)) +
+  ggtitle('Variação no tom de voz') +
+  labs(subtitle = '(em Hertz)') +
+  geom_errorbar(aes(ymin = `var. tom (média)`+`var. tom (desvio padrão)`, ymax = `var. tom (média)`-`var. tom (desvio padrão)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(plot.title.position = 'panel') +
+  xlab('') +
+  ylab('\u2190 Fala monotônica') +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12))
+
+plot_grid(plot1, plot2, plot3, plot4, nrow = 2, ncol = 2)
+```
+
+Uma surpresa, talvez, esteja no volume das vozes. Ainda que bastante
+equiparáveis, as falas de Covas apresentam um volume médio maior do que as de
+Boulos. Esse dado vai contra a fama dos discursos inflamados do psolista e
+indica uma mudança [bastante
+comentada](https://valor.globo.com/politica/noticia/2020/11/13/moderado-boulos-ainda-busca-voto-da-periferia.ghtml)
+em sua postura, que teria assumido um tom mais moderado nessas eleições.
+
+Mas o jeito de falar dos candidatos não é único, e varia conforme o tema.
+
+###### A fala de Bruno Covas
+
+Quando ouvimos as falas do atual prefeito, dois temas chamam a atenção. Em suas
+quatro falas sobre seu vice, Ricardo Nunes
+([MDB](https://pindograma.com.br/2020/10/21/mdb.html)), Covas teve uma
+constância de ritmo de voz incomum. Além disso, o ritmo de Covas ao falar de
+seu vice foi mais rápido que a média de suas falas:
+
+```{r}
+features = read_csv('features_por_tema.csv') %>%
+  mutate(tema = case_when(
+    tema == 'polarização/radicalismo' ~ 'polarização/\nradicalismo',
+    tema == 'responsabilidade fiscal' ~ 'responsabilidade\nfiscal',
+    tema == 'terceirização/serv. público' ~ 'terceirização/\nserv. público',
+    T ~ tema
+  ))
+
+covas = features %>%
+  filter(candidato == 'Covas')
+
+ggplot(covas, aes(x = fct_reorder(tema, `ritmo de fala (média)`), y = `ritmo de fala (média)`)) +
+  ggtitle('Ritmo de fala por tema - Bruno Covas') +
+  labs(subtitle = '(sílabas por segundo)') +
+  geom_errorbar(aes(ymin = `ritmo de fala (média)`-`ritmo de fala (desvio padrão)`, ymax = `ritmo de fala (média)`+`ritmo de fala (desvio padrão)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12)) +
+  theme(axis.text.x = element_text(angle = 90, size = 12)) +
+  ylab('\u2190 Devagar') + xlab('')
+```
+
+Ao falar de Nunes, Covas também assumiu um tom de voz mais grosso. Entre todas
+as falas analisadas do candidato nos 6 debates, seu tom mais grosso foi
+justamente em uma fala de 40 segundos tratando do boletim de ocorrência
+registrado pela esposa de Ricardo Nunes em um [caso de violência
+doméstica](https://www1.folha.uol.com.br/poder/2020/10/vice-de-covas-foi-acusado-pela-esposa-de-violencia-domestica-e-ameaca.shtml).
+Esse tom mais grosso e ritmo constante pode indicar uma maior cautela do tucano
+ao falar do assunto, assim como pode conferir-lhe mais seriedade:
+
+```{r}
+ggplot(covas, aes(x = fct_reorder(tema, `tom de voz (média)`), y = `tom de voz (média)`)) +
+  ggtitle('Tom de voz por tema - Bruno Covas') +
+  labs(subtitle = '(em Hertz)') +
+  geom_errorbar(aes(ymin = `tom de voz (média)`-`tom de voz (desvio padrão)`, ymax = `tom de voz (média)`+`tom de voz (desvio padrão)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12)) +
+  theme(axis.text.x = element_text(angle = 90, size = 12)) +
+  ylab('\u2190 Voz grave') + xlab('')
+```
+
+Por outro lado, Covas atingiu seus tons mais finos e ritmos mais brandos quando
+tocou no assunto da terceirização de serviços públicos, situação em que se
+contrapõe energicamente à posição de seu oponente. **Enquanto Covas aparenta
+mais cautela e nervosismo ao falar de seu vice, ele tem uma postura propositiva
+e confiante ao tratar de temas como terceirização e responsabilidade fiscal**. 
+
+###### A fala de Guilherme Boulos
+
+Assim como Covas, Boulos também apresenta seus momentos de cautela. Para se
+defender contra ataques, que geralmente são sobre sua inexperiência ou
+acusações de ter um passado extremista, sua fala fica com tons de voz mais
+graves e com ritmo mais devagar. 
+
+```{r}
+boulos = features %>%
+  filter(candidato == 'Boulos')
+
+ggplot(boulos, aes(x = fct_reorder(tema, `ritmo de fala (média)`), y = `ritmo de fala (média)`)) +
+  ggtitle('Ritmo de fala por tema - Guilherme Boulos') +
+  labs(subtitle = '(sílabas por segundo)') +
+  geom_errorbar(aes(ymin = `ritmo de fala (média)`-`ritmo de fala (desvio padrão)`, ymax = `ritmo de fala (média)`+`ritmo de fala (desvio padrão)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12)) +
+  theme(axis.text.x = element_text(angle = 90, size = 12)) +
+  ylab('\u2190 Devagar') + xlab('')
+```
+
+Por exemplo, a sua fala de menor ritmo entre todas as analisadas foi no Roda
+Viva, quando respondeu ao jornalista Eduardo Kattah sobre a sua atuação
+"radical" com a seguinte frase: "Eu luto, Eduardo, há vinte anos para que as
+pessoas tenham um teto... Isso é radicalismo?". Este ritmo mais lento quando
+relata sua atuação política lhe dá um tom mais apelativo e dramático. O
+candidato também prioriza falas mais articuladas nestes casos. 
+
+Boulos assume uma estratégia diferente ao falar do tema da terceirização do
+serviço público — também bastante usado como ponto de ataque contra ele e de
+diferenciação entre ele e seu rival.  Nestes casos, a fala se destaca pelo tom
+alto:
+
+```{r}
+ggplot(covas, aes(x = fct_reorder(tema, `tom de voz (média)`), y = `tom de voz (média)`)) +
+  ggtitle('Tom de voz por tema - Guilherme Boulos') +
+  labs(subtitle = '(em Hertz)') +
+  geom_errorbar(aes(ymin = `tom de voz (média)`-`tom de voz (desvio padrão)`, ymax = `tom de voz (média)`+`tom de voz (desvio padrão)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12)) +
+  theme(axis.text.x = element_text(angle = 90, size = 12)) +
+  ylab('\u2190 Voz grave') + xlab('')
+```
+
+Para justificar sua posição, Boulos geralmente [denuncia irregularidades
+em alguns
+contratos](https://valor.globo.com/politica/noticia/2020/11/25/boulos-quer-revisar-concessoes-e-contratos-mas-sem-rasgar-nada.ghtml)
+de Organizações Sociais, o que poderia explicar seu tom mais elevado.
+
+Outro ponto que analisamos foi a diferença no discurso adotado por Boulos nos
+debates da campanha presidencial de 2018 e nos da campanha municipal de 2020,
+para avaliar se o candidato realmente assumiu um tom mais brando e moderado nas
+eleições deste ano:
+
+```{r}
+bouloscmp = read_csv('boulos_2018_2020.csv')
+
+plot1 = ggplot(bouloscmp, aes(x = factor(ano), y = `Tempo médio de pausa (mean)`)) +
+  ggtitle('Tempo de pausa') +
+  labs(subtitle = '(em segundos)') +
+  geom_errorbar(aes(ymin = `Tempo médio de pausa (mean)`-`Tempo médio de pausa (dp)`, ymax = `Tempo médio de pausa (mean)`+`Tempo médio de pausa (dp)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12)) +
+  theme(plot.title.position = 'panel') +
+  ylab('\u2190 Fala mais pausada') +
+  xlab('')
+
+plot2 = ggplot(bouloscmp, aes(x = factor(ano), y = `Tom de voz médio (mean)`)) +
+  ggtitle('Tom de voz') +
+  labs(subtitle = '(em Hertz)') +
+  geom_errorbar(aes(ymin = `Tom de voz médio (mean)`-`Tom de voz médio (dp)`, ymax = `Tom de voz médio (mean)`+`Tom de voz médio (dp)`), width = 0, color = pg_blue) +
+  geom_point(color = pg_orange) +
+  theme_pindograma() +
+  theme(axis.title.y = element_text(margin = margin(t=10, l = 10, r = 10, b = 10), size = 12)) +
+  theme(plot.title.position = 'panel') +
+  xlab('') +
+  ylab('\u2190 Voz grave')
+
+plot_grid(plot1, plot2, nrow = 1)
+```
+
+Até certo ponto, os gráficos parecem confirmar a intuição de que Boulos
+[abrandou](https://valor.globo.com/politica/noticia/2020/10/27/boulos-modera-discurso-e-diz-que-nao-e-inimigo-do-setor-privado-ou-invasor-de-casas.ghtml)
+suas falas inflamadas de 2018. As principais diferenças estão no tempo médio de
+pausa, substancialmente maior em 2020, e no tom de voz, agora bastante abaixo
+do seu tom de 2018. 
+
+A diminuição no tom de voz, junto com um dinamismo maior em seu volume, apontam
+para um discurso mais pausado e menos enérgico que o da eleição anterior, o que
+pode ser interpretado como uma postura mais moderada do candidato em sua fala.
+Porém, a velocidade do discurso de Boulos parece ter crescido com relação a
+2018, o que pode indicar que, apesar do tom mais brando, o candidato mantém uma
+postura propositiva nos debates.
+
+###### Os temas nos debates
+
+Para uma análise mais detalhada do que foi discutido nos debates, rotulamos
+cada fala com seu tema correspondente, o que possibilita elencar os temas em
+destaque nessa corrida eleitoral:
+
+```{r}
+totais_tema = read_csv('totais_tema.csv') %>%
+  mutate(tema = str_to_title(tema)) %>%
+  mutate(`duração total de falas` = `duração total de falas` / 60)
+
+tot_tema = totais_tema %>%
+  group_by(tema) %>%
+  summarize(duration = sum(`duração total de falas`)) %>%
+  ungroup() %>%
+  arrange(desc(duration)) %>%
+  filter(row_number() <= 10)
+
+ggplot(tot_tema, aes(x = fct_reorder(tema, duration), y = duration)) +
+  geom_col(position = 'dodge', fill = pg_green) +
+  coord_flip() +
+  theme_pindograma() +
+  xlab('') + ylab('Duração (minutos)') +
+  theme(axis.text.y = element_text(size = 14))
+```
+
+Algumas omissões notáveis neste top 10 são: Meio Ambiente (31º de 35 temas com
+56 segundos), Cultura (25º de 35 temas com 2 minutos), Renda Emergencial (menos
+de 3 minutos dedicados) e Racismo/Minorias (em 11º com 9 minutos). Mas por
+candidato, essa distribuição é um pouco diferente:
+
+```{r fig.width=8, fig.height=8}
+tot_tema2 = totais_tema %>%
+  group_by(tema) %>%
+  filter(n_distinct(candidato) == 2) %>%
+  ungroup()
+
+ggplot(tot_tema2, aes(x = fct_reorder(tema, `duração total de falas`), y = `duração total de falas`, fill = candidato)) +
+  geom_col(position = 'dodge') +
+  coord_flip() +
+  theme_pindograma() +
+  theme(axis.text.y = element_text(size = 14)) +
+  scale_fill_manual(values = c(pg_orange, pg_blue)) +
+  guides(fill = guide_legend(title = 'Candidato')) +
+  ylab('Duração (minutos)') + xlab('')
+```
+
+Como era esperado, o tema da pandemia dominou os debates. O prefeito Bruno
+Covas passou o dobro de tempo falando deste assunto do que seu segundo tema
+mais abordado: a economia. Covas, além de falar mais sobre o enfrentamento da
+pandemia que o rival, priorizou o tema da responsabilidade fiscal, assunto que
+usa para desacreditar seu adversário.
+
+Já Boulos focou mais em diminuir sua pecha de "radical", além de trazer mais à
+tona a questão da moradia e atacar o candidato a vice-prefeito do rival,
+Ricardo Nunes (MDB). Por fim, enfatizou o tema da terceirização e do serviço
+público, questão divisora entre os candidatos.
+
+###### Metodologia
+
+Foram analisados 6 debates dos candidatos à prefeitura de São Paulo: três do
+primeiro turno (promovidos pela
+[Band](https://www.band.uol.com.br/eleicoes/noticias/band-define-as-regras-para-o-primeiro-debate-eleitoral-em-sao-paulo-16309976),
+[TV
+Cultura](https://www.abcdoabc.com.br/abc/noticia/tv-cultura-promove-debate-candidatos-prefeito-sao-paulo-nesta-quinta-feira-111653)
+e
+[Folha](https://noticias.uol.com.br/eleicoes/2020/11/11/integra-debate-uol---bloco-1.htm))
+e três do segundo turno (promovidos pela [CNN
+Brasil](https://www.cnnbrasil.com.br/nacional/2020/11/15/cnn-organiza-primeiro-debate-entre-candidatos-a-prefeito-de-sp-nesta-segunda]),
+[Band](https://www.band.uol.com.br/eleicoes/debates/2turno) e a sabatina no
+[Roda
+Viva](https://www1.folha.uol.com.br/ilustrada/2020/11/covas-e-boulos-dividem-edicao-especial-do-roda-viva-na-cultura.shtml)).
+Em cada debate, recortamos todas as falas (perguntas, respostas, réplicas e
+tréplicas) dos candidatos e analisamos as seguintes características acústicas
+para cada fala: 
+
+* número de pausas;
+* tempo de fonação (tempo de resposta menos o tempo gasto em pausas);
+* número aproximado de sílabas;
+* ritmo de fala (número de sílabas por tempo de resposta);
+* características de intensidade e de frequência fundamental (tom ou "pitch" da voz).
+
+Além disso, anotamos também o tema de cada fala. 
+
+Para a análise das falas de Guilherme Boulos em 2018, analisamos os debates na
+RedeTV (17.8.2018), TV Gazeta (9.9.2018), SBT (26.9.2018) e Record (30.9.2018)
+— feita em um [estudo
+prévio](https://nicolasfigueiredo.medium.com/a-pros%C3%B3dia-dos-debates-presidenciais-de-2018-958a323af4b4)
+seguindo os mesmos moldes do levantamento feito para 2020.
+
+---
+
+**Contribuiu com gráficos**: Daniel Ferreira.
+
+**Créditos da imagem**: Kelly Queiroz/CNN Brasil/Divulgação.
+
+Para reproduzir os números da matéria, o código e os dados podem ser acessados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-28-prosodia/Prosodia.Rmd
