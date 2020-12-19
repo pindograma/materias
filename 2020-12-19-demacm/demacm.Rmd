@@ -1,0 +1,151 @@
+---
+title: "Partidos em números: PV e REDE"
+author: "João Costa"
+date: "18/12/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+
+load('./data/demacm.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+O partido que mais aumentou seu número de prefeituras em 2020 foi o [Democratas](https://pindograma.com.br/2020/11/03/dem-rep.html). Além de crescer de 269 para 459 prefeituras este ano, o DEM passou a governar algumas das capitais mais populosas do país. Dados analisados pelo _Pindograma_ confirmam que o partido trouxe candidatos com grande potencial eleitoral, mobilizou suas estruturas regionais e aproveitou sua influência no Congresso Nacional para vencer as eleições deste ano.
+
+---
+
+#### Novos Democratas
+
+O prefeito de Salvador e presidente do Democratas, ACM Neto, explicou ao _Pindograma_ que seu partido não teve de mudar muito para conquistar a enorme vitória desse ano. Perguntado sobre o que essa vitória diz sobre o atual momento político, ACM Neto explicou que "apesar dos resultados de 2018 apontarem para essa direção da renovação política, o Democratas entendeu, nos últimos dois anos, que o eleitor não está mais buscando o novo, mas o concreto. E o resultado das urnas em 2020 demonstrou essa vontade".
+
+O prefeito de Salvador fez seu sucessor em primeiro turno com seu atual vice-prefeito e aliado de longa data no partido, Bruno Reis. Nas três outras capitais conquistadas pelo Democratas este ano, prefeitos que passaram anos no [MDB](https://pindograma.com.br/2020/10/21/mdb.html) se filiaram ao DEM recentemente e venceram as eleições.
+
+No Rio de Janeiro, o partido elegeu Eduardo Paes, que já fora prefeito da Cidade Maravilhosa duas vezes pelo MDB. Em Florianópolis, Gean Loureiro havia sido eleito prefeito em 2016 pelo MDB e foi reeleito esse ano pelo Democratas. Em Curitiba, o prefeito Rafael Greca passou 12 anos no PMDB, até se eleger prefeito pelo PMN em 2016 e agora pelo DEM em 2020. Todos foram reconduzidos ao governo pelo Democratas com ampla vantagem. A estratégia de persuadir lideranças de centro-direita já populares em suas cidades a mudarem de legenda funcionou muito bem para o partido, levando-o a ganhar importantes disputas.
+
+Além dessas corridas já encerradas, o DEM ainda tem chance de conquistar a quinta capital, em Macapá. A capital amapaense teve sua eleição adiada devido ao apagão de 22 dias que afetou o estado em novembro. Caso Josiel Alcolumbre, irmão do presidente do Senado Davi Alcolumbre, vença, o DEM governará o mesmo número de capitais que o MDB, 5.
+
+Para Murilo Medeiros, assessor legislativo do Democratas no Senado e estrategista do partido, "o Democratas aglutinou forças que estavam esparsas ou em legendas pequenas ou desgastadas''. 
+
+Medeiros explica que o Democratas se tornou uma alternativa atraente para lideranças locais se projetarem, já que saiu relativamente ileso da crise política, quando a onda da Operação Lava-Jato degradou as maiores legendas tradicionais. 
+
+Entre 2016 e 2020, o número de candidatos a prefeito do DEM cresceu 55%. O crescimento foi ainda maior em cidades com menos de 100 mil habitantes, onde o número de candidatos do partido foi de 357 em 2016 para 1.000 em 2020, um crescimento de **180%**. Em cidades do mesmo porte, o crescimento do MDB foi de apenas 32%. 
+
+A deterioração de legendas como o PSDB, que perdeu 279 prefeituras desde a última eleição, pode explicar por que o DEM, de acordo com Medeiros, "saiu do Nordeste". O PSDB concentra boa parte de suas bases eleitorais no Sul e no Sudeste do país, onde o DEM avançou esse ano. Ao todo, 63 prefeituras vencidas pelo PSDB em 2016 foram conquistadas pelo Democratas em 2020. Dessas, 16 estão em Goiás, 9 em Minas Gerais e 9 em São Paulo. Além disso, 62 prefeituras vencidas pelo MDB, 41 pelo PSD e 25 pelo PTB em 2016 foram tomadas pelo DEM na última eleição.
+
+[Gráfico balanço de prefeituras]
+```{r, fig.width = 9, fig.height = 6}
+net %>%
+  mutate(n = prefeituras_perdidas+prefeituras_tomadas,
+         PARTIDO = ifelse(PARTIDO == "REPUBLICANOS", "REP",
+                          ifelse(PARTIDO == "CIDADANIA", "CID", PARTIDO))) %>% 
+  filter(prefeituras_perdidas>5) %>% 
+  pivot_longer(cols = c(prefeituras_perdidas, prefeituras_tomadas)) %>% 
+ggplot(aes(reorder(PARTIDO, net), value, fill = name))+
+  geom_bar(stat="identity", position = "dodge")+
+  scale_fill_manual(values = c(pg_blue, pg_orange),
+                    labels = c("Prefeituras tomadas pelo DEM",
+                               "Prefeituras perdidas pelo DEM"))+
+  labs(fill = "", title = "Prefeituras tomadas e perdidas pelo DEM entre 2016 e 2020")+
+  theme_pindograma()+
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom")
+```
+
+Em 2020, além de conquistar muitas prefeituras antes governadas por outros partidos, o DEM conseguiu, em geral, manter-se no poder nos municípios em que havia sido eleito no pleito anterior.
+
+#### O Poder dos Democratas
+
+Além da imagem mais preservada, outro atrativo do DEM é o protagonismo nacional do partido. A legenda preside tanto a Câmara dos Deputados, com Rodrigo Maia, quanto o Senado Federal, com Davi Alcolumbre. O estrategista Murilo Medeiros argumenta que esses dois líderes ajudaram a fazer do Democratas o representante do reformismo liberal, pautando reformas com a da previdência, por exemplo. Medeiros aponta que "um político que está desgarrado, numa legenda desprestigiada e sem acesso à máquina do poder, ele vem pro Democratas e pode levar a suas bases o acesso ao poder; à presidência da Câmara, do Senado, ao poder".
+
+```{r, fig.width = 9, fig.height = 6}
+mapa %>% filter(UF == "TO") %>%
+  mutate(party_color = ifelse(PARTIDO %in% c("DEM"), party_color, pg_light_gray)) %>%  
+  ggplot() +
+  geom_sf(aes(geometry = geom,fill = party_color), lwd = 0.2)+
+  labs(title = "Prefeituras conquistadas pelo Democratas no Tocantins")+
+  scale_fill_identity()+
+  facet_wrap(~ANO_ELEICAO, strip.position = "bottom")+
+  theme_pindograma()+
+  theme(axis.title = element_blank(),
+        axis.line.x = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_blank(),
+        strip.text = element_text(size = 16),
+        strip.background = element_blank())
+```
+
+O partido parece ter feito também bom uso de seus governadores nas eleições deste ano. No Tocantins, em 2016, o Democratas elegeu um único prefeito. Depois de o governador do estado Mauro Carlesse se filiar ao partido em 2019, o partido elegeu 26 prefeitos. 
+
+```{r, fig.width = 9, fig.height = 6}
+mapa %>% filter(UF == "GO") %>%
+  mutate(party_color = ifelse(PARTIDO %in% c("DEM"), party_color, pg_light_gray)) %>%  
+  ggplot() +
+  geom_sf(aes(geometry = geom,fill = party_color), lwd = 0.2)+
+  labs(title = "Prefeituras conquistadas pelo Democratas em Goiás")+
+  scale_fill_identity()+
+  facet_wrap(~ANO_ELEICAO, strip.position = "bottom")+
+  theme_pindograma()+
+  theme(axis.title = element_blank(),
+        axis.line.x = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_blank(),
+        strip.text = element_text(size = 16),
+        strip.background = element_blank())
+```
+
+Goiás era terra arrasada para o Democratas, mas depois da vitória do governador Ronaldo Caiado, o partido foi de 10 prefeitos para 52.
+
+```{r, fig.width = 9, fig.height = 6}
+mapa %>% filter(UF == "MT") %>%
+  mutate(party_color = ifelse(PARTIDO %in% c("DEM"), party_color, pg_light_gray)) %>%  
+  ggplot() +
+  geom_sf(aes(geometry = geom,fill = party_color), lwd = 0.2)+
+  labs(title = "Prefeituras conquistadas pelo Democratas no Mato Grosso")+
+  scale_fill_identity()+
+  facet_wrap(~ANO_ELEICAO, strip.position = "bottom")+
+  theme_pindograma()+
+  theme(axis.title = element_blank(),
+        axis.line.x = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_blank(),
+        strip.text = element_text(size = 16),
+        strip.background = element_blank())
+```
+
+Com Mauro Mendes governando o Mato Grosso, o partido foi de 8 prefeitos para 24. Essas 83 novas vitórias nos 3 estados controlados pelo partido representam 43% das 190 prefeituras adicionadas pelo Democratas nessas eleições.
+
+Medeiros não se preocupa com a perda da identidade do Democratas ao trazer tantos novos membros. O estrategista entende que o partido deixa muito claro que é uma alternativa moderada de centro-direita que recebe críticas tanto da extrema-direita quanto da esquerda e, por isso, não atrai nem lideranças extremistas nem de esquerda. Medeiros lembra que Rodrigo Maia é alvo de críticas do presidente Bolsonaro, assim como da oposição ao governo.
+
+Mantendo ou não uma linha ideológica clara, o Democratas cresceu muito em 2020. Para explicar como o Democratas negociou a entrada de tantas lideranças com potencial eleitoral, ACM Neto deixou claro que não dita as estratégias do partido de cima para baixo, mas que as acolhe de baixo para cima. Para o prefeito, os diretórios regionais se organizaram de forma independente para aumentar o número de lideranças aptas e dispostas a enfrentar o pleito.
+
+ACM afirma que sempre mantém "contato direto com os presidentes regionais para entender o cenário de cada local, mas durante as eleições de 2020 a avaliação da viabilidade eleitoral de cada estado e município ficou por conta dos diretórios locais. São eles que entendem a realidade de cada região e podem definir, com conhecimento de causa, os quadros mais capacitados".
+
+O estrategista Murilo Medeiros concorda com o presidente de seu partido. Medeiros exemplifica que "ao contrário de partidos como o Novo, que é muito hierárquico e uma decisão feita na liderança nacional afeta a corrida de um vereador num município pequeno", o Democratas recolhe as melhores ideias regionais e permite mais flexibilidade. Ele conclui que está aí a resposta, "colhemos o sucesso por esse pragmatismo".
+
+
+---
+
+**Dados utilizados na matéria**: Resultados eleições 2012 e 2016 (Tribunal Superior Eleitoral/Cepespdata); Candidatos eleições 2020 (TSE); Resultados eleições 2020 (TSE).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Pedro França/Agência Senado
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-12-19-demacm/demacm.Rmd
