@@ -1,0 +1,272 @@
+---
+title: "São Paulo"
+author: "João Costa"
+date: "23/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(sf)
+library(ggplot2)
+
+source('../theme.R')
+load('poa.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Sebastião Melo ([MDB](https://pindograma.com.br/2020/10/21/mdb.html)) venceu a eleição para prefeito em Porto Alegre (RS) em uma campanha acirrada, superando a candidata Manuela D’Ávila ([PCdoB](https://pindograma.com.br/2020/11/28/pcbdob.html)) no segundo turno. Melo, que liderou o primeiro turno com uma pequena margem, venceu a segunda etapa da disputa com 54,6% dos votos. O atual prefeito Nelson Marchezan Jr. ([PSDB](https://pindograma.com.br/2020/11/02/psdb.html)), que buscava a reeleição, não conseguiu acesso ao segundo turno e ficou em terceiro lugar.
+
+Apesar de contar com 13 candidatos, a disputa principal se deu entre três blocos, encabeçados por figuras tradicionais da política na cidade. Ex-vice-prefeito da gestão de José Fortunati (PTB) entre 2013 e 2016, Sebastião Melo ficou à frente de uma coalizão de centro-direita centrada no MDB e no [DEM](https://pindograma.com.br/2020/11/03/dem-rep.html). Sua adversária Manuela D’Ávila liderou a coligação de esquerda entre PCdoB e [PT](https://pindograma.com.br/2020/10/27/pt.html), enquanto o atual prefeito, Nelson Marchezan, concorreu à reeleição pelo PSDB enfraquecido pelos críticos de sua gestão e por [atritos recentes com o legislativo municipal](https://g1.globo.com/rs/rio-grande-do-sul/noticia/2020/08/05/vereadores-aprovam-abertura-de-processo-de-impeachment-do-prefeito-de-porto-alegre.ghtml).
+
+Três fatores parecem ter pesado na vitória de Melo: o imbróglio que levou à [renúncia da candidatura do ex-prefeito José Fortunati](https://gauchazh.clicrbs.com.br/politica/eleicoes/noticia/2020/11/os-jogos-de-poder-que-afastaram-e-reaproximaram-fortunati-e-melo-em-porto-alegre-ckhfctkmz00470170fuhk8qck.html), o peso dos votos herdados de Marchezan e de outros candidatos no segundo turno e a forte rejeição da esquerda na capital gaúcha.
+
+---
+
+#### O primeiro e o segundo turno de Sebastião Melo
+
+	O MDB de Melo tinha planos de formar uma aliança com partidos de centro e de direita para lançar um candidato forte à prefeitura, mas desencontros levaram à inscrição de três candidaturas paralelas: além de Melo, o ex-prefeito José Fortunati (PTB) e Gustavo Paim ([PP](https://pindograma.com.br/2020/12/08/plpp.html)) também concorreram. Fortunati, que vinha tendo [bons resultados nas pesquisas](https://pindograma.shinyapps.io/agregador/), acabou renunciando à campanha devido a uma [denúncia de irregularidades](https://www.correiodopovo.com.br/not%C3%ADcias/pol%C3%ADtica/elei%C3%A7%C3%B5es/fortunati-renuncia-%C3%A0-candidatura-para-prefeitura-de-porto-alegre-1.518484) na inscrição de sua chapa e declarou, em seguida, apoio a Melo, removendo assim o principal obstáculo do emedebista ao segundo turno.
+
+	Melo se beneficiou dos votos de Fortunati, superando as pesquisas e liderando o primeiro turno com 31% dos votos válidos. Com resultados expressivos na cidade inteira, ele recebeu pelo menos 20% dos votos em todos os bairros da capital. 
+
+
+```{r, fig.width=9, fig.height=7}
+ggplot() +
+  geom_sf(data = poa20, aes(fill = cand_15), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  scale_fill_distiller(palette = "Greens", direction = 1, labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Concentração dos votos por bairro no primeiro turno\nSebastião Melo (MDB)")+
+  annotate('text', label = 'Sarandi',
+           family = 'Fantasque', color = "grey10",
+           x = -51.05, y = -29.97, size = 4)+
+  annotate('curve', curvature = -.20, x = -51.05,
+           xend = -51.115, y = -29.98, yend = -29.99,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey30")+
+  annotate('text', label = 'Bela Vista',
+           family = 'Fantasque', color = "grey10",
+           x = -51.08, y = -30.06, size = 4)+
+  annotate('curve', curvature = -.20, x = -51.115,
+           xend = -51.185, y = -30.06, yend = -30.034,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey30")+
+  annotate('text', label = 'Moinhos\nde Vento',
+           family = 'Fantasque', color = "grey10",
+           x = -51.29, y = -30.01, size = 4)+
+  annotate('curve', curvature = .20, x = -51.28,
+           xend = -51.21, y = -30.025, yend = -30.028,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey30")+
+  annotate('text', label = 'Serraria',
+           family = 'Fantasque', color = "grey10",
+           x = -51.29, y = -30.15, size = 4)+
+  annotate('curve', curvature = .20, x = -51.28,
+           xend = -51.24, y = -30.158, yend = -30.165,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey30")+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque'), 
+        plot.title = element_text(size = 14,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold'),
+        plot.caption.position = 'plot', 
+        plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray),
+        legend.title = element_blank())
+```
+
+Melo obteve vitórias importantes no primeiro turno ao receber cerca de 40% dos votos nos bairros com a renda mais elevada da cidade, de população predominantemente branca, como Bela Vista e Moinhos de Vento. Além disso, ele foi bem em áreas periféricas e de menor renda, com auxílio de vereadores “puxadores” na Zona Sul e na Zona Norte, como nos bairros da Serraria e do Sarandi. Seus locais de menor votação não tiveram perfil muito definido, misturando regiões e níveis de renda diversos. 
+
+De certa forma, os votos de Marchezan e de outros dois candidatos menores de direita, que juntos somaram 27% no primeiro turno, ajudaram a consolidar a candidatura de Melo em zonas de variados perfis socioeconômicos onde o emedebista ainda precisava de um empurrão para virar a balança no segundo turno. Melo [atraiu parte relevante do eleitorado](https://gauchazh.clicrbs.com.br/colunistas/rosane-de-oliveira/noticia/2020/11/melo-herda-maioria-dos-votos-que-foram-para-marchezan-no-primeiro-turno-diz-pesquisa-ibope-ckhwoacos009q014nup5dpwcv.html) do tucano Marchezan mesmo sem ter obtido apoio do candidato. Isso ampliou sua margem nos bairros de classe média e média-alta da Zona Norte, como Higienópolis e Jardim Lindóia.
+
+Também pesou a forte [rejeição da esquerda na capital](https://brasil.elpais.com/brasil/2020-11-27/manuela-luta-para-romper-antipetismo-em-porto-alegre-para-ter-chance-de-superar-melo-e-quebrar-jejum-da-esquerda.html), que com o resultado dessa eleição completará 20 anos afastada do comando da cidade. Durante a campanha, os adversários de Manuela exploraram essa brecha ao utilizar forte [retórica anti-comunista e anti-petista contra a candidata](https://valor.globo.com/politica/noticia/2020/11/28/em-porto-alegre-bolsonarismo-e-comunismo-pautam-debate-entre-melo-e-manuela.ghtml), que não conseguiu se desvencilhar da imagem de “candidata da esquerda”, reforçada pela participação nas eleições presidenciais de 2018 como vice de Fernando Haddad (PT).
+
+```{r, fig.width=9, fig.height=7}
+ggplot() +
+  geom_sf(data = poa20_seg_turno, aes(fill = cand_15), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  scale_fill_distiller(
+    palette = "Greens", direction = 1, labels = scales::percent_format(accuracy = 1)
+    ) +
+  labs(title = "Concentração dos votos por bairro no segundo turno\nSebastião Melo (MDB)")+
+  annotate('text', label = 'Sarandi',
+           family = 'Fantasque', color = "grey10",
+           x = -51.05, y = -29.97, size = 4)+
+  annotate('curve', curvature = -.20, x = -51.05,
+           xend = -51.115, y = -29.98, yend = -29.99,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey30")+
+  annotate('text', label = 'Bela Vista',
+           family = 'Fantasque', color = "grey10",
+           x = -51.08, y = -30.06, size = 4)+
+  annotate('curve', curvature = -.20, x = -51.115,
+           xend = -51.185, y = -30.06, yend = -30.034,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey30")+
+  annotate('text', label = 'Moinhos\nde Vento',
+           family = 'Fantasque', color = "grey10",
+           x = -51.29, y = -30.01, size = 4)+
+  annotate('curve', curvature = .20, x = -51.28,
+           xend = -51.21, y = -30.025, yend = -30.028,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey30")+
+  annotate('text', label = 'Serraria',
+           family = 'Fantasque', color = "grey10",
+           x = -51.29, y = -30.15, size = 4)+
+  annotate('curve', curvature = .20, x = -51.28,
+           xend = -51.24, y = -30.158, yend = -30.165,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey30")+
+  theme_void() +
+  theme(text = element_text(family = 'Fantasque'), 
+        plot.title = element_text(size = 14,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold'),
+        plot.caption.position = 'plot', 
+        plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray),
+        legend.title = element_blank())
+```
+
+Contando com [boa articulação e longa trajetória política](https://gauchazh.clicrbs.com.br/politica/eleicoes/noticia/2020/11/o-militante-articulado-que-chamou-a-atencao-de-senador-do-mdb-a-trajetoria-de-sebastiao-melo-ate-a-disputa-da-prefeitura-de-porto-alegre-cki0r8ycm004h014l791m16a3.html), Melo provavelmente conseguirá formar maioria na câmara, tendo como principais desafios o equilíbrio de interesses entre os diversos partidos que auxiliaram na sua eleição e a oposição da bancada de esquerda, renovada e mais numerosa que na legislatura anterior.
+
+---
+
+#### O primeiro e o segundo turno de Manuela D`Ávila
+
+Líder nas [pesquisas do primeiro turno](https://noticias.uol.com.br/eleicoes/2020/11/14/ibope-porto-alegre-14-de-novembro.htm), Manuela conseguiu unificar boa parte dos eleitores de esquerda, vencendo em tradicionais redutos do PT. Obteve votação expressiva na cidade inteira, conquistando 29% dos votos, ainda que com uma rejeição mais alta.
+
+Manuela teve votações elevadas no Bom Fim, na Cidade Baixa e no Centro Histórico, bairros centrais de classe média com grande quantidade de jovens, universitários e funcionários públicos, dada a presença de universidades e órgãos públicos na região. Outro foco de bons resultados foram os bairros de Bom Jesus, Restinga e Mário Quintana, regiões periféricas que concentram as populações negras da cidade e que estão entre as menores rendas do município.
+
+```{r, fig.width=9, fig.height=7}
+ggplot() +
+  geom_sf(data = poa20, aes(fill = cand_65), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  scale_fill_distiller(palette = "Reds", direction = 1, labels = scales::percent) +
+  labs(title = "Concentração dos votos por bairro no primeiro turno\nManuela D'Ávila (PCdoB)")+
+  theme_void() +
+  annotate('text', label = 'Bom Jesus',
+           family = 'Fantasque', color = "grey10",
+           x = -51.075, y = -30.065, size = 4)+
+  annotate('curve', curvature = -.20, x = -51.11,
+           xend = -51.14, y = -30.065, yend = -30.055,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  annotate('text', label = 'Mário\nQuintana',
+           family = 'Fantasque', color = "grey10",
+           x = -51.03, y = -29.99, size = 4)+
+  annotate('curve', curvature = -.20, x = -51.04,
+           xend = -51.08, y = -30.01, yend = -30.025,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  annotate('text', label = 'Centro\nHistórico',
+           family = 'Fantasque', color = "grey10",
+           x = -51.292, y = -30.035, size = 4)+
+  annotate('curve', curvature = .20, x = -51.29,
+           xend = -51.235, y = -30.051, yend = -30.041,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  annotate('text', label = 'Restinga',
+           family = 'Fantasque', color = "grey10",
+           x = -51.29, y = -30.15, size = 4)+
+  annotate('curve', curvature = .20, x = -51.28,
+           xend = -51.16, y = -30.158, yend = -30.165,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  theme(text = element_text(family = 'Fantasque'), 
+        plot.title = element_text(size = 14,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold'),
+        plot.caption.position = 'plot', 
+        plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray),
+        legend.title = element_blank())
+```
+
+Ao contrário de Melo, Manuela teve um foco bastante definido de rejeição, localizado nas imediações dos bairros de alta renda da Zona Norte, como Moinhos de Vento e Bela Vista.
+
+No segundo turno, Manuela [recebeu o apoio](https://www.brasildefato.com.br/2020/11/18/juliana-brizola-e-pdt-declaram-apoio-a-manuela-d-avila-no-segundo-turno) de Juliana Brizola ([PDT](https://pindograma.com.br/2020/11/14/pdt.html)) e Fernanda Melchionna ([PSOL](https://pindograma.com.br/2020/11/06/psol.html)), 4ª e 5ª colocadas que juntas somaram 11% dos votos no primeiro turno. Os votos do PSOL reforçaram a candidata em regiões em que Manuela já havia obtido bons resultados, como Cidade Baixa e Centro Histórico. Já os eleitores do PDT engrossaram os números da candidata em regiões periféricas e de menor renda, como Humaitá, Bom Jesus e Restinga. O fato das três candidatas serem mulheres, com bandeiras feministas e projetos mais à esquerda que o de Melo, parece ter exercido influência nessa dinâmica.
+
+
+```{r, fig.width=9, fig.height=7}
+ggplot() +
+  geom_sf(data = poa20_seg_turno, aes(fill = cand_65), lwd = 0) +
+  #scale_fill_gradient(low = 'white', high = pg_blue, labels = scales::percent) +
+  scale_fill_distiller(palette = "Reds", direction = 1, labels = scales::percent) +
+  labs(title = "Concentração dos votos por bairro no segundo turno\nManuela D'Ávila (PCdoB)")+
+  theme_void() +
+  annotate('text', label = 'Bom Jesus',
+           family = 'Fantasque', color = "grey10",
+           x = -51.075, y = -30.065, size = 4)+
+  annotate('curve', curvature = -.20, x = -51.11,
+           xend = -51.14, y = -30.065, yend = -30.055,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  annotate('text', label = 'Mário\nQuintana',
+           family = 'Fantasque', color = "grey10",
+           x = -51.03, y = -29.99, size = 4)+
+  annotate('curve', curvature = -.20, x = -51.04,
+           xend = -51.08, y = -30.01, yend = -30.025,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  annotate('text', label = 'Centro\nHistórico',
+           family = 'Fantasque', color = "grey10",
+           x = -51.292, y = -30.035, size = 4)+
+  annotate('curve', curvature = .20, x = -51.29,
+           xend = -51.235, y = -30.051, yend = -30.041,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  annotate('text', label = 'Restinga',
+           family = 'Fantasque', color = "grey10",
+           x = -51.29, y = -30.15, size = 4)+
+  annotate('curve', curvature = .20, x = -51.28,
+           xend = -51.15, y = -30.158, yend = -30.16,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  annotate('text', label = 'Humaitá',
+           family = 'Fantasque', color = "grey10",
+           x = -51.192, y = -29.95, size = 4)+
+  annotate('curve', curvature = -.10, x = -51.192,
+           xend = -51.191, y = -29.955, yend = -29.975,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .4,
+           color = "grey10")+
+  theme(text = element_text(family = 'Fantasque'), 
+        plot.title = element_text(size = 14,
+                                  color = pg_dark_gray,
+                                  hjust = 0.5,
+                                  margin = margin(5, 0, 15, 0),
+                                  face = 'bold'),
+        plot.caption.position = 'plot', 
+        plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray),
+        legend.title = element_blank())
+```
+
+---
+
+#### O mandato de Melo e os prospectos de Manuela
+
+Contando com [boa articulação e longa trajetória política](https://gauchazh.clicrbs.com.br/politica/eleicoes/noticia/2020/11/o-militante-articulado-que-chamou-a-atencao-de-senador-do-mdb-a-trajetoria-de-sebastiao-melo-ate-a-disputa-da-prefeitura-de-porto-alegre-cki0r8ycm004h014l791m16a3.html), Melo provavelmente conseguirá formar maioria na câmara municipal. Seus maiores desafios serão equilibrar os interesses dos diversos partidos que contribuíram para sua eleição e enfrentar a oposição da  bancada de esquerda, renovada e mais numerosa do que na legislação anterior, como mostra a [geografia do voto para vereador em Porto Alegre](https://www.matinaljornalismo.com.br/matinal/reportagem-matinal/area-central-foi-decisiva-para-crescimento-da-esquerda-na-camara-de-porto-alegre/) (parceria do _Pindograma _com Afonte Jornalismo e Matinal Jornalismo). Já Manuela D’Ávila, apesar da derrota, conseguiu se consolidar nessa eleição como um nome forte da esquerda pós-PT, de maneira semelhante a Guilherme Boulos em São Paulo.
+
+---
+
+**Dados utilizados na matéria**: Locais de Votação (_Pindograma_); Votação por
+Seção Eleitoral (Tribunal Superior Eleitoral).
+
+**Contribuíram com dados**: Daniel Ferreira e Antonio Piltcher.
+
+**Créditos da imagem**: Wikimedia/Mídia Ninja; Assembleia Legislativa do Estado de São Paulo.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-11-23-sp/sp.Rmd
