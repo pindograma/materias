@@ -1,0 +1,217 @@
+---
+title: "O Financiamento Coletivo nas eleicões de 2020"
+author: "João Costa"
+date: "23/12/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+
+load('fin.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Em 2017, o Congresso Nacional aprovou uma reforma à legislação eleitoral que deu nova cara às campanhas eleitorais. Dentre as medidas aprovadas, houve a regulamentação do uso de sites de financiamento coletivo para campanhas eleitorais.
+
+Desde então, sites como o [Apoia.org](https://www.apoia.org/) e o [Voto Legal](https://votolegal.com.br/) puderam ser utilizados para arrecadar doações nas eleições de 2018. Naquele ano, houve pouca cobertura midiática sobre o assunto, embora a campanha de Jair Bolsonaro, eleito presidente pelo [PSL](https://pindograma.com.br/2020/10/29/psl.html), tenha conseguido[ 85% de seus recursos](https://divulgacandcontas.tse.jus.br/divulga/#/candidato/2018/2022802018/BR/280000614517/integra/receitas) por meio de financiamento coletivo.
+
+Neste ano, o financiamento coletivo estreou nos pleitos municipais. Houve casos de sucesso de arrecadação de grandes campanhas, como a de Manuela D’Ávila ([PCdoB](https://pindograma.com.br/2020/11/28/pcbdob.html)) em [Porto Alegre](https://pindograma.com.br/2020/12/21/poa.html) e as de Guilherme Boulos ([PSOL](https://pindograma.com.br/2020/11/06/psol.html)) e Arthur Mamãe Falei ([Patriota](https://pindograma.com.br/2020/11/10/novo-patri.html)) em São Paulo.
+
+O _Pindograma_ investigou os dados de financiamento de campanha em 2020 para entender o papel do financiamento coletivo em suas primeiras eleições municipais. O levantamento mostrou que as vaquinhas impulsionaram campanhas de partidos menores e mais ideológicos, assim como viabilizaram candidaturas com poucos recursos partidários em cidades menores. No entanto, o dispositivo foi usado por pouquíssimos candidatos, concentrados principalmente na região Sul e Sudeste.
+
+---
+
+O TSE considera como financiamento coletivo apenas as doações para campanhas por meio de sites regulamentados pelo órgão. Para este levantamento, consideramos apenas o dinheiro designado desta forma pela Justiça Eleitoral. Há outros tipos de contribuições individuais que também podem ser feitas pela internet, mas elas são transferências diretas entre contas e não são facilitadas pelos sites de vaquinha. As doações por meio dessas plataformas [não podem ultrapassar R$1.064](https://www.tse.jus.br/imprensa/noticias-tse/2020/Fevereiro/eleicoes-2020-conheca-as-regras-e-os-limites-para-doacoes-eleitorais).
+
+Os dados do financiamento coletivo destoam dos padrões de votação da eleição em geral. Os partidos que mais tiveram candidatos usando esse dispositivo foram o [PT](https://pindograma.com.br/2020/10/27/pt.html), [NOVO](https://pindograma.com.br/2020/11/10/novo-patri.html) e PSOL. Entre os 10 partidos que mais usaram o financiamento coletivo, apenas 2 siglas são do Centrão. Isso contrasta com uma eleição [dominada pelo Centrão](https://pindograma.com.br/2020/12/19/demacm.html) em que o PT teve [derrotas históricas](https://g1.globo.com/politica/eleicoes/2020/eleicao-em-numeros/noticia/2020/11/29/partido-com-mais-candidatos-no-2o-turno-pt-perde-11-das-15-disputas.ghtml), o PSOL elegeu 5 prefeitos e o NOVO apenas 1.
+
+```{r, fig.height=7, fig.width=9}
+ggplot(resumo_partidos, aes(reorder(PARTIDO, cand_fincol), cand_fincol, fill = party_color)) +
+  geom_hline(aes(yintercept = 500), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 400), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 300), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 200), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 100), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 0), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_bar(stat="identity") +
+  scale_fill_identity()+
+  scale_y_continuous(breaks = c(0,100,200,300,400,500))+
+  labs(title = "Número de candidatos que tiveram financiamento coletivo por partido",
+       y = "Quantidade de candidatos")+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_text(size = 14),
+  )+
+  coord_flip()
+```
+
+Quando analisamos a quantidade de dinheiro arrecadada, a situação é parecida: a esquerda mantém a liderança, a direita ideológica fica em segundo plano e o Centrão perde vez. Das 10 legendas que mais arrecadaram dinheiro por meio de financiamento coletivo, apenas uma é do Centrão. Partidos que tiveram [várias vitórias](https://pindograma.com.br/2020/12/19/demacm.html) nestas eleições como o [MDB](https://pindograma.com.br/2020/10/21/mdb.html) e o [DEM](https://pindograma.com.br/2020/11/03/dem-rep.html) ficam atrás de legendas pequenas como a [REDE](https://pindograma.com.br/2020/12/18/pvrede.html) e o Patriota.
+
+```{r, fig.height=6, fig.width=9}
+ggplot(resumo_partidos, aes(reorder(PARTIDO, valor), valor, fill = party_color)) +
+  geom_hline(aes(yintercept = 4716573), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 2000000), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 1000000), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 500000), color = pg_blue, size = .4, linetype = 'dashed')+
+  scale_fill_identity()+
+  geom_bar(stat="identity") +
+  scale_y_continuous(
+    labels = scales::label_number_si(prefix = "R$", big.mark = ".", decimal.mark = ",", accuracy = .1),
+    breaks = c(0, 1000000, 2000000, 4716573))+
+  labs(title = "Valor arrecadado em financiamento coletivo por partido")+
+  theme_pindograma()+
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 14))+
+  coord_flip(ylim = c(200000,4800000))
+```
+
+De toda forma, a proporção de candidatos usando o financiamento coletivo muda bastante entre o Novo, o PSOL e o PT. 77% dos candidatos do NOVO em 2020 receberam financiamento coletivo. No caso do PSOL, foram apenas 9,2%; e do PT, apenas 1,9%. Alguns partidos dependem muito mais do financiamento coletivo do que outros.
+
+---
+
+O partido que mais arrecadou dinheiro pelo financiamento coletivo foi o PSOL. Este valor deve-se em grande parte ao sucesso da campanha de Guilherme Boulos, candidato pelo partido à prefeitura de São Paulo. A campanha de Boulos se destacou pelo [uso efetivo das redes sociais](https://www.poder360.com.br/eleicoes/nas-redes-sociais-boulos-e-hit-em-sp-e-candidatos-nao-empolgam-no-rio/) e do engajamento que superou a dimensão municipal.  Após o final do segundo turno, Boulos arrecadou mais de R$2,8 milhões — 4 vezes o valor arrecadado pelo próximo colocado no financiamento coletivo, o deputado estadual Arthur Mamãe Falei (Patriota).
+
+Rival de Boulos na eleição paulistana, Mamãe Falei divulgou bastante o link para seu financiamento coletivo. Um dos [pontos de orgulho](https://www.instagram.com/p/CG-2Q-HptQc/?utm_source=ig_web_copy_link) do candidato era o fato de não usar dinheiro público — ou seja, do fundo partidário ou eleitoral. Em sua campanha, 61,5% dos recursos foram provenientes da vaquinha.
+
+Outro partido cujos candidatos [se orgulham](https://istoe.com.br/o-novo-nao-quer-um-centavo-dos-r-2-bi-que-bolsonaro-dara-aos-partidos/) de [não usar dinheiro do TSE](https://www.tse.jus.br/imprensa/noticias-tse/2020/Junho/partido-novo-abre-mao-de-recursos-do-fundo-eleitoral-para-as-eleicoes-municipais-de-2020) é o NOVO. O partido foi o terceiro que mais arrecadou dinheiro com financiamento coletivo no país. As candidaturas do partido geralmente são financiadas por recursos próprios ou com a ajuda de apoiadores. Assim como o PSOL, o NOVO atrai eleitores mais ideológicos e, [em geral, mais ricos](https://piaui.folha.uol.com.br/o-perfil-socioeconomico-do-voto/).
+
+O sucesso do PSOL à esquerda e do NOVO e Patriota à direita parece indicar que o sucesso de campanhas de financiamento coletivo está ligado a candidaturas mais ideológicas. Partidos com pouca definição programática e discursos mais brandos, como é típico do Centrão, atraem pouco apoio financeiro por meio de pequenas doações. 
+
+Ao mesmo tempo, partidos menores como PSOL e NOVO recebem menos dinheiro dos fundos partidário e eleitoral. Isso gera a necessidade de atrair fundos para a campanha de outras maneiras, principalmente por meio das doações.
+
+---
+
+Em termos geográficos, o financiamento coletivo foi mais popular em estados do Sul e do Sudeste. Todos os estados dessas duas regiões estão entre os 10 estados que mais tiveram candidatos usando o financiamento coletivo; os três outros estados da lista são os estados mais populosos do Nordeste: Bahia, Pernambuco e Ceará. A região Norte foi a que menos teve candidatos usando vaquinhas. 1 em cada 4 candidatos que usaram o dispositivo eram paulistas.
+
+A arrecadação seguiu um padrão parecido. São Paulo foi de longe o estado onde os candidatos mais arrecadaram. Mesmo descontando os R$3,5 milhões das campanhas de Boulos e Mamãe Falei, o financiamento coletivo no estado estaria próximo ao valor dos próximos 2 estados somados. Novamente, os estados do Sul e Sudeste aparecem todos entre os 10 primeiros.
+
+```{r, fig.height=6, fig.width=9}
+ggplot(resumo_uf, aes(reorder(SG_UF, valor), valor)) +
+  geom_hline(aes(yintercept = 6656096), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 4000000), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 2000000), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 1000000), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_bar(stat="identity", fill = pg_green)+
+  scale_y_continuous(
+    labels = scales::label_number_si(prefix = "R$", big.mark = ".",
+                                     decimal.mark = ",", accuracy = .1),
+    breaks = c(0, 2000000, 4000000, 6656096))+
+  labs(title = c("Valor total arrecadado em financiamento coletivo por estado")) +
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_text(size = 14),
+  )+
+  coord_cartesian(ylim = c(0, 6800000))
+```
+
+Mesmo quando levamos em conta a população de cada estado, vemos que as maiores doações _per capita_ ainda estão nas mesmas duas regiões.
+
+```{r, fig.height=7, fig.width=9}
+ggplot(resumo_uf)+
+  geom_sf(aes(geometry = geom, fill = apc), lwd = 0)+
+  scale_fill_distiller(
+    palette = "YlGn", direction = 1,
+    labels = scales::dollar_format(prefix = "R$", decimal.mark = ","),
+    breaks = c(0.02, 0.06, 0.1, 0.14))+
+  labs(title = "Valor proporcional arrecadado em financiamento coletivo por estado",
+       fill = "Doação per capita\n")+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    plot.subtitle = element_text(size = 14),
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 14),
+    panel.background = element_blank()
+  )
+```
+
+Em cidades menores, os recursos repassados por partidos são mais limitados. Com isso, lideranças políticas locais tradicionais são favorecidas, pois são mais conhecidas e conseguem vencer investindo menos dinheiro.
+
+Já os candidatos com pouco apoio de partidos já estabelecidos na região acabam com campanhas menos competitivas. Isso dá ao financiamento coletivo o potencial de ser uma ferramenta efetiva em cidades pequenas. Com bom engajamento com o eleitorado e pequenas doações, uma candidata pode arrecadar o suficiente para ter uma campanha efetiva.
+
+É o caso, por exemplo, de Lohanna França (Cidadania) de Divinópolis, cidade mineira de cerca de 200 mil habitantes. Aos 25 anos, a [jovem](https://pindograma.com.br/2020/10/02/jovens.html) foi a vereadora mais votada da história do município e não contou com repasses do partido, apenas doações de pelo site OK Pago e transferências diretas à conta da campanha.
+
+Enquanto isso, Daniel Tygel (PT), eleito vereador em Caldas (MG) usou apenas o financiamento coletivo para arrecadar dinheiro para sua campanha.  No final da eleição,  foi o candidato que mais arrecadou de todas as campanhas de vereadores da cidade e quase chegou ao limite legal de arrecadação de R$12.307,75.  Foi também o único candidato de um partido de esquerda a se eleger na cidade.
+
+9 cidades elegeram candidatos que financiaram ao menos 80% de suas campanhas com o financiamento coletivo. Dessas, apenas Chapecó (SC) e Araçatuba (SP) têm mais de 100 mil habitantes, demonstrando que o financiamento coletivo teve um bom desempenho nos municípios de menor população. 
+
+Os exemplos de Daniel e Lohanna revelam como o financiamento coletivo tem o potencial de mudar o perfil de uma eleição em cidades pequenas. No entanto, ele ainda é muito pouco utilizado para ter um efeito amplo por todo o país. Nas eleições de 2020, mais de 537 mil candidatos se registraram no TSE, mas apenas 3.427 utilizaram o financiamento coletivo em suas campanhas.
+
+---
+
+Qual o tamanho médio das doações por financiamento coletivo no Brasil? Nos Estados Unidos, por exemplo, o baixo valor médio das doações à campanha foi um ponto de orgulho do candidato [Bernie Sanders](https://www.nytimes.com/2020/03/01/us/politics/bernie-sanders-money.html), que via o número como indicação do apoio de pessoas mais pobres à sua candidatura.
+
+```{r, fig.height=6, fig.width=9}
+ggplot(resumo_partidos, aes(reorder(PARTIDO, meanFINCOL), meanFINCOL, fill = party_color)) +
+  geom_hline(aes(yintercept = 377.6426), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 300), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 200), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 100), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_hline(aes(yintercept = 0), color = pg_blue, size = .4, linetype = 'dashed')+
+  geom_bar(stat="identity") +
+  geom_hline(aes(yintercept = 131.4742), color = "grey30", size = .6, linetype = 'dashed')+
+  annotate('text', label = 'Doação média',
+           family = 'Fantasque', color = "grey30",
+           x = 4, y = 165, size = 4)+
+  scale_fill_identity()+
+  scale_y_continuous(labels = scales::dollar_format(prefix = "R$", decimal.mark = ",", big.mark = "."),
+                     breaks = c(0, 100, 200, 300, 377))+
+  labs(title = "Valor médio das doações recebidas por partido")+
+  theme_pindograma()+
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 14))+
+  coord_flip()
+```
+
+No Brasil, o valor médio de todas as doações foi de R$131,47. É um número mais condizente com  a realidade da maioria dos brasileiros do que as doações de milhares de reais comuns nas grandes campanhas.
+
+---
+
+#### Como funciona o financiamento de campanhas eleitorais no Brasil?
+
+[Desde 2015](https://m.folha.uol.com.br/poder/2015/09/1683012-stf-proibe-doacoes-de-empresas-para-campanhas-eleitorais-e-partidos.shtml), empresas não podem mais fazer doações de campanha. Assim, existem três maneiras de uma candidata captar recursos para sua candidatura: receber dinheiro de um partido, usar seus próprios recursos ou receber doações de indivíduos.
+
+A quantidade de dinheiro que um candidato pode gastar em uma campanha é determinada pelo TSE. No entanto, o candidato pode captar esses recursos como quiser — seja de seu partido, seja de doadores individuais.
+
+Uma pessoa física pode doar até 10% de seus rendimentos no último ano para uma campanha. Não há limitação de quantas doações podem ser feitas, contanto que, no total, somem menos que este valor. As doações podem ser feitas tanto por transferência direta para a conta da campanha quanto por meio dos sites de financiamento coletivo. Caso sejam pelos sites, porém, o valor não pode ultrapassar R$1.064. 
+
+Este sistema traz consigo diversos problemas. Em primeiro lugar, a grande quantidade de dinheiro público disponível para os partidos gera conflitos internos às legendas sobre como serão alocados os recursos. Isso faz com que diretórios e lideranças tenham um grande poder de influenciar uma disputa a favor de um candidato de seu grupo. 
+
+As contribuições com recursos próprios também favorecem desproporcionalmente candidatos mais ricos. Como nota o economista Bruno Carazza em seu livro _Dinheiro, eleições e poder: as engrenagens do sistema político brasileiro_, não é à toa que nas eleições de 2016 — a primeira disputa sem a participação (lícita) de dinheiro de empresas —, candidatos milionários ‘gestores e não-políticos’ foram 8 dos 10 maiores doadores da eleição, sempre doando a suas próprias campanhas.
+
+A maneira como são limitadas as doações de pessoas físicas também geram o mesmo problema. O limite de 10% do rendimento bruto favorece quem tem mais renda. Mesmo com a proibição de doações empresariais, grandes [empresários também não ficaram de fora do processo eleitoral](https://oglobo.globo.com/brasil/eleicoes-2020/metade-dos-prefeitos-eleitos-teve-doacao-de-empresarios-24780116) em 2020 e [doaram milhões](https://www.nexojornal.com.br/expresso/2020/11/11/Quem-s%C3%A3o-os-5-maiores-doadores-nas-elei%C3%A7%C3%B5es-municipais) das suas próprias contas para campanhas diversas.
+
+A novidade do financiamento coletivo aponta para um caminho de mudança. Até a regulamentação do serviço, uma doação era burocrática e envolvia a transferência bancária direta a uma campanha. As plataformas de financiamento coletivo simplificam a interação dos eleitores com as campanhas e incentivam as doações menores. No entanto, a farta disponibilidade dos recursos públicos e as grandes doações privadas concentradas em alguns agentes desincentivam sua utilização por muitos candidatos. Para que o financiamento coletivo deixe de ser usado por apenas 0,6% dos candidatos no Brasil, o país precisa reavaliar o sistema de financiamento de campanhas eleitorais como um todo primeiro.
+
+Em [entrevista ao Nexo Jornal](https://www.nexojornal.com.br/expresso/2020/10/28/O-efeito-de-vaquinhas-eleitorais-para-candidatos-e-eleitores), Carazza afirmou que o potencial das vaquinhas é grande, porém o atual sistema de financiamento de campanhas eleitorais faz com que elas não tenham como competir com os outros recursos aos quais os candidatos têm acesso. 
+
+---
+
+**Dados utilizados na matéria**: Prestação de contas eleitorais dos candidatos, eleições 2020 (Tribunal Superior Eleitoral); Candidatos eleições 2020 (TSE); População dos municípios brasileiros (Instituto Brasileiro de Geografia e Estatística).
+
+**Contribuiu com dados**: Antonio Piltcher e João Costa.
+
+**Créditos da imagem**: Manuela D'Ávila/Flickr; Michel Jesus/Câmara dos Deputados; Mídia NINJA/Flickr.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-12-23-fincol/fincol.Rmd
