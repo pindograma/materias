@@ -1,0 +1,1506 @@
+---
+title: "Partidos em números: DC e PSC"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "DC"
+pcb <- "PSC"
+ptc <- "PTC"
+cor <- filter(party_palette, party_name == party)$party_color
+pcb_cor <- filter(party_palette, party_name == pcb)$party_color
+ptc_cor <- filter(party_palette, party_name == ptc)$party_color
+cor_continua <- "Purples"
+pcb_cor_continua <- "Oranges"
+ptc_cor_continua <-  "Blues"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Na edição de Natal (e última do ano) do **Partidos em Números**, o _Pindograma_ traça o perfil dos três partidos brasileiros que têm no nome a religião que defendem: o Partido Social Cristão (PSC), o Partido Trabalhista Cristão (PTC) e a Democracia Cristã (DC).
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+#prefeito <- cand20 %>%
+#  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+#  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+#  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+#  distinct(UF, MUNICIPIO, .keep_all = T)
+#ggplot()+
+#  geom_sf(data = prefeito,
+#          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito","Não eleito"))),
+#          lwd = 0)+
+#  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+#  scale_fill_manual(values = c(cor, pg_yellow, pg_blue),
+#                    labels = c("Eleito", "Não eleito", "Sem candidato"),
+#                    na.value="grey90")+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party, "Desempenho dos candidatos a prefeito em 2020",
+#                  sep = " - "),
+#    fill = "Resultado"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito_b,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pcb_cor, pg_blue),
+                    labels = c("Eleito","Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+```{r, fig.height=7, fig.width=9}
+#prefeito_c <- cand20 %>%
+#  filter(PARTIDO == ptc, CARGO == "PREFEITO") %>% 
+#  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+#  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+#  distinct(UF, MUNICIPIO, .keep_all = T)
+#ggplot()+
+#  geom_sf(data = prefeito_c,
+#          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+#          lwd = 0)+
+#  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+#  scale_fill_manual(values = c(ptc_cor, pg_orange),
+#                    labels = c("Eleito","Não eleito", "Sem candidato"),
+#                    na.value="grey90")+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(ptc, "Desempenho dos candidatos a prefeito em 2020",
+#                  sep = " - "),
+#    fill = "Resultado"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+O PSC concentrou candidatos e vitórias tanto no Amazonas quanto no Rio de Janeiro, estados governados pelo partido. Em menor grau, o partido teve sucessos no Paraná. No total, o partido elegeu 116 prefeitos, um crescimento de cerca de 30% em relação a 2016.
+
+Já o PTC e a DC ambos tiveram pouquíssimos candidatos. Vários estados não tiveram candidatos de um ou do outro partido e ambos elegeram apenas um prefeito cada; o PTC em Pratinha (MG) e a DC em Bom Princípio do Piauí (PI).
+
+```{r, fig.height=5, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=9}
+#edges_l_b <- coligacoes %>%
+#  filter(PARTIDO == pcb) %>% 
+#  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+#  rename(from = id, weight = n) %>% 
+#  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+#  rename(to = id) %>% select(from, to, weight)
+#leader_b <- tbl_graph(nodes = nodes, edges = edges_l_b, directed = TRUE) %>% 
+#  mutate(
+#    degree = ifelse(value == pcb,
+#                    centrality_degree(weights = edges_l_b$weight, mode = "out"),
+#                    centrality_degree(weights = edges_l_b$weight, mode = "in")
+#                    ) 
+#  )
+#ggraph(leader_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+#  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+#  scale_edge_width(range = c(0.2, 6))+
+#  geom_node_point(aes(color = value, size = degree)) +
+#  scale_color_manual(values = nodes$party_color, guide = F) +
+#  geom_node_text(
+#    aes(label = ifelse(value==pcb, "", value)),
+#    nudge_y = .12,
+#    family = "Fantasque",
+#    fontface = "bold",
+#    size = 4,
+#    color = "grey10"
+#   )+
+#  scale_size(range = c(1, 20), guide = F)+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", pcb,
+#                  sep = " "),
+#    edge_width = "Número de coligações"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    text = element_text(family = "Fantasque"),
+#    axis.line.x = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    axis.ticks.x = element_blank(), 
+#    axis.ticks.y = element_blank(), 
+#    axis.text.x = element_blank(), 
+#    axis.text.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "bottom"
+#    )
+```
+
+```{r, fig.height=5, fig.width=9}
+edges_l_c <- coligacoes %>%
+  filter(PARTIDO == ptc) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader_c <- tbl_graph(nodes = nodes, edges = edges_l_c, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == ptc,
+                    centrality_degree(weights = edges_l_c$weight, mode = "out"),
+                    centrality_degree(weights = edges_l_c$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader_c, layout = "star", center = filter(nodes, value == ptc)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = ptc_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==ptc, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", ptc,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+#edges_f <- coligacoes %>%
+#  filter(LEGENDA == party) %>% 
+#  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+#  rename(from = id, weight = n) %>% 
+#  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+#  rename(to = id) %>% select(from, to, weight)
+#follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+#  mutate(
+#    degree = ifelse(value == party,
+#                    centrality_degree(weights = edges_f$weight, mode = "in"),
+#                    centrality_degree(weights = edges_f$weight, mode = "out")
+#                    ) 
+#  )
+#ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+#  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+#  scale_edge_width(range = c(0.2, 6))+
+#  geom_node_point(aes(color = value, size = degree)) +
+#  scale_color_manual(values = nodes$party_color, guide = F) +
+#  geom_node_text(
+#    aes(label = ifelse(value==party, "", value)),
+#    nudge_y = .12,
+#    family = "Fantasque",
+#    fontface = "bold",
+#    size = 4,
+#    color = "grey10"
+#   )+
+#  scale_size(range = c(1, 30), guide = F)+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+#                  sep = " "),
+#    edge_width = "Número de coligações"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    text = element_text(family = "Fantasque"),
+#    axis.line.x = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    axis.ticks.x = element_blank(), 
+#    axis.ticks.y = element_blank(), 
+#    axis.text.x = element_blank(), 
+#    axis.text.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "bottom"
+#    )
+```
+
+```{r, fig.height=6, fig.width=9}
+#edges_f_b <- coligacoes %>%
+#  filter(LEGENDA == pcb) %>% 
+#  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+#  rename(from = id, weight = n) %>% 
+#  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+#  rename(to = id) %>% select(from, to, weight)
+#follower_b <- tbl_graph(nodes = nodes, edges = edges_f_b, directed = TRUE) %>% 
+#  mutate(
+#    degree = ifelse(value == pcb,
+#                    centrality_degree(weights = edges_f_b$weight, mode = "in"),
+#                    centrality_degree(weights = edges_f_b$weight, mode = "out")
+#                    ) 
+#  )
+#ggraph(follower_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+#  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+#  scale_edge_width(range = c(0.2, 6))+
+#  geom_node_point(aes(color = value, size = degree)) +
+#  scale_color_manual(values = nodes$party_color, guide = F) +
+#  geom_node_text(
+#    aes(label = ifelse(value==pcb, "", value)),
+#    nudge_y = .12,
+#    family = "Fantasque",
+#    fontface = "bold",
+#    size = 4,
+#    color = "grey10"
+#   )+
+#  scale_size(range = c(1, 30), guide = F)+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", pcb,
+#                  sep = " "),
+#    edge_width = "Número de coligações"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    text = element_text(family = "Fantasque"),
+#    axis.line.x = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    axis.ticks.x = element_blank(), 
+#    axis.ticks.y = element_blank(), 
+#    axis.text.x = element_blank(), 
+#    axis.text.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "bottom"
+#    )
+```
+
+```{r, fig.height=6, fig.width=9}
+#edges_f_c <- coligacoes %>%
+#  filter(LEGENDA == ptc) %>% 
+#  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+#  rename(from = id, weight = n) %>% 
+#  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+#  rename(to = id) %>% select(from, to, weight)
+#follower_c <- tbl_graph(nodes = nodes, edges = edges_f_c, directed = TRUE) %>% 
+#  mutate(
+#    degree = ifelse(value == ptc,
+#                    centrality_degree(weights = edges_f_c$weight, mode = "in"),
+#                    centrality_degree(weights = edges_f_c$weight, mode = "out")
+#                    ) 
+#  )
+#ggraph(follower_c, layout = "star", center = filter(nodes, value == ptc)$id) +
+#  geom_edge_link(aes(width = weight), alpha = 0.6, color = ptc_cor) + 
+#  scale_edge_width(range = c(0.2, 6))+
+#  geom_node_point(aes(color = value, size = degree)) +
+#  scale_color_manual(values = nodes$party_color, guide = F) +
+#  geom_node_text(
+#    aes(label = ifelse(value==ptc, "", value)),
+#    nudge_y = .12,
+#    family = "Fantasque",
+#    fontface = "bold",
+#    size = 4,
+#    color = "grey10"
+#   )+
+#  scale_size(range = c(1, 30), guide = F)+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", ptc,
+#                  sep = " "),
+#    edge_width = "Número de coligações"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    text = element_text(family = "Fantasque"),
+#    axis.line.x = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    axis.ticks.x = element_blank(), 
+#    axis.ticks.y = element_blank(), 
+#    axis.text.x = element_blank(), 
+#    axis.text.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "bottom"
+#    )
+```
+
+O PSC tem o perfil de coligações mais tradicional dos três partidos, com várias de suas chapas recebendo apoio principalmente de legendas do Centrão como DEM, MDB e PSD, mas fazendo alianças com quase todos os partidos do país.
+
+Em contraste, o PTC teve alinhamentos mais ideológicos. As legendas do Centrão estão, como sempre, presentes, mas entre seus principais apoiadores estão também o Patriota e o Republicanos, partidos que vem crescendo no campo da direita nos últimos anos.
+
+O Republicanos é um partido muito próximo de lideranças da Igreja Universal do Reino de Deus, da qual o presidente nacional do partido é bispo. A DC, no entanto, é um partido de base católica. Isso pode explicar porque nenhuma chapa do partido foi apoiada pelo Republicanos em 2020. Outra possibilidade que pode explicar essa ausência de coligações é simplesmente o fato do partido ser inexpressivo; tendo poucas candidaturas, não surgiu um situação para o Republicanos dar apoio.  OPTB foi a legenda do Centrão mais próxima da DC.
+
+Na hora de dar apoio, o PSC reforça sua ligação com o Centrão, deixando a ligação com outros partidos em segundo plano. 
+
+Sob esta ótica, o PTC perde seu caráter mais ideológico e tem uma ligação bem mais clara ao Centrão, e mantém uma ligação forte com o Republicanos.
+
+A DC também dá mais espaço às grandes legendas, apoiando muitos candidatos do MDB, PP e PSD. Sem ser líder de chapa, o partido apoiou o Republicanos em alguns pleitos.
+
+
+```{r, fig.height=7, fig.width=9}
+#vereador <- cand20 %>%
+#  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+#  group_by(UF, MUNICIPIO) %>%
+#  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+#  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+#  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+#  distinct(UF, MUNICIPIO, .keep_all = T)
+#ggplot()+
+#  geom_sf(data = vereador,
+#          aes(geometry = geom, fill = n_elected),
+#          lwd = 0)+
+#  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+#  scale_fill_fermenter(
+##    breaks = c(1,2,4,8),
+#    palette = cor_continua, direction = 1
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party, "Vereadores eleitos por município em 2020",
+#                  sep = " - "),
+#    fill =  "Eleitos"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+vereador_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador_b,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,4,8),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Vereadores por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+#vereador_c <- cand20 %>%
+#  filter(PARTIDO == ptc, CARGO == "VEREADOR") %>% 
+#  group_by(UF, MUNICIPIO) %>%
+#  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+#  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+#  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+#  distinct(UF, MUNICIPIO, .keep_all = T)
+#ggplot()+
+#  geom_sf(data = vereador_c,
+#          aes(geometry = geom, fill = n_elected),
+#          lwd = 0)+
+#  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+#  scale_fill_fermenter(
+##    breaks = c(1,2,4,8),
+#    palette = ptc_cor_continua, direction = 1
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(ptc, "Vereadores por município em 2020",
+#                  sep = " - "),
+#    fill =  "Eleitos"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+A concentração de candidaturas e eleições de vereadores do PSC foi principalmente no Amazonas e no Rio de Janeiro e em menor grau no Pará e no Paraná.
+
+Enquanto isso, o PTC ficou mais concentrado no Sudeste, mas teve pouco alcance no resto do país e elegeu poucos representantes no geral. A DC teve ainda menos capilaridade, apresentando candidaturas em menos cidades e elegendo menos vereadores.
+
+```{r, fig.height=5, fig.width=9}
+perfil_cand <- cand20 %>%
+  filter(PARTIDO %in% c(party, pcb, ptc)) %>% 
+  group_by(PARTIDO, RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = "Composicão de sexo e raça dos candidatos em 2020",
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill = ""
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  facet_wrap(~PARTIDO)+
+  theme(axis.line.x = element_blank(),
+        legend.position = "bottom")
+```
+Dos candidatos masculinos, os três partidos lançaram mais pretos e pardos do que brancos. No caso do PTC, as mulheres negras também foram maioria, algo bem incomum entre a maioria dos partidos brasileiros. As proporções de gênero também foram similares: cerca de um terço de mulheres. 
+
+```{r, fig.height=5, fig.width=9}
+perfil_eleitos <- cand20 %>%
+  filter(PARTIDO %in% c(party, pcb, ptc), eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(PARTIDO, RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = "Composição de sexo e raça dos eleitos em 2020",
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  ""
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  facet_wrap(~PARTIDO)+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank(),
+        legend.position = "bottom")
+```
+
+```{r, fig.height=6, fig.width=9}
+#perfil_cand_b <- cand20 %>%
+#  filter(PARTIDO == pcb) %>% 
+#  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+#  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+#ggplot(perfil_cand_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+#  geom_treemap(lwd = 3)+
+#  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+#  geom_treemap_subgroup_text(
+#    colour = "white",
+#    family = "Fantasque",
+#    place = "bottom",
+#    fontface = "bold",
+#    grow = FALSE,
+#    size = 22
+#  )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb, "Composição de sexo e raça dos candidatos em 2020",
+#                  sep = " - "),
+#    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+#    fill =  "Autodeclaração\nde cor ou raça"
+#  )+
+#  scale_fill_manual(
+#    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+#    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+#    )+
+#  theme_pindograma()+
+#  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+#perfil_eleitos_b <- cand20 %>%
+#  filter(PARTIDO == pcb, eleito == "Eleito" | eleito == "2º turno") %>% 
+#  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+#  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+#ggplot(perfil_eleitos_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+#  geom_treemap(lwd = 3)+
+#  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+#  geom_treemap_subgroup_text(
+#    colour = "white",
+#    family = "Fantasque",
+#    place = "bottom",
+#    fontface = "bold",
+#    grow = FALSE,
+#    size = 22
+#  )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb, "Composição de sexo e raça dos eleitos em 2020",
+#                  sep = " - "),
+#    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+#    fill =  "Autodeclaração\nde cor ou raça"
+#  )+
+#  scale_fill_manual(
+#    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+#    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+#    )+
+#  theme_pindograma()+
+#  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+#perfil_cand_c <- cand20 %>%
+#  filter(PARTIDO == ptc) %>% 
+#  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+#  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+#ggplot(perfil_cand_c, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+#  geom_treemap(lwd = 3)+
+#  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+#  geom_treemap_subgroup_text(
+#    colour = "white",
+#    family = "Fantasque",
+#    place = "bottom",
+#    fontface = "bold",
+#    grow = FALSE,
+#    size = 22
+#  )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(ptc, "Composição de sexo e raça dos candidatos em 2020",
+#                  sep = " - "),
+#    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+#    fill =  "Autodeclaração\nde cor ou raça"
+#  )+
+#  scale_fill_manual(
+#    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+#    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+#    )+
+#  theme_pindograma()+
+#  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+#perfil_eleitos_c <- cand20 %>%
+#  filter(PARTIDO == ptc, eleito == "Eleito" | eleito == "2º turno") %>% 
+#  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+#  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+#ggplot(perfil_eleitos_c, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+#  geom_treemap(lwd = 3)+
+#  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+#  geom_treemap_subgroup_text(
+#    colour = "white",
+#    family = "Fantasque",
+#    place = "bottom",
+#    fontface = "bold",
+#    grow = FALSE,
+#    size = 22
+#  )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(ptc, "Composição de sexo e raça dos eleitos em 2020",
+#                  sep = " - "),
+#    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+#    fill =  "Autodeclaração\nde cor ou raça"
+#  )+
+#  scale_fill_manual(
+#    values = c(pg_dark_gray, pg_green, pg_blue, pg_orange, pg_light_gray),
+#    labels = c("Amarela", "Branca", "Parda", "Preta", "Sem informação")
+#    )+
+#  theme_pindograma()+
+#  theme(axis.line.x = element_blank())
+```
+
+Apesar do perfil dos candidatos, a grande maioria dos eleitos dos três partidos foram homens, a maioria dos quais também era branca.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+#fundo <- fundo_partidario %>% filter(PARTIDO == party)
+#ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+#  geom_col(fill = cor)+
+#  scale_y_continuous(
+#    labels = scales::label_number_si(
+#      prefix = "R$", big.mark = ".", decimal.mark = ","
+#      )
+#    )+
+#  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+#  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+#  coord_cartesian(ylim = c(0, 50000000))+
+#  geom_text(
+#    aes(
+#      y = 750000000*PROPORCAO,
+#      label = scales::percent(
+#      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+#      )),
+#    color = "grey20",
+#    family = "Fantasque",
+#    fontface = "bold",
+#    vjust = -1.5
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party,"Fundo partidário (2008-2019)",
+#                  sep = " - "),
+#    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+#Valores em milhões de reais, corrigidos pela inflação"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.text.x = element_text(size = 12),
+#    axis.text.y = element_text(size = 12),
+#    axis.title.x = element_blank(),
+#    plot.subtitle = element_text(hjust = .5),
+#    axis.title.y = element_blank()
+#  )
+```
+
+```{r, fig.height=6, fig.width=9}
+fundo_b <- fundo_partidario %>% filter(PARTIDO == pcb)
+ggplot(fundo_b, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = pcb_cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 50000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+#fundo_c <- fundo_partidario %>% filter(PARTIDO == ptc)
+#ggplot(fundo_c, aes(factor(ANO), VALOR_CORRIGIDO))+
+#  geom_col(fill = ptc_cor)+
+#  scale_y_continuous(
+#    labels = scales::label_number_si(
+#      prefix = "R$", big.mark = ".", decimal.mark = ","
+#      )
+#    )+
+#  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+#  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+#  coord_cartesian(ylim = c(0, 50000000))+
+#  geom_text(
+#    aes(
+#      y = 750000000*PROPORCAO,
+#      label = scales::percent(
+#      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+#      )),
+#    color = "grey20",
+#    family = "Fantasque",
+#    fontface = "bold",
+#    vjust = -1.5
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(ptc,"Fundo partidário (2008-2019)",
+#                  sep = " - "),
+#    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+#Valores em milhões de reais, corrigidos pela inflação"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.text.x = element_text(size = 12),
+#    axis.text.y = element_text(size = 12),
+#    axis.title.x = element_blank(),
+#    plot.subtitle = element_text(hjust = .5),
+#    axis.title.y = element_blank()
+#  )
+```
+
+Em anos recentes, o PSC recebeu valores que oscilaram entre 2% e 3% do valor total distribuído pelo TSE do Fundo Partidário, valor condizente com o tamanho médio do partido.
+
+Já o PTC e a DC sempre receberam valores próximos ao mínimo alocado para cada legenda, raramente ficando acima de 1% do valor total cada. Em 2019, nenhum deles recebeu dinheiro do fundo partidário por não atingirem a cláusula de barreira estabelecida em 2017.
+
+Para as eleições municipais de 2020, o PSC recebeu R\$33.239.786,22, enquanto o PTC recebeu R\$9.498.596,58 e a DC R\$4.025.171,90. 
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO %in% c(party, pcb, ptc))
+ggplot(filiados, aes(DATA, n))+
+  geom_line(aes(color = PARTIDO), size = 2)+
+  geom_point(aes(color = PARTIDO), size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  scale_color_manual(values = c(cor, pcb_cor, ptc_cor))+
+  labs(
+    title = "Número de filiados (2010 - 2019)",
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+#filiados_b <- filiacoes_total %>% filter(PARTIDO == pcb)
+#ggplot(filiados_b, aes(DATA, n, group = 1))+
+#  geom_line(color = pcb_cor, size = 2)+
+#  geom_point(color = pcb_cor, size = 2.5)+
+##  coord_cartesian(ylim = c(1250000, 1500000))+
+#  scale_y_continuous(
+#    labels = scales::label_number(
+#      accuracy = 1, decimal.mark = ",", big.mark = "."
+#      )
+#  )+
+#  labs(
+#    title = str_c(pcb,"Número de filiados (2010 - 2019)",
+#                  sep = " - "),
+#    caption = "Fonte: TSE"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.title.y = element_blank(),
+#    axis.title.x = element_blank() 
+#  )
+```
+
+```{r, fig.height=6, fig.width=9}
+#filiados_c <- filiacoes_total %>% filter(PARTIDO == ptc)
+#ggplot(filiados_c, aes(DATA, n, group = 1))+
+#  geom_line(color = ptc_cor, size = 2)+
+#  geom_point(color = ptc_cor, size = 2.5)+
+##  coord_cartesian(ylim = c(1250000, 1500000))+
+#  scale_y_continuous(
+#    labels = scales::label_number(
+#      accuracy = 1, decimal.mark = ",", big.mark = "."
+#      )
+#  )+
+#  labs(
+#    title = str_c(ptc,"Número de filiados (2010 - 2019)",
+#                  sep = " - "),
+#    caption = "Fonte: TSE"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.title.y = element_blank(),
+#    axis.title.x = element_blank() 
+#  )
+```
+
+O PSC é o maior dos três partidos em número de filiados. Atualmente tem cerca de 400 mil filiados, enquanto o PTC tem cerca de 200 mil e a DC 180 mil.
+
+Apesar da diferença de tamanho, o crescimento dos três partidos é virtualmente idêntico, crescendo antes de eleições municipais mais que em qualquer outra época.
+
+```{r, fig.height=5, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO %in% c(party,pcb,ptc)) %>% 
+  group_by(PARTIDO,DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = "Composição etária dos filiados (2010 - 2019)"
+  )+
+  facet_wrap(~PARTIDO)+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+#idade_filiados_b <- filiacoes_idade %>% filter(PARTIDO == pcb) %>% 
+#  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+#order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+#               "60 a 69 anos", "70 anos ou mais") %>% rev()
+#ggplot(idade_filiados_b,
+#       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+#  scale_fill_manual(
+#    values = c(pg_orange, pg_blue, pg_green, 
+#               pg_yellow, pg_light_gray, "#F4Ac90")
+#    )+
+#  geom_area(stat="identity")+
+#  labs(
+#    fill = "Faixa etária",
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb,"Composição etária dos filiados (2010 - 2019)",
+#                  sep = " - ")
+#  )+
+#  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+#  theme_pindograma()+
+#  theme(axis.ticks.y = element_blank(),
+#        axis.text.y = element_blank(),
+#        axis.title.x = element_blank(),
+#        axis.title.y = element_blank(),
+#        legend.position = "bottom",
+#        legend.title = element_blank(),
+#        legend.text = element_text(size = 12),
+#        panel.background = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+#idade_filiados_c <- filiacoes_idade %>% filter(PARTIDO == ptc) %>% 
+#  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+#order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+#               "60 a 69 anos", "70 anos ou mais") %>% rev()
+#ggplot(idade_filiados_c,
+#       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+#  scale_fill_manual(
+#    values = c(pg_orange, pg_blue, pg_green, 
+#               pg_yellow, pg_light_gray, "#F4Ac90")
+#    )+
+#  geom_area(stat="identity")+
+#  labs(
+#    fill = "Faixa etária",
+#    caption = "Fonte: TSE",
+#    title = str_c(ptc,"Composição etária dos filiados (2010 - 2019)",
+#                  sep = " - ")
+#  )+
+#  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+#  theme_pindograma()+
+#  theme(axis.ticks.y = element_blank(),
+#        axis.text.y = element_blank(),
+#        axis.title.x = element_blank(),
+#        axis.title.y = element_blank(),
+#        legend.position = "bottom",
+#        legend.title = element_blank(),
+#        legend.text = element_text(size = 12),
+#        panel.background = element_blank())
+```
+
+O perfil etário dos partidos também é bem similar; a maioria dos filiados são de meia idade, principalmente entre os 44 e 59 anos. No entanto, a DC tem uma presença maior de filiados de 25 a 34 anos e o PTC tem uma proporção maior de filiados com mais de 60 anos.
+
+
+```{r, fig.height=4, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.42,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=4, fig.width=9}
+sexo_filiados_b <- sexo %>% filter(PARTIDO == pcb)
+ggplot(sexo_filiados_b, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = pcb_cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.42,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=4, fig.width=9}
+sexo_filiados_c <- sexo %>% filter(PARTIDO == ptc)
+ggplot(sexo_filiados_c, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = ptc_cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(ptc,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.42,.48))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+Enquanto o PSC e a DC seguiram um padrão similar ao da maioria dos partidos — cerca de 43% de filiadas mulheres, aumentando progressivamente nos últimos anos —, o PTC tinha uma tendência de queda da proporção de mulheres até 2018. Em 2020, porém, o número cresceu para 45%, próximo ao valor em que estava em 2008.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    #breaks = c(500, 1000, 1500, 2000),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_b <- filiacao_estados %>% filter(PARTIDO == pcb) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_b, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(150, 300, 450, 600),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_c <- filiacao_estados %>% filter(PARTIDO == ptc) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_c, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+#    breaks = c(150, 300, 450, 600),
+    palette = ptc_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(ptc, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O estado de mais força do PSC é o Amazonas, onde o número de filiados por 100 mil eleitores chega a 690. O partido tem força em outros estados da região Norte, assim como no Mato Grosso, no Paraná e no Distrito Federal.
+
+O PTC tem a maior concentração de filiados no Goiás, seguido pelo Maranhão, Tocantins, Amazonas e Espírito Santo. No entanto, mesmo com a maior concentração de petecistas, o Goiás tem apenas 305 filiados por 100 mil eleitores. Proporcionalmente, a DC tem mais representação em Rondônia, onde a taxa chega a 418 por 100 mil eleitores. Além deste estado, a legenda tem mais concentração de filiados em Roraima, no Acre, no Maranhão e no Goiás.
+
+---
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.02, 0.06, 0.1, 0.14),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depest_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(0.025, 0.05, 0.075, 0.1),
+    palette = pcb_cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = .1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depest_c <- eleicoes18 %>%
+  filter(PARTIDO == ptc, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest_c, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.025, 0.05, 0.075, 0.1),
+    palette = ptc_cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(ptc, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+A maior força do PSC nos legislativos estaduais está nas regiões Norte e Nordeste, principalmente no Amapá e Amazonas. O partido elegeu, porém, representantes em 20 estados e no DF também. Já o PTC concentrou mais força em Roraima, no Amapá e no Rio Grande do Norte, além de eleger deputados estaduais em mais 6 unidades federativas. Por último, a DC representa sua maior parcela da população no Mato Grosso e tem presença em mais 6 estados.  
+
+
+```{r, fig.height=7, fig.width=9}
+#depfed <- eleicoes18 %>%
+#  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+#  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+#  mutate(prop = n/BANCADA) %>% 
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(eleitos = ifelse(is.na(CARGO), 0, 2.2)) %>% 
+#  distinct(UF, .keep_all = T)
+#ggplot(depfed, aes(fill = factor(eleitos, levels=c(2.2, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(
+#    values = c(pg_light_gray,"grey50"),
+#    labels = c("2,2%","0")
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+#                  sep = " - "),
+#    fill = "Porcentagem dos\ndeputados do estado"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depfed_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+#depfed_c <- eleicoes18 %>%
+#  filter(PARTIDO == ptc, CARGO == "DEPUTADO FEDERAL") %>%
+#  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+#  mutate(prop = n/BANCADA) %>% 
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+#  distinct(UF, .keep_all = T)
+#ggplot(depfed_c, aes(fill = prop))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_fermenter(
+#    labels = scales::percent_format(accuracy = .1),
+#    palette = ptc_cor_continua, direction = 1
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(ptc, "Proporção dos deputados federais\neleitos por estado em 2018",
+#                  sep = " - "),
+#    fill = "Porcentagem dos\ndeputados do estado"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+O PSC teve o maior sucesso das três legendas em eleger deputados federais em 2018, tendo ao menos um representante em cada região do país, distribuídos em 8 estados. Enquanto isso, o PTC elegeu deputados em apenas dois estados do Nordeste — um no Piauí e outro no Rio Grande do Norte —  e a DC elegeu um deputado no Rio de Janeiro. Atualmente, esses dois últimos partidos não possuem nenhum representante no Congresso. 
+
+```{r, fig.height=7, fig.width=9}
+senadores_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores_b, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(pcb_cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Dos três partidos, o PSC foi o único que elegeu um representante ao Senado: Zequinha Marinho, pelo Pará. O senador continua em exercício pelo partido. 
+
+```{r, fig.height=7, fig.width=9}
+governadores_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "GOVERNADOR") %>%
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+ggplot(governadores_b, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(values = c(pcb_cor,"grey90"))+
+  annotate('text', label = 'Wilson Lima',
+           family = 'Fantasque', color = "grey10",
+           x = -69.5, y = 4, size = 3.5)+
+  annotate('curve', curvature = .15, x = -72,
+           xend = -71, y = 3, yend = -1,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  annotate('text', label = 'Wilson Witzel',
+           family = 'Fantasque', color = "grey10",
+           x = -43, y = -28, size = 3.5)+
+  annotate('curve', curvature = -.15, x = -43,
+           xend = -43, y = -26.5, yend = -23.5,
+           arrow = arrow(angle = 20, length = unit(.2, "cm")), size = .7,
+           color = "grey30")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Governadores eleitos em 2018",
+                  sep = " - ")
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none"
+  )
+```
+
+O PSC também foi o único das três legendas que elegeu governadores em 2018: os xarás Wilson Lima, no Amazonas, e Wilson Witzel, no Rio de Janeiro. 
+
+---
+
+#### História
+
+A Democracia Cristã é um partido centrado praticamente em uma única figura, o político José Maria Eymael, presidente da legenda desde sua fundação em 1995.
+
+Durante sua juventude nos anos 1960, Eymael fora militante do Partido Democrata Cristão (PDC), partido católico fundado em 1945. Com a proibição de partidos políticos e a sucessiva instauração do bipartidarismo pela Ditadura Militar, Eymael passou a ser membro da ARENA, o partido governista do regime.
+
+Após a redemocratização, o PDC se reorganiza em 1985 e Eymael se elege deputado para a Assembleia Constituinte no ano seguinte pelo partido. O fraco desempenho do partido levou suas lideranças a negociarem sua fusão com o PDS para a fundação do PPR. Descontente com a união, Eymael deixa o partido para fundar o Partido da Social Democracia Cristã, que em 2017 mudou seu nome para apenas Democracia Cristã. 
+
+O presidente e fundador da legenda concorreu em todas as eleições presidenciais desde 1998 tirando a de 2002, quando tentou se eleger deputado federal. A legenda é um partido nanico desde sua fundação, mas o nome de Eymael tem amplo reconhecimento popular devido ao seu tradicional _jingle_ de campanha. Em 2018, apoiou Fernando Haddad (PT) no segundo turno das eleições presidenciais. O número eleitoral do partido é 27.
+
+O Partido Social Cristão não tem ligação com nenhum partido anterior à Ditadura Militar. Foi fundado em 1985 em Belo Horizonte, por Vítor Nósseis e recebeu seu registro no TSE em 1990. Em 1989, o partido foi aliado de Fernando Collor na eleição presidencial. Essa aliança rendeu a filiação do político alagoano Geraldo Bulhões, eleito governador do estado em 1990. O partido lançou candidatos nanicos à presidência em 1994 e 1998 e continuou com um partido pequeno, elegendo alguns prefeitos, em sua maioria concentrados no Nordeste.
+
+O PSC não lançou candidatos presidenciais em 2002 ou 2006, mas apoiou Dilma Rousseff em 2010. A partir deste ano, o partido começou a crescer. Elegeu 17 deputados federais e um senador, além de ter um de seus membros presidindo a Assembleia Legislativa do Rio de Janeiro. Em 2012, deputados do partido estiveram envolvidos na polêmica nomeação do deputado e pastor fundamentalista Marco Feliciano à presidência da Comissão de Direitos Humanos e Minorias da Câmara dos Deputados. 
+
+Em 2014, o PSC não apoiou Dilma e lançou o candidato Pastor Everaldo Pereira à presidência. A campanha do pastor chamou atenção pela aguerrida defesa de pautas conservadoras e cristãs, que rapidamente se transformaram na marca do partido. Em 2016, o então deputado federal pelo PP Jair Bolsonaro se filiou ao partido. A passagem de Bolsonaro foi rápida — trocou o partido pelo PSL para se lançar candidato à presidência em 2018 —, mas deixou sua marca. Nas eleições de 2018, o partido elegeu dois governadores, no Amazonas e no Rio de Janeiro. Atualmente, o partido é da base aliada do governo de Bolsonaro (sem partido). 
+
+Seu número nas urnas é 20 e seu presidente é Everaldo Pereira, atualmente preso devido ao envolvimento em um esquema de corrupção liderado por seu correligionário e governador do Rio de Janeiro, Wilson Witzel.
+
+O último dos três partidos, o Partido Trabalhista Cristão, também foi fundado em 1985, mas com outro nome: Partido da Juventude. O PJ foi fundado pelo jornalista Daniel Tourinho, até então militante do PDT. Ainda sem registro definitivo no TSE e com praticamente nenhuma expressividade eleitoral, o partido se aliou a diversos nomes nas eleições de 1986, dentre eles o candidato ao governo de Alagoas Fernando Collor de Mello, então no PMDB. Poucos meses após sua eleição, Collor ingressou PJ, agora renomeado Partido da Reconstrução Nacional.
+
+O novo nome fez parte de uma tentativa do partido de se reorganizar e ter uma identidade política mais clara. Citando a reconstrução moral como [“pré-requisito para todas as demais tarefas que enfrenta a sociedade brasileira no campo político, econômico e social”](http://www.fgv.br/cpdoc/acervo/dicionarios/verbete-tematico/partido-da-reconstrucao-nacional-prn), o partido se colocava como uma alternativa a políticos mais tradicionais, criticando em especial o presidente José Sarney do PMDB.
+
+Nessa onda de críticas à política tradicional e de promessas de renovação, o PRN lançou Fernando Collor à presidência em 1989. A campanha de Collor rapidamente ganhou destaque nacional e a alcunha de “caçador de marajás” levou Collor ao segundo turno, onde ganhou de Lula (PT) e tornou-se o primeiro presidente eleito por voto direto desde Jânio Quadros em 1960. A eleição de Collor levou ao rápido crescimento do partido. No entanto, mesmo com um presidente da República, o PRN não teve nenhum ministério durante o governo de Collor. 
+
+Apesar de se dizer caçador de corruptos, esquemas de corrupção envolvendo o presidente e seu irmão levaram a seu impedimento em 1992. Durante os meses de seu julgamento, o PRN defendeu Collor das acusações. O apoio custou caro ao partido, que viu-se esvaziado com a vitória acachapante a favor do afastamento do presidente, de 441 votos a 38. A maioria das figuras eleitas pelo partido deixaram-no e se desvencilharam da figura do presidente. 
+
+Em 1994, o partido apresentou uma candidatura à presidência, mas a chapa foi impugnada pelo TSE. O partido lançou um candidato substituto, mas Carlos Gomes teve uma votação inexpressiva e ficou em último lugar da disputa. Durante os anos seguintes, o partido não elegeu representantes. Em 2000, a direção do partido mudou o nome da legenda para Partido Trabalhista Cristão, apesar de nunca ter sido um partido religioso.
+
+O PTC continuou pouco expressivo por anos, mas elegeu o prefeito de São Luís (MA) em 2012, ocupando o governo de uma capital pela primeira vez. Em 2016, após ter passado anos em outros partidos, o agora senador por Alagoas Fernando Collor voltou à legenda que o elegeu presidente. O partido apoia Álvaro Dias do Podemos nas eleições presidenciais de 2018. O presidente do partido ainda é Daniel Tourinho e o número usado pelo PTC nas urnas é 36.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); Resultados eleições 2020 (TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2020-12-25-cristaos/cristaos.Rmd
