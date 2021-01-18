@@ -1,0 +1,1111 @@
+---
+title: "Partidos em números: PP e PL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../../materias/theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PTB"
+pcb <- "AVANTE"
+cor <- filter(party_palette, party_name == party)$party_color
+pcb_cor <- filter(party_palette, party_name == pcb)$party_color
+cor_continua <- "Blues"
+pcb_cor_continua <- "Oranges"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Esta edição do **Partido em Números** traz uma comparação de duas legendas que têm suas origens no trabalhismo do século XX: o Partido Trabalhista Brasileiro (PTB) e o Avante (antigo PTdoB).
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 2)+
+  geom_point(color = cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+filiados_b <- filiacoes_total %>% filter(PARTIDO == pcb)
+ggplot(filiados_b, aes(DATA, n, group = 1))+
+  geom_line(color = pcb_cor, size = 2)+
+  geom_point(color = pcb_cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(pcb,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+O PTB é o sexto maior partido do Brasil em termos de filiados. É curioso, no entanto, que o partido não segue o padrão de crescimento comum aos outros partidos. A legenda teve uma série de desfiliações entre 2014 e 2016, que foram recuperadas logo em seguida. Em 2017, o PTB também perdeu filiados, mas desta vez não voltou aos números de antes. Essas instabilidades podem ser atribuídas à progressiva migração do partido à direita, acentuada em anos recentes pela [liderança de Roberto Jefferson](https://politica.estadao.com.br/noticias/geral,roberto-jefferson-provoca-racha-interno-ao-bolsonarizar-ptb,70003549970), que se aproxima cada vez mais do presidente Jair Bolsonaro (sem partido). 
+
+Em contrapartida, o Avante é um partido pequeno, que segue um padrão mais normal de crescimento para os partidos brasileiros. Antes das eleições municipais, há uma grande onda de novos filiados. Já em anos de eleições gerais, o crescimento é menor.
+
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados_b <- filiacoes_idade %>% filter(PARTIDO == pcb) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados_b,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2015-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+Os dois partidos são pouco jovens e concentram seus filiados na faixa dos 35 a 60 anos. No entanto, a presença de jovens com menos de 25 anos é quase nula no PTB. O Avante conta com mais jovens no geral e tem menos filiados acima de 60 anos.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.4,.5))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados_b <- sexo %>% filter(PARTIDO == pcb)
+ggplot(sexo_filiados_b, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = pcb_cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.4,.5))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+A proporção de mulheres filiadas ao PTB segue o mesmo padrão da grande maioria dos outros partidos que leitores dos _Partidos em Números_ já estão acostumados a ver. No entanto, o caso do Avante chama atenção pois a porcentagem permaneceu estável em 45% em quase todos os anos para os quais este dado está disponível.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+#    breaks = c(500, 1000, 1500, 2000),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_b <- filiacao_estados %>% filter(PARTIDO == pcb) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_b, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PTB é um dos maiores partidos do país e, por isso, está presente em todos os estados da federação. Em apenas 8 estados o partido tem menos de 500 filiados a cada 100 mil eleitores. Seu estado de maior força é o Rio Grande do Sul, onde o número chega a 1.427 filiados por 100 mil eleitores.
+
+Já o Avante é um partido bem menor, tendo menos filiados que o PTB em todos os estados. Seus filiados se concentram mais no Nordeste e Sudeste, com destaque para o Maranhão e a Paraíba.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 50000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+fundo_b <- fundo_partidario %>% filter(PARTIDO == pcb)
+ggplot(fundo_b, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = pcb_cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 50000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+A proporção de dinheiro recebida pelo PTB do Fundo Partidário sempre foi uma das maiores até 2019, quando o partido teve uma diminuição de candidatos eleitos e a quantia caiu pela metade. Isso mostra que o partido está passando por dificuldades de manter sua posição de destaque no Congresso.
+
+O Avante é um partido pequeno, desde 2011 vem aumentando sua parcela do Fundo Partidário. De 2018 a 2019, o partido dobrou a quantidade de dinheiro recebida e agora recebe uma quantidade equivalente à do PTB, mesmo tendo um décimo de seus filiados.
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito","Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, pg_yellow, pg_blue),
+                    labels = c("Eleito", "Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito_b,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pcb_cor, pg_yellow),
+                    labels = c("Eleito","Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Em 2020, o PTB apresentou candidatos a prefeito em todos os estados menos Roraima. No entanto, a maioria se concentrou no Rio Grande do Sul, São Paulo e Minas Gerais. Nestes estados também se localizam a maioria dos municípios com prefeitos eleitos pelo partido.
+
+Já o Avante apresentou bem menos candidatos, concentrados em geral em Minas Gerais. Mato Grosso, Piauí e Rio Grande do Sul não tiveram nenhum candidato do Avante e outros 14 não terão nenhum prefeito da legenda nos próximos 4 anos. 
+
+```{r, fig.height=5, fig.width=10}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=10}
+edges_l_b <- coligacoes %>%
+  filter(PARTIDO == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader_b <- tbl_graph(nodes = nodes, edges = edges_l_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_l_b$weight, mode = "out"),
+                    centrality_degree(weights = edges_l_b$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Ambos os partidos se coligaram com quase todos os outros partidos do país em pelo menos uma eleição em 2020. Devido a seu tamanho, o PTB coligou com muito mais que o Avante, mas a tradicional predominância do Centrão é regra para ambos. 
+
+```{r, fig.height=5, fig.width=10}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=10}
+edges_f_b <- coligacoes %>%
+  filter(LEGENDA == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower_b <- tbl_graph(nodes = nodes, edges = edges_f_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_f_b$weight, mode = "in"),
+                    centrality_degree(weights = edges_f_b$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Quando deram apoio a outros partidos, tanto o PTB quanto o Avante também focaram no Centrão. A maior diferença entre os dois partidos é a preferência do Avante pelo PL comparada à maior proporção de apoios dados ao PSDB pelo PTB. O [PSD](https://pindograma.com.br/2020/11/20/psd.html) e o MDB se aliaram com ambos os partidos diversas vezes.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,4,8),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Vereadores eleitos por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+vereador_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador_b,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,4,8),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Vereadores por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PTB teve mais candidatos às câmaras municipais no Rio Grande do Sul, São Paulo e Minas. Os estados do Tocantins, Maranhão e Piauí tiveram uma maior quantidade de vereadores petebistas eleitos também. 
+
+Já os candidatos a vereador do Avante estiveram mais limitados a alguns estados, assim como seus candidatos a prefeito. Minas Gerais foi o estado com mais candidatos e eleitos. São Paulo e o Rio de Janeiro concentraram muitos candidatos, mas menos sucessos.
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand_b <- cand20 %>%
+  filter(PARTIDO == pcb) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+A proporção de raça e gênero dos candidatos do PTB é parecida com a de vários outros partidos grandes, sendo cerca de 30% candidatas mulheres e mais da metade dos candidatos brancos. O Avante tem uma representação similar de gênero, mas os homens pardos foram o maior grupo dentre os candidatos masculinos. No total, 42,8% dos candidatos do Avante eram brancos.
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos <- cand20 %>%
+  filter(PARTIDO == party, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos_b <- cand20 %>%
+  filter(PARTIDO == pcb, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+Apesar dos esforços de maior representatividade, mais de 4 a cada 5 candidatos eleitos por ambos os partidos são homens. A maioria dos petebistas eleitos foram também brancos, já no Avante a porcentagem foi 46,1%, alta mas mais próxima da realidade brasileira. 
+
+---
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.02, 0.06, 0.1, 0.14),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depest_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(0.025, 0.05, 0.075, 0.1),
+    palette = pcb_cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = .1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PTB elegeu representantes para as Assembleias Legislativas de 19 estados em 2018. Seus representantes estavam espalhados por todas as regiões do país, mas suas maiores bancadas foram no Rio Grande do Sul e em Rondônia.
+
+Já o Avante tem uma presença mais restrita, limitando-se ao Sudeste e Nordeste, assim como o Distrito Federal. Sua maior bancada foi eleita na Paraíba. Em outros estados, o partido elegeu apenas um representante.
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depfed_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Em 2018, o PTB elegeu 10 deputados federais distribuídos por 8 estados. Proporcionalmente, suas maiores bancadas são a alagoana, a paraense e a matogrossense. A maioria dos deputados são de estados do Nordeste. Hoje, o partido conta com 12 deputados no total.
+
+O Avante elegeu 7 deputados federais na última eleição, representando apenas 4 estados: Amapá, Minas Gerais, Bahia e Rio de Janeiro. Desde sua fundação, essa é a maior bancada do partido na Câmara dos Deputados. Hoje, o partido conta com 9 deputados federais no total, sendo um deles de Pernambuco. 
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+#senadores_b <- eleicoes18 %>%
+#  filter(PARTIDO == pcb, CARGO == "SENADOR") %>%
+#  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+#  distinct(UF, .keep_all = T)
+#ggplot(senadores_b, aes(fill = factor(eleitos, levels = c(1,0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(
+#    values = c( "grey90"),
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb,"Senadores eleitos em 2014 ou 2018",
+#                  sep = " - "),
+#    fill = ""
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+Nas últimas duas eleições o PTB elegeu 4 senadores. No entanto, todos trocaram o partido por outras legendas. Ou seja, o partido não conta com senadores em exercício.
+
+O Avante nunca elegeu nenhum candidato ao Senado. 
+
+Nenhum dos dois partidos elegeu governadores em 2018.
+
+```{r, fig.height=7, fig.width=9}
+#governadores <- eleicoes18 %>%
+#  filter(PARTIDO == party, CARGO == "GOVERNADOR") %>%
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+#ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(values = c("grey90"))+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party,"Governadores eleitos em 2018",
+#                  sep = " - ")
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "none"
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+#governadores_b <- eleicoes18 %>%
+#  filter(PARTIDO == "PR", CARGO == "GOVERNADOR") %>%
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+#ggplot(governadores_b, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(values = c("grey90"))+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb,"Governadores eleitos em 2018",
+#                  sep = " - ")
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "none"
+#  )
+```
+
+---
+
+#### História
+
+Antes da ditadura militar, o PTB era um dos maiores partidos do Brasil. Então de centro-esquerda, o partido que herdou o legado de Getúlio Vargas contava com amplo apoio popular. Sua bancada no Congresso crescia a cada eleição entre 1945 e 1962. Pelo partido, elegeu-se o presidente Getúlio Vargas em 1950 e o vice-presidente João Goulart em 1955 e 1960. O partido retornou à presidência em 1961, após a renúncia de Jânio Quadros.
+
+Quando os partidos políticos foram proibidos no Brasil e o bipartidarismo foi instituído em 1965 pela ditadura militar, as lideranças do PTB se dispersaram. Algumas foram para o exílio e outras ficaram no Brasil, dividindo-se entre a ARENA, o MDB ou abandonando a vida política. Com a progressiva abertura do regime no final da década de 1970, algumas dessas lideranças começaram a se movimentar para refundar o PTB.
+
+Um desses esforços veio de Leonel Brizola, ex-governador do Rio Grande do Sul, que organizou em Lisboa uma reunião de lideranças trabalhistas para propor a refundação do partido — desta vez incorporando o socialismo à ideologia da legenda. Ivete Vargas, sobrinha-neta de Getúlio Vargas e ex-deputada federal pelo partido, rejeitava a guinada mais à esquerda do grupo brizolista, mas também compareceu ao encontro, na tentativa de fazer um acordo com Brizola. O acordo não ocorreu, e tanto Brizola quanto Ivete tentaram registrar a legenda do PTB. A disputa parou na Justiça Eleitoral, que deu ganho de causa a Ivete e registro oficial para o partido em 1980. Já Brizola abandonou o partido e fundou o [PDT](https://pindograma.com.br/2020/11/14/pdt.html), registrado oficialmente em 1981.
+
+O novo PTB visava ser, nas palavras de Ivete Vargas, uma oposição [“patriótica e não demagógica”](http://www.fgv.br/cpdoc/acervo/dicionarios/verbete-tematico/partido-trabalhista-brasileiro-ptb-1980) à ditadura, aberta ao diálogo e disposta a abranger “todos os segmentos da sociedade brasileira, inclusive o empresariado nacional”. Nos primeiros anos após sua refundação, o PTB recuperou antigas lideranças por todo o país e incorporou outras figuras de destaque nacional, como o ex-presidente Jânio Quadros. Nas primeiras eleições após o fim do bipartidarismo, o PTB elegeu 13 deputados federais, tornando-se o terceiro maior partido da Câmara dos Deputados. Tanto o governista PDS quanto o MDB disputavam o apoio do PTB para obter a maioria. Depois de um acordo com os apoiadores do regime, o PTB passa a integrar a base aliada do ditador João Figueiredo.
+
+Apesar do governismo, em 1984 a maior parte dos deputados do PTB votou a favor da emenda constitucional que garantia o voto direto para as eleições presidenciais. Derrotada a proposta, o PTB apoiou a chapa de Tancredo Neves e José Sarney nas eleições indiretas de 1985. No mesmo ano, o partido teve sua maior vitória eleitoral desde 1980 com a eleição de Jânio Quadros para a prefeitura de São Paulo, derrotando Fernando Henrique Cardoso ([PSDB](https://pindograma.com.br/2020/11/02/psdb.html)).
+
+Em 1989, o partido se veria novamente fragmentado diante das eleições presidenciais. Um grupo era favorável a apoiar Fernando Collor, candidato pelo antigo [PRN](https://pindograma.com.br/2020/12/25/cristaos.html), outro preferia o apoio ao PDT de Brizola e outro ainda defendia o lançamento de um candidato próprio. O último grupo venceu, mas a candidatura do senador pelo Paraná Afonso Camargo terminou com menos de 1% dos votos. O partido apoiou Collor no segundo turno.
+
+Em 1992, a maioria dos deputados petebistas apoiaram o impedimento de Fernando Collor, mas alguns membros como Roberto Jefferson apoiaram o presidente até o final de seu mandato. Com o afastamento de Collor, o PTB passou a integrar a base aliada de Itamar Franco ([PMDB](https://pindograma.com.br/2020/10/21/mdb.html)). Em 1994, o partido integrou a coligação de Fernando Henrique Cardoso e passou a ser um importante aliado governista do tucano em ambos os seus mandatos. A década de 1990 foi importante para a consolidação do PTB como um partido grande e a legenda elegeu seus primeiros governadores e prefeitos em diferentes capitais durante o período.
+
+Em 2002, o partido apoiou a candidatura à presidência de Ciro Gomes pelo PPS, mas passou a apoiar o governo de Lula ([PT](https://pindograma.com.br/2020/10/27/pt.html)) após o início de seu mandato. O partido apoiaria Lula em ambos os seus mandatos e faria o mesmo com sua sucessora Dilma Rousseff, mesmo tendo apoiado outros candidatos nas eleições de 2010 e 2014. No entanto, em 2016 a bancada do partido optou pelo impedimento de Dilma, marcando a definitiva guinada à direita para a qual o partido já caminhava há anos.
+
+Na eleição de 2018, o PTB integrou mais uma vez a coligação do PSDB e da candidatura de Geraldo Alckmin. Já no segundo turno, o partido declarou apoio ao candidato pelo [PSL](https://pindograma.com.br/2020/10/29/psl.html) Jair Bolsonaro. Hoje, o PTB é um dos mais importantes aliados de Bolsonaro na Câmara dos Deputados. Seu presidente é Roberto Jefferson e o número eleitoral do partido é 14.
+
+As divergências internas do PTB no final da década de 1980 levaram a um racha de alguns deputados insatisfeitos com as posições conservadoras de outros membros da legenda. Esta insatisfação levou um grupo de petebistas a saírem do partido e fundar o Partido Trabalhista do Brasil (PTdoB) em 1989. A ideia dos dissidentes era recuperar o legado getulista do partido, que já não viam como majoritárias no PTB.
+
+Os primeiros anos do PTdoB foram marcados por resultados eleitorais pífios e pouco crescimento. O partido também incorporou outras legendas nanicas como o PSU, PNTB e PASART neste período. A legenda recebeu seu registro definitivo em 1994. 
+
+Em 2006, foi anunciada a fusão do partido com o [PL](https://pindograma.com.br/2020/12/08/plpp.html) e o PRONA para a formação do Partido da República, mas a decisão foi rejeitada pelos filiados na convenção partidária do mesmo ano.
+
+Apesar de pequeno, o partido continuou seu trabalho de fortalecimento de bases regionais e obteve seu melhor resultado nas eleições municipais em 2012, elegendo 535 vereadores e 26 prefeitos.
+
+Assim como vários outros partidos, o PTdoB mudou seu em 2017, adotando o título Avante. Segundo [o site da legenda](https://avante70.org.br/avante/), o nome representa a ‘direção certa’ para o país e para o partido. Seu [estatuto](http://avante70.org.br/wp-content/uploads/2019/05/Estatuto_Avante-70.pdf) enfatiza a necessidade de renovação e engajamento da sociedade com a política, mas sem grandes comprometimentos ideológicos.
+
+Em 2018 integrou a aliança de Ciro Gomes (PDT) em sua disputa à presidência, que no segundo turno declarou apoio a Fernando Haddad (PT). No mesmo ano, o partido elegeu 7 deputados federais, seu melhor desempenho desde sua fundação.
+
+Os deputados do Avante não integram oficialmente a base aliada de Bolsonaro, mas seus parlamentares votam com o governo em cerca de [3 a cada 4](https://congressoemfoco.uol.com.br/governo/exclusivo-os-12-partidos-que-formam-a-base-fiel-do-governo-na-camara/) votações no Congresso. O deputado federal mineiro Luís Tibé é o atual presidente do partido, que usa 70 como seu número nas urnas.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); Resultados eleições 2020 (TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-01-18-avanteptb/avanteptb.Rmd
