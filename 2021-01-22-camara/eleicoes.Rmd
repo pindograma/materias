@@ -1,0 +1,189 @@
+---
+title: "Partidos em números: PP e PL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+library(ggalluvial)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+```{r}
+data = read_excel('eleicoes.xlsx', sheet = 'Conta Final Apoio & Votos')
+
+treason = mean(abs(data$`Nº Apoios` - data$`Votos 1o Escrutínio`))
+
+apoios_estadao = tibble(bloco = c(rep('Baleia Rossi\n(MDB)', 236), rep('Arthur Lira\n(PP)', 249)),
+                        decl = c(rep('Arthur Lira\n(PP)', 20), rep('Baleia Rossi\n(MDB)', 117), rep('Não Declarou\nVoto', 96), rep('Outros', 3),
+                                 rep('Baleia Rossi\n(MDB)', 5), rep('Arthur Lira\n(PP)', 175), rep('Não Declarou\nVoto', 67), rep('Outros', 2)))
+```
+
+No dia 2 de fevereiro, os deputados federais elegerão, sob voto secreto, um
+novo presidente da Câmara. Hoje, o deputado **Arthur Lira**
+([PP](https://pindograma.com.br/2020/12/08/plpp.html)) tem o apoio do
+presidente Bolsonaro e de um bloco de 249 deputados — pouco menos que os 257
+necessários para vencer. Já o deputado **Baleia Rossi**
+([MDB](https://pindograma.com.br/2020/10/21/mdb.html)) é candidato de uma
+coalizão competitiva que inclui o
+[PT](https://pindograma.com.br/2020/10/27/pt.html), o
+[PSDB](https://pindograma.com.br/2020/11/02/psdb.html) e o
+[DEM](https://pindograma.com.br/2020/11/03/dem-rep.html), somando 236 votos. No
+entanto, o padrão de traições na eleição para presidente da Câmara tende a
+favorecer Lira ainda mais do que seus números atuais indicam.
+
+Hoje, o deputado Arthur Lira [tem apoio][2] declarado do
+[PSL](https://pindograma.com.br/2020/10/29/psl.html), [PL,
+PP](https://pindograma.com.br/2020/12/08/plpp.html),
+[PSD](https://pindograma.com.br/2020/11/20/psd.html),
+[Republicanos](https://pindograma.com.br/2020/11/03/dem-rep.html),
+[PTB](https://pindograma.com.br/2021/01/18/avanteptb.html),
+PROS, [PSC](https://pindograma.com.br/2020/12/25/cristaos.html),
+[Avante](https://pindograma.com.br/2021/01/18/avanteptb.html) e
+[Patriota](https://pindograma.com.br/2020/11/10/novo-patri.html). Estes
+partidos somados renderiam 249 deputados oficialmente apoiando Lira. Já seu
+adversário, o deputado **Baleia Rossi**, teria 236 votos assegurados pelo seu
+bloco, composto por PT, MDB, PSB, PSDB, DEM, PDT, Cidadania, PV, PCdoB, Rede e
+Solidariedade.
+
+Contudo, a análise das últimas sete eleições para presidente da Câmara revela
+que a vantagem de Lira é ainda maior que esses números indicam. Ao comparar o
+tamanho dos blocos de partidos e os votos reais de cada candidato em todas as
+eleições, o _Pindograma_ estimou a oscilação na votação devida a traições.
+Calculamos que, desde 2007, **cada candidato a presidente da Câmara perdeu ou
+ganhou, em média, `r pn(treason)` votos por conta de traições**.
+
+Este ano, tudo indica que Arthur Lira ganhará votos com as traições. Lira tem o
+apoio do governo de Jair Bolsonaro (sem partido), que procura assegurar um
+aliado no cargo para evitar que um processo de impedimento contra ele seja
+pautado. O governo até cogita até [recriar
+ministérios](https://www.bbc.com/portuguese/brasil-55494720) para ganhar votos
+e está [explicitamente
+oferecendo](https://oglobo.globo.com/brasil/governo-bolsonaro-oferece-cargos-para-tentar-influenciar-eleicoes-para-as-presidencias-da-camara-do-senado-24798861)
+cargos, vantagens e emendas para parlamentares que decidirem trair Baleia Rossi
+em favor de Lira. 
+
+Um levantamento do jornal _O Estado de São Paulo_ perguntou a cada deputado o
+seu voto para presidente. No [placar de 22 de
+janeiro](https://www.estadao.com.br/infograficos/politica,placar-votos-eleicao-presidente-camara-deputados-2021,1145650),
+Lira tem 197 contra 122 de Baleia Rossi. 22 deputados declararam votos em
+outros candidatos, como os 9 deputados do
+[PSOL](https://pindograma.com.br/2020/11/06/psol.html) e 8 do
+[NOVO](https://pindograma.com.br/2020/11/10/novo-patri.html) que votarão em
+candidatos próprios.
+
+Entre os que já declararam os seus votos, Lira conta com apoios de 20
+parlamentares do DEM, PSDB,
+[PSB](https://pindograma.com.br/2020/11/23/psb.html), MDB e Solidariedade —
+todos partidos que formalmente apoiam Baleia Rossi. Já Baleia angariou somente
+cinco votos do bloco de seu adversário.
+
+```{r fig.height=7}
+ggplot(apoios_estadao, aes(axis1 = bloco, axis2 = decl)) +
+  geom_alluvium(aes(fill = bloco), decreasing = T) +
+  geom_stratum(decreasing = T) +
+  geom_text(stat = 'stratum', aes(label = after_stat(stratum)), decreasing = T, family = 'Fantasque') +
+  scale_fill_manual(values = c(pg_blue, pg_yellow)) +
+  ylab('Deputados') +
+  labs(title = 'Traição e Indecisão na Escolha do Presidente da Câmara',
+       subtitle = '(Esquerda: blocos oficiais de apoio; Direita: declarações de voto)',
+       caption = 'Fonte: O Estado de S. Paulo, Câmara dos Deputados') +
+  theme_pindograma() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = 'none')
+```
+
+Todos esses números apontam para um triunfo de Arthur Lira: tanto a média
+histórica de traições quanto as traições já declaradas por deputados apontam
+para uma vitória de Lira no primeiro turno. Além disso, dos 172 deputados que
+ainda não anunciaram seu voto, 55% são do bloco de Baleia Rossi — o que dá a
+Lira um espaço ainda maior para virar votos.
+
+---
+
+Em 2011, o deputado Marco Maia (PT) tinha 469 deputados oficialmente em seu
+bloco, mas perdeu 94 deputados para o candidato Sandro Mabel (PR), candidato de
+protesto contra a candidatura apoiada pela maioria. Já em 2013, 135 deputados
+de partidos que apoiavam Henrique Eduardo Alves (PMDB) migraram para as
+candidaturas independentes de Rose de Freitas (PMDB) e Júlio Delgado (PSB).
+
+Em casos de eleições onde um candidato tem a vitória quase garantida, como as
+de 2011 e 2013, os deputados podem se dar ao luxo de mandar uma mensagem à
+liderança sem consequências reais para o Congresso. Por isso, tendem a haver
+mais traições.
+
+Mesmo assim, as traições ainda ocorrem nos pleitos mais competitivos. Em 2015,
+Eduardo Cunha (PMDB)  derrotou o governista Arlindo Chinaglia (PT) em meio à
+enorme crise de popularidade do governo Dilma. Sem os 49 votos ganhos com
+traições do bloco de Chinaglia e de Júlio Delgado — coincidentemente, o mesmo
+número da média histórica de traições —, o peemedebista não teria sido eleito
+em primeiro turno. 
+
+Com a saída de Cunha em 2016, Rodrigo Maia (DEM) foi eleito para um mandato
+tampão e subsequentemente reeleito duas vezes. Os três pleitos em que concorreu
+seguiram o padrão de eleições pouco competitivas: em 2019, por exemplo, Maia
+perdeu 59 votos para traições, mas ainda venceu em primeiro turno com uma ampla
+vantagem de 334 votos. Nenhum outro candidato conseguiu mais de 66 votos. 
+
+```{r}
+treason_mean_by_year = data %>%
+  group_by(Ano) %>%
+  summarize(treason_mean = mean(abs(`Nº Apoios` - `Votos 1o Escrutínio`)))
+
+ggplot(treason_mean_by_year, aes(x = factor(Ano), y = treason_mean)) +
+  geom_col(fill = pg_green) +
+  labs(title = 'Impacto das Traições por Candidato, 2007-2019',
+       subtitle = '(Média da diferença entre apoios partidários e votos obtidos, entre todos os candidatos)',
+       caption = 'Fonte: Câmara dos Deputados, TSE, Pindograma') +
+  xlab('') + ylab('Votos') +
+  theme_pindograma()
+```
+
+De todas as eleições desde 2007, Eduardo Cunha foi o único candidato que
+derrotou um candidato apoiado pelo Palácio do Planalto. Pressão, votos e
+alianças ainda podem mudar a eleição deste ano até o último segundo.
+
+###### Metodologia
+
+A "traição" sofrida por cada candidato à presidência da Câmara foi calculada
+através da diferença entre o tamanho de seu bloco de apoio e os votos que
+obteve na no primeiro turno da eleição. A média histórica de traições é a média
+simples da "traição" de todos os candidatos desde 2007. Os blocos de apoio a
+candidatos à presidência da Câmara foram obtidos através de dados da Secretaria
+Geral da Mesa da Câmara e da imprensa. O tamanho das bancadas na Câmara no
+momento de cada eleição foi extraído do _Diário da Câmara dos Deputados_ para
+os anos de 2009, 2013 e 2017; e do Tribunal Superior Eleitoral/Cepespdata para
+os anos de 2007, 2011, 2015 e 2019. A eleição especial de 2016 foi excluída,
+pois nela não foram registrados blocos de apoio.
+
+---
+
+**Dados utilizados na matéria**: Filiação partidária dos deputados
+(TSE/Cepespdata; Câmara dos Deputados); Blocos de apoio a candidatos para a
+Presidência da Câmara (Secretaria Geral da Mesa da Câmara dos Deputados).
+
+**Contribuiu com dados**: Daniel Ferreira.
+
+**Créditos da imagem**: Wilson Dias/Agência Brasil, Luis Macedo/Agência Câmara,
+Baleia Rossi/Divulgação.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-01-22-camara/eleicoes.Rmd
+
+[2]: https://oglobo.globo.com/brasil/eleicao-da-camara-com-apoio-de-mais-dois-partidos-bloco-de-lira-ultrapassa-de-baleia-em-numero-de-deputados-1-24849412
