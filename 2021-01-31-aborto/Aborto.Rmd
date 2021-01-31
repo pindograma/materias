@@ -1,0 +1,195 @@
+---
+title: "Partidos em números: PP e PL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(gt)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+A aprovação da lei que legalizou o aborto na Argentina em dezembro de 2020
+reacendeu o debate sobre o tema por toda a América Latina, inclusive no Brasil.
+Durante as últimas duas décadas, de acordo com dados da [World Values Survey][1],
+países do continente se dividiram em dois grupos: um onde a opinião pública
+sobre o aborto se tornou mais progressista e um onde a opinião pública
+permaneceu a mesma ou até se intensificou no sentimento contrário à prática. O
+Brasil encontra-se no segundo grupo: a opinião dos brasileiros continua muito
+similar à do início dos anos 2000, o que dificulta a ampliação do direito ao
+abortamento.
+
+Nos últimos 20 anos, Argentina, Chile e México tiveram uma diminuição
+significativa na _rejeição absoluta_ ao aborto (a proporção de pessoas que,
+perguntadas sobre quanto o aborto é justificável em uma escala de 0 a 10,
+escolheram zero). Enquanto isso, a Colômbia e o Brasil não acompanharam
+essa tendência na mudança de opinião pública:
+
+```{r}
+rejection = read_csv('absolute_rejection.csv')
+
+rejection %>%
+  filter(country %in% c('argentina', 'brazil', 'chile', 'mexico', 'colombia')) %>%
+  mutate(`Queda na Rejeição desde 2005` = -((wvs7 - wvs5) / wvs5)) %>%
+  rename(`País` = country, `2000-2004` = wvs4, `2005-2009` = wvs5, `2010-2014` = wvs6, `2017-2020` = wvs7) %>%
+  mutate(`País` = str_to_title(case_when(
+    `País` == 'brazil' ~ 'Brasil',
+    `País` == 'mexico' ~ 'México',
+    `País` == 'colombia' ~ 'Colômbia',
+    T ~ `País`
+  ))) %>%
+  gt() %>% 
+  theme_pindograma_table() %>%
+  tab_style(cell_fill(color = pg_light_gray), cells_body()) %>%
+  tab_style(cell_text(weight = 'bold'), cells_body(columns = 6)) %>%
+  fmt_missing(columns = everything(), missing_text = '—') %>%
+  cols_align('center', T) %>%
+  fmt_percent(columns = 2:6, dec_mark = ',', sep_mark = '.', decimals = 1)
+```
+
+Outros países da região também têm taxas altas de rejeição absoluta ao aborto,
+como a Bolívia (65,3%), Peru (63,5%), Equador (63,3%) e Nicarágua (76,3%).
+
+De acordo com Gabriela Rondon, doutora em Direito e pesquisadora do Instituto
+de Bioética (Anis), a opinião pública quanto ao aborto depende de vários
+fatores particulares à situação de cada país, mas o cenário político e social
+são determinantes para como o público compreende o aborto. Dependendo de como o
+debate é pautado, o assunto é tratado como matéria de saúde pública ou tabu
+religioso.
+
+No Brasil, Rondon explica que havia um debate nos anos 90, quando novos
+projetos de lei para aumentar as exceções à criminalização eram propostos. Mas
+a partir dos anos 2000, o legislativo tornou-se hostil a esses projetos. Para a
+pesquisadora, "a efervescência das bancada evangélica no Brasil, de vozes
+conservadoras no parlamento, paulatinamente forçou os movimentos feministas a
+uma redução de danos quanto à pauta do aborto, sem avanço". Na eleição de 2010
+a então presidenciável Dilma Rousseff [assinou uma
+carta](https://politica.estadao.com.br/noticias/geral,em-carta-dilma-assina-compromisso-contra-o-aborto,625257)
+se comprometendo com a causa anti-abortista, parte de um esforço do Partido dos
+Trabalhadores quando estava no poder de manter o apoio de eleitores religiosos.
+
+Quanto à recente legalização do aborto na Argentina, Rondon lembra que muitas
+líderes argentinas reconhecem que feministas brasileiras foram importantes para
+a legalização por lá. No entanto, Rondon explica que as argentinas avançaram
+devido a reformas políticas no país que incluíram cotas de participação para
+mulheres na política. O Congresso Nacional brasileiro por exemplo, é formado
+por só [15% de
+mulheres](http://www.generonumero.media/paridade-genero-cotas-argentina/), uma
+alta histórica. Na Argentina, [40% dos
+parlamentares](http://www.generonumero.media/paridade-genero-cotas-argentina/)
+são mulheres.
+
+"Lá, você vê muito mais mulheres, mas não só isso, muito mais jovens no
+parlamento, e isso muda a relação dos movimentos sociais com a
+institucionalidade. Claro que há muitos outros fatores. As feministas
+argentinas dizem, por exemplo, que alcançaram antes a despenalização social e
+agora a despenalização legal, mas a representação na política foi muito
+importante".
+
+A notícia de Buenos Aires trouxe o tema à tona por toda a América Latina. No
+México, o presidente Andres Manuel Lopez Obrador propôs fazer um referendo
+sobre o aborto e
+[enfatizou](https://politica.expansion.mx/mexico/2020/12/31/amlo-propone-hacer-consulta-sobre-la-despenalizacion-del-aborto)
+que a decisão deve ser das mulheres mexicanas. No Chile, onde a criminalização
+do aborto foi uma das últimas decisões do ditador Augusto Pinochet,
+manifestantes usando os mesmos lenços verdes das ativistas argentinas buscam
+movimentar a pauta no
+[Congresso](https://g1.globo.com/mundo/noticia/2021/01/13/em-meio-a-protestos-congresso-chileno-inicia-debate-para-descriminalizar-aborto.ghtml).
+Nestes países há uma grande movimentação política, com apoio de figuras
+públicas importantes, como o próprio presidente argentino Alberto Fernández. No
+Brasil, este não é o caso.
+
+Para Rondon, a menos que haja uma grande movimentação política pelo assunto, a
+pressão por ora ficará no judiciário brasileiro — e que isso tampouco trará
+mudanças rápidas. Ela explica que mesmo o julgamento sobre casos de anencefalia
+demorou quase 12 anos para ser decidido. “Estamos falando de fetos que não têm
+nenhuma chance de vida, e mesmo assim demorou porque não existiam as condições
+políticas para a decisão. A corte é um espaço político... E algumas perguntas
+simplesmente não são possíveis tendo em vista o cenário político. O Congresso
+Nacional não pergunta se a criminalização do aborto diminui o número de
+abortos. É efetivo? Não".
+
+Mesmo assim, a pesquisadora diz haver motivos para otimismo entre ativistas por
+direitos reprodutivos. Ela cita o caso da garota de 10 anos que [buscou o
+aborto
+legalmente](https://oglobo.globo.com/sociedade/oab-defende-direito-legal-aborto-de-menina-de-10-anos-vitima-de-estupro-no-es-24588022)
+no Espírito Santo esse ano. "A narrativa desses que foram para a porta do
+hospital [grupo católico que tentava impedir o aborto legal] não foi a
+narrativa vencedora". A
+[imprensa](https://oglobo.globo.com/sociedade/oab-defende-direito-legal-aborto-de-menina-de-10-anos-vitima-de-estupro-no-es-24588022)
+noticiou o caso com favorabilidade à menina e a situação delicada na qual ela
+se encontrava.
+
+Rondon entende que o aborto é um tema que mexe com as paixões das pessoas, com
+a religiosidade e crenças enraizadas, e que evidências não são o único caminho
+para mudar a opinião pública. A pesquisadora acredita que a atitude em relação
+a meninas e mulheres que precisam recorrer a um abortamento está se tornando
+mais empática, mesmo com um cenário político cada vez mais conservador. “Então
+por isso há esperança [para quem defende o aborto legal], mesmo num cenário que
+a gente acha que é politicamente muito árido, a gente tem visto giros muito
+importantes nesse tema".
+
+Quanto ao cenário politicamente árido, um
+[levantamento](https://www.diap.org.br/index.php/noticias/noticias/88900-eleicoes-2018-bancada-evangelica-cresce-na-camara-e-no-senado)
+do Departamento Intersindical de Assessoria Parlamentar mostrou que a bancada
+evangélica, cuojs parlamentares são majoritariamente engajados contra a
+legalização do aborto, cresceu nas últimas eleições. Além disso, tendências de
+buscas no Google indicam que o interesse pelo tema surge apenas quando há
+episódios específicos de grande circulação na mídia, mas não cresceu ou se
+sustentou por grandes períodos de tempo. Por ora, o tema segue sendo uma pauta
+intermitente, que compete com outras prioridades imediatas da política
+brasileira.
+
+---
+
+A Argentina agora permite a interrupção voluntária da gravidez até as 12
+semanas de gravidez em todo o país. Já no México, há distinções entre os
+diferentes estados do país: o Distrito Federal e o estado de Oaxaca reconhecem
+o direito ao abortamento até as 12 semanas de gestação, enquanto na maioria das
+outras unidades federativas, é permitido apenas em caso de risco de vida da
+gestante ou de estupro.
+
+No Chile, a partir de 2017 exceções em casos de risco de vida ou estupro foram
+estabelecidas, derrogando a proibição completa da época Pinochet. No Brasil,
+desde 1940, abortamento é direito da gestante em casos onde a vida da mulher
+corre risco ou onde a gravidez foi causada por abuso sexual. E, desde 2012, o
+STF decidiu que também pode ocorrer legalmente quando o feto é anencéfalo, e
+portanto, não tem chances de sobreviver.
+
+Segundo a mais recente Pesquisa Nacional de Aborto, publicada pelo Instituto de
+Bioética (Anis) e pela Universidade de Brasília em 2016, no Brasil “[quase 1 em
+cada 5 mulheres, aos 40 anos já realizou, pelo menos, um
+aborto](https://www.scielo.br/scielo.php?pid=S1413-81232017000200653&script=sci_abstract&tlng=pt)”
+— seja de forma legal ou não.
+
+Segundo a pesquisa, o aborto é frequente, ainda mais entre mulheres mais
+vulneráveis — as com menor escolaridade, pretas, pardas e indígenas, das
+regiões Norte, Nordeste e Centro-Oeste. Na América Latina, de acordo com um
+levantamento da Organização Mundial da Saúde e do Instituto Guttmacher, apenas
+um em cada quatro abortamentos foram realizados de acordo com as [diretrizes e
+normas da
+OMS](https://apps.who.int/iris/bitstream/handle/10665/70914/9789248548437_por.pdf;jsessionid=99C0F201D850C61311BE4C99533FD40D?sequence=7):
+por profissionais da saúde treinados, através de métodos seguros, em ambiente
+adequado.
+
+---
+
+**Dados utilizados na matéria**: World Values Survey.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][2].
+
+[1]: http://www.worldvaluessurvey.org/wvs.jsp
+
+[2]: https://github.com/pindograma/materias/blob/master/2021-01-31-aborto/Aborto.Rmd
