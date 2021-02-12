@@ -1,0 +1,1090 @@
+---
+title: "Partidos em números: PP e PL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PMB"
+pcb <- "PROS"
+cor <- filter(party_palette, party_name == party)$party_color
+pcb_cor <- filter(party_palette, party_name == pcb)$party_color
+cor_continua <- "Purples"
+pcb_cor_continua <- "Oranges"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Nesta edição do **Partidos em Números**, o _Pindograma_ analisa a trajetória de dois partidos recentes, pequenos e sem uma ideologia definida: o Partido da Mulher Brasileira (PMB) e o Partido Republicano da Ordem Social (PROS).
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 2)+
+  geom_point(color = cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+filiados_b <- filiacoes_total %>% filter(PARTIDO == pcb)
+ggplot(filiados_b, aes(DATA, n, group = 1))+
+  geom_line(color = pcb_cor, size = 2)+
+  geom_point(color = pcb_cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(pcb,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+O PMB é um partido muito pequeno. Cresceu desde sua fundação em 2015, mas hoje ainda conta com pouco mais de 40 mil filiados.
+
+Já o PROS é maior em termos de filiados, com cerca de 100 mil membros. Antes das eleições municipais de 2016, a legenda teve o maior salto no número de filiados, um período em que legendas comumente ganham mais integrantes.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2016 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2015-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados_b <- filiacoes_idade %>% filter(PARTIDO == pcb) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados_b,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2015-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+Tanto o PMB quanto o PROS são mais [jovens](https://pindograma.com.br/2020/10/02/jovens.html) do que grandes partidos tradicionais na política brasileira. 
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5,
+    color = pg_light_gray
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.38,.57))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados_b <- sexo %>% filter(PARTIDO == pcb)
+ggplot(sexo_filiados_b, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = pcb_cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.38, .57))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+O PMB é um dos poucos partidos que tem uma maioria de mulheres entre seus filiados: 54,9%. Além dele, apenas o Republicanos tem mais da metade dos seus filiados composta por mulheres.
+
+O PROS segue uma tendência mais comum entre os partidos brasileiros. Ao longo dos últimos anos, houve um aumento sutil na proporção de mulheres filiadas, e atualmente elas formam 41,6% do total de filiados.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+#    breaks = c(500, 1000, 1500, 2000),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_b <- filiacao_estados %>% filter(PARTIDO == pcb) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_b, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Os estados do Acre e Amapá aparecem no topo quando se trata da concentração de filiados de ambos os partidos. O PMB tem 219 filiados a cada 100 mil eleitores no primeiro, e 201 no segundo. Já o PROS tem maior concentração de filiados no Amapá (são 503 a cada 100 mil eleitores) e depois no Acre (315). Isso é incomum para partidos brasileiros, e está relacionado ao tamanho pequeno tanto do PMB e do PROS.
+
+Em números absolutos, a cifra de filiados tende a acompanhar o tamanho da população dos estados. Para as duas legendas, a maior quantidade de filiados está em São Paulo.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 30000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+fundo_b <- fundo_partidario %>% filter(PARTIDO == pcb)
+ggplot(fundo_b, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = pcb_cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 30000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+Devido a sua baixíssima representação no Congresso, o PMB recebeu menos de 1% do fundo partidário desde sua fundação. Em 2018, o PMB não [atingiu os 1,5%](https://noticias.r7.com/brasil/sem-votacao-minima-14-partidos-ficarao-sem-recursos-publicos-09102018) dos votos para deputado federal em nove estados e ao menos 1% de votos em cada um deles, o mínimo de votação exigida pela cláusula de barreira estabelecida em 2017. Como consequência, deixou de receber verbas do fundo partidário e também tempo de propaganda eleitoral gratuita na TV e rádio. No entanto, em 2020, recebeu R$1.233.305,95 do Fundo Eleitoral.
+
+Já o PROS recebeu uma fatia maior do Fundo Partidário, apesar de ainda ser pequena -- pouco mais de 2% desde 2015, após a eleição de seus primeiros deputados federais. A legenda recebeu R$37.187.846,96 do Fundo Eleitoral para as últimas eleições.
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito","Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, pg_yellow, pg_blue),
+                    labels = c("Eleito", "Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito_b,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pcb_cor, pg_yellow),
+                    labels = c("Eleito","Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PMB lançou apenas 53 candidaturas, distribuídas por todas as regiões do país. Apenas uma foi eleita: Marina, em Guapimirim (RJ). 
+
+Já o PROS lançou 277 candidatos, a maior parte deles na região Sudeste e Nordeste. Destes, 41 foram vitoriosos.  
+
+```{r, fig.height=5, fig.width=10}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6), breaks = c(1,2,3))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=10}
+edges_l_b <- coligacoes %>%
+  filter(PARTIDO == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader_b <- tbl_graph(nodes = nodes, edges = edges_l_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_l_b$weight, mode = "out"),
+                    centrality_degree(weights = edges_l_b$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Nas eleições para prefeituras em 2020, o PMB formou coligações em 19 das suas candidaturas. O maior apoio veio do PROS, seguido pelo DEM e PSDB.
+
+O PROS foi apoiado 325 vezes por outros partidos, em lugares diferentes do espectro ideológico, englobando desde o PSL até o PC do B.
+
+```{r, fig.height=5, fig.width=10}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=10}
+edges_f_b <- coligacoes %>%
+  filter(LEGENDA == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower_b <- tbl_graph(nodes = nodes, edges = edges_f_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_f_b$weight, mode = "in"),
+                    centrality_degree(weights = edges_f_b$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+Como é comum entre partidos menores, PMB e PROS apoiaram mais chapas de outros partidos mais frequentemente do que lançaram suas próprias candidaturas. Entre os partidos que obtiveram mais apoio, se destacam MDB, DEM, e PSD (alguns dos partidos com mais candidatos e sucessos eleitorais em 2020).
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,4,8),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Vereadores eleitos por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+vereador_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador_b,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,4,8),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Vereadores por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+2.358 pessoas disputaram vereanças pelo PMB, espalhadas pelo país, e com destaque para a região Sudeste. Destas, 45 foram eleitas. 
+
+Já o PROS lançou 10.413 candidatos. As candidaturas estavam concentradas no Paraná e na região Sudeste. 748 dos candidatos que concorreram obtiveram sucesso.
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos <- cand20 %>%
+  filter(PARTIDO == party, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_green, pg_blue, pg_orange),
+    labels = c("Branca", "Parda", "Preta")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+A principal ideia do PMB é aumentar a participação de mulheres na política, mas não se vê isso na prática. Apenas 35,5% dos candidatos do partido eram mulheres em 2020, o que acompanha a tendência da grande maioria dos partidos políticos brasileiros. Além disso, 37,8% do total de candidatos eram brancos, enquanto 59,8% se identificaram como pretos ou pardos. Já entre os eleitos pelo partido, 87% eram homens.
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand_b <- cand20 %>%
+  filter(PARTIDO == pcb) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos_b <- cand20 %>%
+  filter(PARTIDO == pcb, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+O PROS teve 66,28% do total de candidatos composto por homens, e 40% dos candidatos composto por pessoas brancas. Outros 57,78% se declararam pretos ou pardos. Assim como foi o caso do PMB, a proporção de homens é maior entre os eleitos: 85%. Também aumenta um pouco a proporção de pessoas brancas, para 45,46%
+
+---
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(0.02, 0.04),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = .1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depest_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.025, 0.05, 0.075, 0.1),
+    palette = pcb_cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = .1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PMB conseguiu apenas três cadeiras nas Assembleias Legislativas do país: no Amapá, Rio de Janeiro e em Roraima. Enquanto isso, o PROS elegeu 20 deputados estaduais, três deles no Goiás, dois no Ceará e no Paraná, e apenas um no restante dos estados representados no mapa.
+
+```{r, fig.height=7, fig.width=9}
+#depfed <- eleicoes18 %>%
+#  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+#  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+#  mutate(prop = n/BANCADA) %>% 
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+#  distinct(UF, .keep_all = T)
+#ggplot(depfed, aes(fill = prop))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_fermenter(
+#    labels = scales::percent_format(accuracy = 1),
+#    palette = cor_continua, direction = 1
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+#                  sep = " - "),
+#    fill = "Porcentagem dos\ndeputados do estado"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depfed_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PMB não elegeu nenhum deputado federal em 2018. Já o PROS conquistou 8 cadeiras na Câmara: foram dois nomes pelo Ceará, Minas Gerais e Paraná, e apenas um pelas outras unidades federativas que aparecem destacadas acima.
+
+```{r, fig.height=7, fig.width=9}
+#senadores <- eleicoes18 %>%
+#  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+#  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+#  distinct(UF, .keep_all = T)
+#ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(
+#    values = c("grey90"),
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+#                  sep = " - "),
+#    fill = ""
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+senadores_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores_b, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(pcb_cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+O PROS elegeu apenas um senador em 2018: Eduardo Girão pelo Ceará.
+
+O PMB não elegeu senadores em 2018.
+
+Nenhum dos dois partidos elegeu governadores em 2018.
+
+```{r, fig.height=7, fig.width=9}
+#governadores <- eleicoes18 %>%
+#  filter(PARTIDO == party, CARGO == "GOVERNADOR") %>%
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+#ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(values = c("grey90"))+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party,"Governadores eleitos em 2018",
+#                  sep = " - ")
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "none"
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+#governadores_b <- eleicoes18 %>%
+#  filter(PARTIDO == "PR", CARGO == "GOVERNADOR") %>%
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+#ggplot(governadores_b, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(values = c("grey90"))+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb,"Governadores eleitos em 2018",
+#                  sep = " - ")
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "none"
+#  )
+```
+
+---
+
+#### História
+
+O Partido da Mulher Brasileira foi registrado em 2015, num contexto de fragmentação partidária e crise de representação política. Suêd Haidar Nogueira, a fundadora do partido, fora antes filiada ao [PDT](https://pindograma.com.br/2020/11/14/pdt.html) e [PCdoB](https://pindograma.com.br/2020/11/28/pcbdob.html). Ela foi pré-candidata ao Senado pelo PCdoB em 2010, mas sua candidatura não foi oficializada, [dizendo em entrevista](https://apublica.org/2015/12/truco-partido-da-mulher-brasileira-nao-levanta-a-bandeira-feminista/) que foi apenas para que o partido tivesse mais tempo de televisão. Nogueira tinha experiência trabalhando com política de base, e desde 2008 vinha tentando fundar sua própria sigla. No ano de registro do partido, Nogueira disse que o partido não é feminista, mas feminino, apesar de reconhecer que movimentos feministas “abriram todas essas portas para que hoje nós tenhamos essa oportunidade de falar aqui de política partidária e da inserção da mulher”.
+
+No programa do partido não há uma linha ideológica clara. A legenda se identifica como um partido de centro, mas Rosimere Machado de Jesus, presidente do diretório mineiro do PMB, [afrimou que](https://www2.senado.leg.br/bdsf/bitstream/handle/id/515965/noticia.html?sequence=1&isAllowed=y) o PMB é um partido de direita. Entre suas principais bandeiras está garantir “[uma maior representação das mulheres no Congresso Nacional](https://www.pmb.org.br/historia-do-partido-da-mulher-brasileira-pmb/)” e a garantia de desenvolvimento social sem “caráter excludente e/ou discriminatório de quem quer que seja''. No site do partido, também há destaque para a luta pela valorização social, moral, profissional e física da mulher. 
+
+Após a oficialização da sigla em 2015, um senador e 22 deputados — dos quais apenas 2 eram mulheres — migraram para o partido. No entanto, a vasta maioria deles —  20 dos 22 nomes —  migrou para outras siglas no próximo ano.
+
+Nogueira ocupa a presidência do partido desde a sua fundação. Nas urnas, o PMB usa o número 35.
+
+O Partido Republicano da Ordem Social também é um partido recente. Foi fundado em 2010 e obteve o registro junto ao TSE em 2013. Assim como o PMB, não tem uma linha ideológica bem definida. Em seu [site](https://pros.org.br/quem-somos/), o PROS enfatiza que sua principal bandeira é a redução de impostos, que “têm atrasado o desenvolvimento do Brasil e causado uma grande injustiça social”.
+
+Desde sua fundação, teve pouca representação no Congresso e pouca expressão nacional. Em 2013, o então governador do Ceará Cid Gomes e seu irmão Ciro Gomes migraram para o partido. Os irmãos foram parte da legenda até 2015. Desde então, o fundador da legenda e atual presidente Eurípedes Gomes de Macedo Júnior voltou a ser a principal figura da agremiação. Júnior foi vereador de Planaltina (GO) entre 2008 e 2012, de onde começou a articular a criação do partido. Antes disso, foi [caixeiro-viajante](https://oglobo.globo.com/brasil/lider-do-pros-desconhecido-ex-vereador-de-planaltina-10154088) e vendedor.
+
+O número eleitoral do PROS é 90.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); Resultados eleições 2020 (TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-01-30-pmbpros/pmbpros.Rmd

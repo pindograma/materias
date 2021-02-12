@@ -1,0 +1,1109 @@
+---
+title: "Partidos em números: PP e PL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "CIDADANIA"
+pcb <- "SOLIDARIEDADE"
+cor <- filter(party_palette, party_name == party)$party_color
+pcb_cor <- filter(party_palette, party_name == pcb)$party_color
+cor_continua <- "Purples"
+pcb_cor_continua <- "Oranges"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Nesta edição do **Partidos em Números**, o _Pindograma_ analisa os dados de dois partidos que dividem suas trajetórias entre a esquerda e a direita: o **Solidariedade** e o **Cidadania**. 
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 2)+
+  geom_point(color = cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+filiados_b <- filiacoes_total %>% filter(PARTIDO == pcb)
+ggplot(filiados_b, aes(DATA, n, group = 1))+
+  geom_line(color = pcb_cor, size = 2)+
+  geom_point(color = pcb_cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(pcb,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+Desde sua fundação, o número de filiados ao Solidariedade cresceu em quase todos os anos, estabilizando apenas a partir de 2018 — um padrão incomum para a maioria das legendas brasileiras. Apesar do crescimento, o partido ainda tem um número de filiados menor que a maioria dos outros partidos, com cerca de 260 mil filiados atualmente. 
+
+Já o número de filiados do Cidadania está mais próximo de partidos; são cerca de 460 mil registrados no TSE. A legenda também apresenta um padrão incomum em seu número de filiados: entre anos de eleições municipais, o número de integrantes do partido diminuiu consideravelmente. No entanto, nos anos dos pleitos municipais, compartilha a tendência de crescimento da maioria das legendas. 
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados_b <- filiacoes_idade %>% filter(PARTIDO == pcb) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados_b,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+O Solidariedade é um partido bem mais jovem que a maioria das legendas brasileiras. Um terço do partido tem até 34 anos — quase o dobro da média dos partidos do país. Em comparação, o Cidadania tem apenas um filiado jovem a cada 10 filiados.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.38,.5))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados_b <- sexo %>% filter(PARTIDO == pcb)
+ggplot(sexo_filiados_b, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = pcb_cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.38, .5))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+Ambos os partidos seguem o típico padrão de proporção de sexo dos seus filiados: crescimento gradual ano a ano da porcentagem de mulheres, ficando em torno de 45% atualmente.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+#    breaks = c(500, 1000, 1500, 2000),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_b <- filiacao_estados %>% filter(PARTIDO == pcb) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_b, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Ambos os partidos têm sua maior concentração de filiados no Mato Grosso. É importante ressaltar, no entanto, que a força desses partidos no estado é bem diferente: enquanto a taxa do Solidariedade é de 544 filiados por 100 mil habitantes, a concentração do Cidadania é de 1141, mais que o dobro. 
+
+Em geral, o Solidariedade tem mais força no restante do Centro Oeste e no Norte. O Cidadania também tem mais presença no Centro Oeste, além do Sul e alguns estados do Nordeste.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 50000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+fundo_b <- fundo_partidario %>% filter(PARTIDO == pcb)
+ggplot(fundo_b, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = pcb_cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 50000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+A proporção do fundo partidário que o Solidariedade recebe ficou próximo dos 3% desde 2014, ano em que participou de sua primeira eleição. Em 2020, o partido recebeu R$46.037.917,83 do Fundo Eleitoral.
+
+O valor destinado ao Cidadania diminuiu significativamente depois de 2010. O partido nunca recuperou a influência que costumava ter no Congresso, levando a uma menor quantidade de verbas alocadas a ele. R$35.824.724,42 foram direcionados ao partido para as eleições de 2020 pelo Fundo Eleitoral.
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito","Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, pg_yellow, pg_blue),
+                    labels = c("Eleito", "Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito_b,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pcb_cor, pg_yellow),
+                    labels = c("Eleito","Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O Solidariedade teve vários candidatos no Norte do estado do Rio de Janeiro, assim como no estado do Tocantins. Em menor grau, o partido teve vários candidatos em Minas Gerais e São Paulo e é mais fraco na Região Sul. No total, elegeu 94 prefeitos.
+
+A maioria dos candidatos e dos 139 prefeitos eleitos do Cidadania estão concentrados nos estados do Sudeste e também no Paraná, Goiânia e Paraíba. A presença do partido na região Norte, assim como nos demais estados do Centro-Oeste, Sul e Nordeste, é quase nula.
+
+```{r, fig.height=5, fig.width=10}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=10}
+edges_l_b <- coligacoes %>%
+  filter(PARTIDO == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader_b <- tbl_graph(nodes = nodes, edges = edges_l_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_l_b$weight, mode = "out"),
+                    centrality_degree(weights = edges_l_b$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+Os candidatos dos dois partidos receberam apoio de quase todos os partidos, à exceção dos partidos mais à esquerda e do [NOVO](https://pindograma.com.br/2020/11/10/novo-patri.html). O [MDB](https://pindograma.com.br/2020/10/21/mdb.html), [DEM](https://pindograma.com.br/2020/11/03/dem-rep.html) e [PSDB](https://pindograma.com.br/2020/11/02/psdb.html) foram os maiores apoiadores do Solidariedade e Cidadania.
+
+```{r, fig.height=5, fig.width=10}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=10}
+edges_f_b <- coligacoes %>%
+  filter(LEGENDA == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower_b <- tbl_graph(nodes = nodes, edges = edges_f_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_f_b$weight, mode = "in"),
+                    centrality_degree(weights = edges_f_b$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+Em geral, os dois partidos também apoiaram as chapas dos mesmos partidos que os apoiaram — em geral do Centrão ou de centro-direita.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,4,6),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Vereadores eleitos por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+vereador_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador_b,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,4,8),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Vereadores por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Assim como seus prefeitos candidatos e eleitos, os vereadores do Solidariedade se concentram no Norte do Rio de Janeiro e no Tocantins. O partido teve uma forte presença em Roraima, assim como em partes de Minas Gerais. 
+
+A distribuição dos candidatos a prefeito do Cidadania se assemelha muito à distribuição dos candidatos a vereador: estavam mais presentes no Sudeste, no Paraná, no Goiás e na Paraíba.
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos <- cand20 %>%
+  filter(PARTIDO == party, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+Já o perfil de raça e sexo do Cidadania foi mais próximo da maioria dos outros partidos: brancos foram o maior grupo de ambos os sexos e se elegeram mais que candidatos de outras identificações de raça e cor. As mulheres também tiveram um desempenho ruim: eram um terço dos candidatos e apenas 13,1% dos representantes eleitos.
+
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand_b <- cand20 %>%
+  filter(PARTIDO == pcb) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos_b <- cand20 %>%
+  filter(PARTIDO == pcb, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+O Solidariedade foi um dos poucos partidos cujos candidatos e eleitos foram, em sua maioria, pretos ou pardos. Na representatividade feminina, no entanto, teve desempenho ruim como a maioria dos partidos brasileiros — as mulheres eram 33,5% do total de candidatos e 15,3% do total de pessoas eleitas pela legenda.
+
+---
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == "PPS", CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.02, 0.04),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depest_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.025, 0.05, 0.075, 0.1),
+    palette = pcb_cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = .1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Ambos os partidos têm deputados estaduais eleitos em 16 estados por todas as regiões do país. O Solidariedade tem uma presença maior no Tocantins e em Roraima, já o Cidadania é maior em Alagoas.
+
+```{r, fig.height=7, fig.width=9}
+depfed <- eleicoes18 %>%
+  filter(PARTIDO == "PPS", CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depfed_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O Solidariedade elegeu deputados federais em 12 estados. Proporcionalmente, o partido representa mais estados do Norte e Centro-Oeste. A bancada do partido na Câmara dos Deputados hoje é de 13 deputados.
+
+Enquanto isso, o Cidadania elegeu seus deputados principalmente no Sul e Sudeste. O Espírito Santo é o estado que o partido mais representa proporcionalmente. Fora dessas regiões, o partido elegeu deputados no Distrito Federal e Pernambuco. O Cidadania tem 8 deputados no momento.
+
+```{r, fig.height=7, fig.width=9}
+senadores <- eleicoes18 %>%
+  filter(PARTIDO == "PPS", CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(cor,"grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+senadores_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "SENADOR") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(senadores_b, aes(fill = factor(eleitos, levels = c(1,0))))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_manual(
+    values = c(pcb_cor, "grey90"),
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Senadores eleitos em 2014 ou 2018",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.background = element_blank()
+  )
+```
+```{r, fig.height=7, fig.width=9}
+#governadores <- eleicoes18 %>%
+#  filter(PARTIDO == "PPS", CARGO == "GOVERNADOR") %>%
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+#ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(values = c("grey90"))+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party,"Governadores eleitos em 2018",
+#                  sep = " - ")
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "none"
+#  )
+```
+
+O Solidariedade elegeu o senador por Tocantins Eduardo Gomes em 2018. No entanto, o parlamentar deixou o partido pelo MDB em 2019.
+
+Já o Cidadania elegeu dois senadores em 2018, pelo Maranhão e pelo Espírito Santo. Desde então, mais um senador — Jorge Kajuru, de Goiás — se juntou ao partido.
+
+Nenhum dos dois partidos elegeu governadores em 2018.
+
+```{r, fig.height=7, fig.width=9}
+#governadores_b <- eleicoes18 %>%
+#  filter(PARTIDO == "PR", CARGO == "GOVERNADOR") %>%
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+#ggplot(governadores_b, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(values = c("grey90"))+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb,"Governadores eleitos em 2018",
+#                  sep = " - ")
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "none"
+#  )
+```
+
+---
+
+#### História
+
+Apesar de ter sido fundado apenas em 2012 — recebendo registro oficial junto ao TSE em 2013 —, a história do **Solidariedade** remonta ao final da década de 1980 e ao movimento sindical.
+
+Durante o declínio da ditadura militar na década de 1980, movimentos de operários e trabalhadores por todo o país começaram a se reorganizar. Além de marcos importantes como as greves no ABC Paulista em 1978 e 1979 e a fundação do [PT](https://pindograma.com.br/2020/10/27/pt.html), surge nessa época a Central Única dos Trabalhadores (CUT), que rapidamente se tornaria a principal central sindical do país. De esquerda e defendendo uma atuação mais incisiva contra patrões e empresas a favor do trabalhador, a CUT dominou o sindicalismo brasileiro durante a década de 1980. Esta situação, no entanto, não durou muito tempo.
+
+Já no final da década de 1980 começam a se organizar forças dentro do movimento sindical em oposição à CUT, defendendo posturas menos combativas e mais abertas à negociação direta com empregadores, sem interferência estatal e, principalmente, se opondo ao discurso socialista. Da articulação destes grupos, é fundada em 1991 a Força Sindical. O grupo se colocava como uma alternativa mais pragmática à CUT, que garantiria melhores resultados nas negociações com patrões por ser mais aberta a pautas como a privatização e por defender o uso de greves apenas como ‘último recurso de negociação’. 
+
+Em 1994, o metalúrgico Paulo Pereira da Silva, conhecido como Paulinho da Força, tornou-se presidente da Força Sindical, sendo líder da organização até hoje. Em 1994, Paulinho da Força se filiou ao [PTB](https://pindograma.com.br/2021/01/18/avanteptb.html) e em 2002 foi candidato à vice-presidência na chapa de Ciro Gomes, então no PPS. No ano seguinte, Silva migrou para o [PDT](https://pindograma.com.br/2020/11/14/pdt.html) e em 2004 ficou em quinto lugar na disputa pela prefeitura de São Paulo, mas, dois anos depois disso, se elegeu deputado federal por São Paulo.
+
+Durante sua atuação como político e como presidente da Força Sindical, Paulinho da Força sempre se colocou como oposição aos governos do PT, partido que tem ligações fortes com a CUT. Em 2012, juntando-se a outros políticos ligados à Força Sindical, Paulinho funda o Solidariedade. O partido reuniu principalmente dissidências do PDT, mas contou também com políticos mais ao centro e à direita. Apesar de se colocar como oposição clara ao PT, Silva afirmou à época do registro oficial em 2013 que o partido [era de esquerda](https://web.archive.org/web/20160310074818/http://redebomdia.com.br/noticia/detalhe/41587/'solidariedade'+mais+perto+do+pt+).
+
+Apto para concorrer às eleições gerais de 2014, o partido [já chegou ao pleito com força significativa](http://www.fgv.br/cpdoc/acervo/dicionarios/verbete-tematico/partido-solidariedade): 24 deputados federais, um senador, um vice-governador e mais de 200 prefeitos, cem vice-prefeitos e cerca de três mil vereadores. O grande número de políticos já empossados demonstrava a capilaridade da Força Sindical e a influência que tinha pelo país. Naquele ano, o partido integrou a coligação à presidência de Aécio Neves (PSDB) contra Dilma Rousseff (PT) e elegeu 15 deputados federais e 23 deputados estaduais. Firmado na oposição à petista reeleita, o Solidariedade passou a ser associado ao Centrão de Eduardo Cunha e votou em unanimidade pelo impedimento de Dilma em 2016.
+
+Em 2018, o partido apoiou a candidatura tucana de Geraldo Alckmin. No segundo turno, o Solidariedade não apoiou oficialmente nenhum dos dois candidatos, dando liberdade a seus integrantes a votarem e apoiarem qualquer dos candidatos. A Força Sindical, no entanto, optou por [apoiar a candidatura de Fernando Haddad](https://www.poder360.com.br/eleicoes/forca-sindical-cut-e-mais-5-centrais-anunciam-apoio-a-haddad/) (PT).
+
+Hoje, o Solidariedade continua sendo um partido do bloco do Centrão na Câmara dos Deputados e atualmente apoia diversas medidas do governo de Jair Bolsonaro (sem partido), apesar de não integrar oficialmente a base aliada do governo. Seu presidente ainda é Paulinho da Força, que fora deputado federal até junho de 2020, quando foi [condenado a 10 anos de prisão](https://agenciabrasil.ebc.com.br/justica/noticia/2020-06/paulinho-da-forca-e-condenado-10-anos-de-prisao-pelo-stf) pelo STF por desvio de recursos do BNDES e forçado a renunciar a seu cargo público. O sindicalista recorreu à decisão e aguarda uma futura decisão da corte. O número do Solidariedade nas urnas é 77.
+
+A história do **Cidadania** também remete às mudanças que ocorreram nas forças políticas de esquerda nas décadas de 1980 e 1990. Como descrito em [outra matéria ](https://pindograma.com.br/2020/11/28/pcbdob.html)desta série, em meio a uma crise interna de identidade, o Partido Comunista Brasileiro (PCB) foi dissolvido por sua direção no X Congresso do partido em janeiro de 1992.
+
+Apesar da dissolução da agremiação, seu registro junto ao TSE não foi cancelado. Logo após o Congresso, parte da liderança do PCB, sob o comando do deputado federal pernambucano Roberto Freire, renomeou a legenda para Partido Popular Socialista (PPS), decisão prontamente reconhecida pelo TSE. O grupo então abandonou o marxismo-leninismo, o horizonte político da revolução proletária e o fim da propriedade privada como parte de sua ideologia oficial, como uma resposta à dissolução do bloco soviéticoe e o fim das experiências socialistas reais do século XX. O partido, no entanto, ainda defendia uma transformação profunda da sociedade, tendo [“como base teórica e princípios o humanismo e o socialismo, enriquecidos com a experiência libertária dos movimentos operários e populares, resgatando a melhor tradição do pensamento marxista”](http://www.fgv.br/cpdoc/acervo/dicionarios/verbete-tematico/partido-popular-socialista-pps). 
+
+Ainda em 1992, o partido apoiou o impedimento do então presidente Fernando Collor. Nas eleições municipais daquele ano, o partido se coligou com diversas legendas de esquerda, liderando uma chapa vitoriosa pela prefeitura de Florianópolis (SC). 
+
+Apesar da simpatia de alguns líderes do partido por Fernando Henrique Cardoso (PSDB), a aliança do tucano com a direita fez o PPS apoiar a candidatura de Lula (PT) em 1994. Apesar da derrota de Lula, o presidente do partido Roberto Freire se elegeu senador. Além dele, dois outros dirigentes se elegeram deputados federais. 
+
+A simpatia do PPS por FHC levou o partido a apoiar várias pautas governistas em seus primeiros anos no parlamento. A proximidade levou à nomeação do então dirigente nacional do PPS Raul Jungmann para o comando do Ministério Extraordinário da Reforma Agrária. A aliança, porém, foi frágil e a legenda adotou uma política oficialmente oposicionista a partir de 1996.
+
+Tanto em 1998 quanto em 2002, o PPS lançou Ciro Gomes como candidato à presidência, terminando em terceiro e quarto lugar em cada ano, respectivamente. Ciro tornou-se ministro de Lula em seu primeiro mandato, o que levou a um racha do partido em 2005 entre os que apoiavam e rejeitavam Lula. O embate culminou na expulsão de Ciro do PPS e o desembarque da legenda do governo. O partido manteve-se neutro na eleição de 2006, não apresentando candidato ou declarando apoio.
+
+Em 2010, o PPS integrou a coligação de José Serra (PSDB) pela presidência, que terminou derrotada. Em 2014, o partido voltaria a apoiar um candidato mais à esquerda, coligando-se com a chapa do PSB de Eduardo Campos, substituído por Marina Silva após a morte de Campos. Em 2018, o partido apostou novamente nos tucanos, que terminaram em quarto lugar.
+
+O PPS foi muito criticado por setores da esquerda por transitar entre o apoio a candidatos e governos tucanos e setores da centro-esquerda. Em 2016, quando o partido estava em vias de negociação para fundir-se ao PSB, líderes do partido taxaram o PPS de [“linha auxiliar da direita” e “linha auxiliar do PSDB](https://valor.globo.com/politica/noticia/2015/04/29/de-olho-em-2016-psb-aprova-tratativas-para-fusao-com-pps-ate-julho.ghtml)”. O processo de fusão não vingou.
+
+Depois de uma série de negociações de fusões fracassadas, o partido passou por uma revisão ideológica em 2019. Em convenção, foi definida a adoção do nome Cidadania, decisão acatada pelo TSE em setembro daquele ano. Além do nome, o Cidadania abandonou de vez suas pretensões anticapitalistas e deixou de defender a social-democracia, [defendendo o social-liberalismo e caracterizando se como progressista](https://veja.abril.com.br/politica/cidadania-o-velho-partidao-ficou-liberal/). O partido, no entanto, ainda se coloca como sendo de centro-esquerda e faz oposição ao governo Bolsonaro. Seu presidente ainda é Roberto Freire e o número nas urnas é 23.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); Resultados eleições 2020 (TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-02-05-cidsd/cidsd.Rmd

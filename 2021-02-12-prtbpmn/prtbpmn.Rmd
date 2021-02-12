@@ -1,0 +1,1096 @@
+---
+title: "Partidos em números: PP e PL"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PRTB"
+pcb <- "PMN"
+cor <- filter(party_palette, party_name == party)$party_color
+pcb_cor <- filter(party_palette, party_name == pcb)$party_color
+cor_continua <- "Greens"
+pcb_cor_continua <- "Reds"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Nesta edição do **Partidos em Números**, o _Pindograma_ analisa os dados de mais dois partidos nanicos: o Partido Renovador Trabalhista Brasileiro (PRTB) e o Partido da Mobilização Nacional (PMN).
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO == party)
+ggplot(filiados, aes(DATA, n, group = 1))+
+  geom_line(color = cor, size = 2)+
+  geom_point(color = cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(party,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+filiados_b <- filiacoes_total %>% filter(PARTIDO == pcb)
+ggplot(filiados_b, aes(DATA, n, group = 1))+
+  geom_line(color = pcb_cor, size = 2)+
+  geom_point(color = pcb_cor, size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  labs(
+    title = str_c(pcb,"Número de filiados (2010 - 2019)",
+                  sep = " - "),
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank() 
+  )
+```
+
+As duas legendas vêm crescendo desde 2010, acompanhando a tendência de crescimento em anos de eleição municipal, que é comum entre legendas brasileiras. O PMN, no entanto, teve uma diminuição pronunciada nesse número entre eleições municipais, o que é menos comum. Em 2019, o PRTB tinha 138.554 filiados e o PMN 220.368.
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO == party) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(party,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+idade_filiados_b <- filiacoes_idade %>% filter(PARTIDO == pcb) %>% 
+  group_by(DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados_b,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Composição etária dos filiados (2010 - 2019)",
+                  sep = " - ")
+  )+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+Ambos os partidos vêm envelhecendo. A maioria dos filiados ao PRTB e ao PMN tem mais de 45 anos, e esse grupo aumentou ao longo dos anos recentes.
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.38,.5))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=6, fig.width=9}
+sexo_filiados_b <- sexo %>% filter(PARTIDO == pcb)
+ggplot(sexo_filiados_b, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = pcb_cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.38, .5))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+Pouco menos da metade dos filiados ao PRTB é mulher. A proporção cresceu pouco desde 2008 e em 2020, elas representaram 44,2% do total.
+
+O PMN apresenta uma tendência parecida, mas teve um crescimento um pouco maior no número de mulheres filiadas. Atualmente, elas representam 46,2% de todos os filiados.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+#    breaks = c(500, 1000, 1500, 2000),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_b <- filiacao_estados %>% filter(PARTIDO == pcb) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_b, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Por ser um partido muito pequeno, a maior concentração de eleitores do PRTB está em Roraima, estado pouco populoso. Depois de Roraima, vêm outros estados menos populosos no Norte e Nordeste: Tocantins, Maranhão, Amapá e Acre.
+
+O PMN tem um padrão similar, mas tem aproximadamente 80 mil filiados a mais que o PRTB. Uma diferença importante é que o Espírito Santo também tem uma concentração grande de filiados ao partido, assim como estados no Nordeste.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 15000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+fundo_b <- fundo_partidario %>% filter(PARTIDO == pcb)
+ggplot(fundo_b, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = pcb_cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 15000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.1, big.mark = ".", decimal.mark = ","
+      )),
+    color = "grey20",
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+Devido a sua baixa expressão no Congresso, o PRTB recebeu uma fatia muito pequena do Fundo Partidário — ela se manteve abaixo de 1% desde 2008. Além disso, o partido abriu mão dos recursos que recebeu do Fundo Eleitoral em 2020 (um total de R$1.233.305,95).
+
+O PMN recebia um pouco mais de 1% do total até 2012, mas desde então esteve abaixo desse valor. Para as eleições de 2020, recebeu R$5.872.173,76 do Fundo Eleitoral.
+
+Em 2018, nenhum dos dois partidos atingiu a votação mínima necessária estabelecida pela cláusula de barreira e, por isso, deixaram de receber recursos do Fundo Partidário em 2019.
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito","Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(cor, pg_yellow, pg_blue),
+                    labels = c("Eleito", "Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito_b,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pcb_cor, pg_yellow),
+                    labels = c("Eleito","Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+O PRTB lançou apenas 287 candidatos a prefeito em 2020, 230 dos quais concorreram em chapa puro sangue. Do total de candidatos, só 6 foram eleitos: 2 em Minas Gerais, e um no Amapá, no Goiás, em Mato Grosso e no Pará.
+
+O PMN teve ainda menos candidatos, 108, e 72 desses não formaram coligação. Mesmo tendo menos da metade do número de candidatos do PRTB, o PMN teve o dobro de eleitos: 12. Foram 6 em Minas Gerais, 2 no Maranhão, um no Espírito Santo, no Goiás, no Pará e no Paraná.
+
+```{r, fig.height=5, fig.width=10}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=10}
+edges_l_b <- coligacoes %>%
+  filter(PARTIDO == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader_b <- tbl_graph(nodes = nodes, edges = edges_l_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_l_b$weight, mode = "out"),
+                    centrality_degree(weights = edges_l_b$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+```{r, fig.height=5, fig.width=10}
+edges_f <- coligacoes %>%
+  filter(LEGENDA == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower <- tbl_graph(nodes = nodes, edges = edges_f, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_f$weight, mode = "in"),
+                    centrality_degree(weights = edges_f$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=10}
+edges_f_b <- coligacoes %>%
+  filter(LEGENDA == pcb) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower_b <- tbl_graph(nodes = nodes, edges = edges_f_b, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == pcb,
+                    centrality_degree(weights = edges_f_b$weight, mode = "in"),
+                    centrality_degree(weights = edges_f_b$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower_b, layout = "star", center = filter(nodes, value == pcb)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = pcb_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==pcb, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 30), guide = F)+
+  labs(
+    caption = "Fonte: Dados TSE via Pindograma",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pelo", pcb,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+Ambos os partidos formaram coligações com partidos em diversos pontos do espectro político. Nas coligações que liderou, o PRTB teve apoio de partidos do Centrão, mas também de partidos de direita como [PSL](https://pindograma.com.br/2020/10/29/psl.html) e [PSC](https://pindograma.com.br/2020/12/25/cristaos.html), e de esquerda, como o [PT](https://pindograma.com.br/2020/10/27/pt.html) e até mesmo [PCdoB](https://pindograma.com.br/2020/11/28/pcbdob.html).
+
+O PMN recebeu apoio principalmente do [PSB](https://pindograma.com.br/2020/11/23/psb.html), do MDB, do PP e do Cidadania, e não formou muitas alianças com partidos da esquerda mais ideológica. Ao formar alianças, o PMN apoiou com maior frequência partidos do Centrão e centro-direita, como [MDB](https://pindograma.com.br/2020/10/21/mdb.html), [PSDB](https://pindograma.com.br/2020/11/02/psdb.html), [PP](https://pindograma.com.br/2020/12/08/plpp.html) e [DEM](https://pindograma.com.br/2020/11/03/dem-rep.html). 
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,3),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Vereadores eleitos por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+vereador_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador_b,
+          aes(geometry = geom, fill = n_elected),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,3,4),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Vereadores por município em 2020",
+                  sep = " - "),
+    fill =  "Eleitos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Nas eleições de 2020, o PRTB teve 6.667 candidatos a vereador e 218 eleitos ao cargo. Eles estavam concentrados em São Paulo, no Tocantins e Rio de Janeiro, e em menor frequência no Pará, Paraná e Minas Gerais.
+
+O PMN lançou 4.388 candidatos a vereador e elegeu 199. A maior presença do partido foi no Sudeste, principalmente em Minas Gerais e no Espírito Santo. Poucas candidaturas concorreram no restante das regiões do país.
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand <- cand20 %>%
+  filter(PARTIDO == party) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos <- cand20 %>%
+  filter(PARTIDO == party, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+Pessoas brancas formaram 51,2% dos candidatos do PRTB nas eleições de 2020, menos do que grandes partidos brasileiros. Além disso, 32,54% eram mulheres, pouco acima do mínimo estabelecido pelo TSE e 46,87% se identificaram como pretos ou pardos. Entre os eleitos, a proporção muda: brancos foram 52,2% dos eleitos, e mulheres apenas 12,5%.
+
+```{r, fig.height=6, fig.width=9}
+perfil_cand_b <- cand20 %>%
+  filter(PARTIDO == pcb) %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos candidatos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+```{r, fig.height=6, fig.width=9}
+perfil_eleitos_b <- cand20 %>%
+  filter(PARTIDO == pcb, eleito == "Eleito" | eleito == "2º turno") %>% 
+  group_by(RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_eleitos_b, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Composição de sexo e raça dos eleitos em 2020",
+                  sep = " - "),
+    subtitle = "Área dos retângulos é proporcional à quantidade de eleitos",
+    fill =  "Autodeclaração\nde cor ou raça"
+  )+
+  scale_fill_manual(
+    values = c(pg_green, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Branca","Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  theme(axis.line.x = element_blank())
+```
+
+Já entre os candidatos do PMN, 38,5% eram brancos, 58,7% eram pretos ou pardos e 33,17% eram mulheres. Novamente, entre os eleitos aumenta a proporção de pessoas brancas (para 42,61%) e a de mulheres diminui (para 12,32%).
+
+---
+
+#### Resultados em 2018
+
+```{r, fig.height=7, fig.width=9}
+depest <- eleicoes18 %>%
+  filter(PARTIDO == party, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    breaks = c(0.025, .05, .075, .1),
+    palette = cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = 1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depest_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO ESTADUAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depest_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+#    breaks = c(0.025, 0.05, 0.075, 0.1),
+    palette = pcb_cor_continua, direction = 1,
+    labels = scales::percent_format(accuracy = .1)
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Tamanho da bancada no legislativo estadual\nEleição 2018",
+                  sep = " - "),
+    fill =  "Porcentagem da\nassembleia estadual"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+4 deputados estaduais foram eleitos pelo PRTB em Alagoas, o que representa a maior concentração em casas legislativas estaduais no país. Depois, vêm Roraima, Goiás e Maranhão com 4 eleitos, e a seguir 6 estados com apenas um representante
+
+O PMN não elegeu mais de um deputado estadual em nenhuma unidade da federação. Por ter a menor Assembleia Legislativa, Rondônia é o estado em que o PMN está presente em maior proporção. O partido também teve um eleito em Alagoas, no Espírito Santo, no Pará, no Maranhão e no Paraná.
+
+```{r, fig.height=7, fig.width=9}
+#depfed <- eleicoes18 %>%
+#  filter(PARTIDO == party, CARGO == "DEPUTADO FEDERAL") %>%
+#  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+#  mutate(prop = n/BANCADA) %>% 
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+#  distinct(UF, .keep_all = T)
+#ggplot(depfed, aes(fill = prop))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_fermenter(
+#    labels = scales::percent_format(accuracy = 1),
+#    palette = cor_continua, direction = 1
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party, "Proporção dos deputados federais\neleitos por estado em 2018",
+#                  sep = " - "),
+#    fill = "Porcentagem dos\ndeputados do estado"
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+depfed_b <- eleicoes18 %>%
+  filter(PARTIDO == pcb, CARGO == "DEPUTADO FEDERAL") %>%
+  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+  mutate(prop = n/BANCADA) %>% 
+  right_join(geoloc_states, by = 'UF') %>% 
+  mutate(eleitos = ifelse(is.na(CARGO), 0, prop)) %>% 
+  distinct(UF, .keep_all = T)
+ggplot(depfed_b, aes(fill = prop))+
+  geom_sf(aes(geometry = geom), lwd = .5)+
+  scale_fill_fermenter(
+    labels = scales::percent_format(accuracy = 1),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Proporção dos deputados federais\neleitos por estado em 2018",
+                  sep = " - "),
+    fill = "Porcentagem dos\ndeputados do estado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Foram eleitos 2 deputados federais pelo PMN no Maranhão, e um em Minas Gerais.
+
+O PRTB não elegeu nenhum deputado federal em 2018.
+
+Nenhum dos partidos elegeu senadores ou governadores em 2018.
+
+```{r, fig.height=7, fig.width=9}
+#senadores <- eleicoes18 %>%
+#  filter(PARTIDO == party, CARGO == "SENADOR") %>%
+#  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+#  distinct(UF, .keep_all = T)
+#ggplot(senadores, aes(fill = factor(eleitos, levels = c(1,0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(
+#    values = c(cor,"grey90"),
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party,"Senadores eleitos em 2014 ou 2018",
+#                  sep = " - "),
+#    fill = ""
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+#senadores_b <- eleicoes18 %>%
+#  filter(PARTIDO == pcb, CARGO == "SENADOR") %>%
+#  group_by(UF) %>% mutate(n = n()) %>% ungroup() %>% 
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(eleitos = ifelse(is.na(CARGO), 0, n)) %>% 
+#  distinct(UF, .keep_all = T)
+#ggplot(senadores_b, aes(fill = factor(eleitos, levels = c(1,0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(
+#    values = c(pcb_cor, "grey90"),
+#    )+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb,"Senadores eleitos em 2014 ou 2018",
+#                  sep = " - "),
+#    fill = ""
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank()
+#  )
+```
+
+```{r, fig.height=7, fig.width=9}
+#governadores <- eleicoes18 %>%
+#  filter(PARTIDO == party, CARGO == "GOVERNADOR") %>%
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+#ggplot(governadores, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(values = c("grey90"))+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(party,"Governadores eleitos em 2018",
+#                  sep = " - ")
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "none"
+#  )
+#```
+#
+#```{r, fig.height=7, fig.width=9}
+#governadores_b <- eleicoes18 %>%
+#  filter(PARTIDO == "PR", CARGO == "GOVERNADOR") %>%
+#  right_join(geoloc_states, by = 'UF') %>% 
+#  mutate(dummy_gov = ifelse(is.na(CARGO), 0, 1))
+#ggplot(governadores_b, aes(fill = factor(dummy_gov, levels = c(1, 0))))+
+#  geom_sf(aes(geometry = geom), lwd = .5)+
+#  scale_fill_manual(values = c("grey90"))+
+#  labs(
+#    caption = "Fonte: TSE",
+#    title = str_c(pcb,"Governadores eleitos em 2018",
+#                  sep = " - ")
+#  )+
+#  theme_pindograma()+
+#  theme(
+#    axis.line.x = element_blank(),
+#    axis.text = element_blank(),
+#    axis.ticks = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.background = element_blank(),
+#    legend.position = "none"
+#  )
+```
+
+---
+
+#### História
+
+O Partido Renovador Trabalhista Brasileiro nasceu em novembro de 1994, num contexto em que novos grupos políticos se multiplicavam após o final da ditadura militar. Foi criado por membros do antigo Partido Trabalhista Renovador (PTR) que não concordavam com a fusão entre o PTR e o Partido Social Trabalhista, que viria a formar o Partido Progressista. O registro oficial da legenda foi concedido pelo TSE apenas em 1997.
+
+Até 2006, o partido não obteve sucesso eleitoral relevante: não elegeu nenhum senador ou deputado federal, apenas alguns deputados estaduais pelo país. Em 2002, o ex-presidente Fernando Collor de Mello foi candidato a governador de Alagoas pelo partido sem sucesso. Em 2006, Collor concorreu novamente pelo partido e foi eleito senador por seu estado. No primeiro dia do seu mandato, no entanto, o então senador [mudou de partido](http://www.fgv.br/cpdoc/acervo/dicionarios/verbete-tematico/partido-renovador-trabalhista-brasileiro-prtb) para o [PTB](https://pindograma.com.br/2021/01/18/avanteptb.html).
+
+Levy Fidelix foi fundador e o único a ocupar a presidência do partido até hoje. É reconhecido pela sua proposta do “[aerotrem](https://g1.globo.com/sp/sao-paulo/eleicoes/2020/noticia/2020/10/29/levy-fidelix-chama-monotrilho-de-aerotrem-e-diz-que-vai-ampliar-projeto-em-mais-100-km-em-sp.ghtml),” ou monotrilho, que defende há [24 anos](https://g1.globo.com/sp/sao-paulo/eleicoes/2020/noticia/2020/10/29/levy-fidelix-chama-monotrilho-de-aerotrem-e-diz-que-vai-ampliar-projeto-em-mais-100-km-em-sp.ghtml). Fidelix atua na política há 34 anos, mas nunca foi eleito em nenhuma das [13 eleições](https://politica.estadao.com.br/noticias/eleicoes,quem-e-levy-fidelix-conheca-o-candidato-do-prtb-a-prefeitura-de-sao-paulo,70003481187) que disputou. Além de Fidelix, outro nome importante do PRTB é o atual vice-presidente Antônio Hamilton Mourão, que se filiou ao partido após passar para a reserva do Exército.
+
+Desde 2014 e especialmente após a entrada de Mourão no partido, o PRTB se tornou mais conservador nos costumes, militarista e passou a alinhar-se mais à direita no espectro político. O partido reivindica o legado de Fernando Ferrari, deputado federal que criou o Movimento Trabalhista Renovador na década de 1950. Ferrari acreditava no “[trabalhismo participativo](http://prtb.org.br/programa/),” destacado pelo PRTB em seu programa como meio de gerar riqueza e desenvolvimento para o país.
+
+Nas urnas, o PRTB usa o número 28.
+
+O Partido da Mobilização Nacional surgiu como um movimento nacionalista em 21 de abril de 1984, Dia de Tiradentes, escolhido como patrono do partido. Sua missão era de “dar continuidade ao único projeto político da nossa história, a Inconfidência Mineira.” Além disso, seu [logo](https://www.pmn.org.br/identidade-visual-logos/) remete à bandeira dos inconfidentes mineiros, inspiração também para a bandeira de Minas Gerais.
+
+Em 1985, o movimento se tornou um partido e foi autorizado pelo TSE a participar de eleições, através da [Emenda Constitucional nº 25](https://www2.camara.leg.br/legin/fed/emecon/1980-1987/emendaconstitucional-25-15-maio-1985-364956-publicacaooriginal-1-pl.html) que permitia a participação de partidos ainda em formação. Obteve seu registro definitivo apenas em 1990.
+
+Historicamente, o partido teve pouca expressão nacional. Na primeira eleição presidencial da qual participou, em 1989, recebeu [0,13%](http://www.fgv.br/cpdoc/acervo/dicionarios/verbete-tematico/partido-da-mobilizacao-nacional-pmn) dos votos. Teve bancadas pequenas nos anos 1990 e novamente no início da década de 2010, quando elegeu quatro deputados federais e um senador.
+
+Em 2006, o PMN não atingiu a cláusula de barreira. Por isso, houve uma tentativa de se fundir com o Partido Popular Socialista ([PPS](https://pindograma.com.br/2021/02/05/cidsd.html)) e o Partido Humanista da Solidariedade (PHS), mas a cláusula foi julgada inconstitucional pelo STF.
+
+Num primeiro momento, o PMN defendeu a reforma agrária, a “[moratória conjunta com os países da América Latina](https://pmn.org.br/nossa-historia/)” e uma maior cooperação regional, e o rompimento com o FMI. A principal bandeira do partido é o nacionalismo — em um [manifesto](https://pmn.org.br/wp-content/uploads/2019/07/ESTATUTO-APROVADO-CONV-2018.pdf), afirma que “todos os partidos políticos que o Brasil teve até hoje nasceram de ideias importadas.”Além disso, coloca-se como um partido de esquerda que defende o socialismo democrático, mas não tem uma unidade programática definida. Em eleições recentes, apoiou o ex-presidente Lula (PT) e depois José Serra e Aécio Neves, ambos do PSDB. Em 2018, não apoiou nenhuma candidatura.
+
+O jurista Celso Teixeira Brant foi o fundador e primeiro presidente do partido. Antes da ditadura, Brandt fora deputado federal, mas teve seus direitos cassados pelo regime militar com a promulgação do Ato Institucional n.º 1. Após a reabertura política e fim do bipartidarismo, foi responsável pela criação do Movimento que se transformaria no partido. Antônio Carlos Bosco Massarollo é o presidente nacional do PMN desde 2016 e 33 é o número do partido nas urnas.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); Resultados eleições 2020 (TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-02-12-prtbpmn/prtbpmn.Rmd
