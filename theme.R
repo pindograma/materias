@@ -37,6 +37,20 @@ theme_pindograma = function() {
     theme(panel.background = element_rect(fill = pg_light_gray))
 }
 
+theme_pindograma_map = function() {
+    theme_void() +
+      theme(text = element_text(family = 'Fantasque')) +
+      theme(legend.position = 'bottom', legend.title = element_blank()) +
+      theme(plot.title = element_text(size = 16,
+                                      color = pg_dark_gray,
+                                      hjust = 0.5,
+                                      face = 'bold')) +
+      theme(plot.title.position = 'plot') +
+      theme(plot.subtitle = element_text(color = pg_dark_gray, hjust = 0.5)) +
+      theme(plot.caption.position = 'plot') +
+      theme(plot.caption = element_text(hjust = 0, size = 12, color = pg_dark_gray))
+}
+
 theme_pindograma_table = function(gt_table) {
   gt_table %>%
     tab_style(list(
