@@ -1,0 +1,475 @@
+"nivel";"ano";"codigo_assunto";"nome_assunto";"dispositivo_legal_assunto";"denuncias";"tempo_mediano"
+"Estado";2020;9938;"Violência Doméstica Contra a Mulher ";"Lei Federal n. 11340/06.";8045;42
+"Estado";2020;9444;"Lesão corporal decorrente de violência doméstica";"Art. 129, § 9º e 11, CP.";7481;54
+"Estado";2020;9683;"Tráfico de Drogas e Condutas Afins";"Art. 33, Lei Federal nº 11.343/06.";6779;12
+"Estado";2020;9460;"Ameaça";"Art. 147, CP.";6178;44
+"Estado";2020;9498;"Roubo Majorado";"Art. 157, § 2º, CP.";5484;14
+"Estado";2020;9689;"Associação para a Produção e Tráfico e Condutas Afins";"Art. 35, Lei Federal nº 11.343/06.";3324;14
+"Estado";2020;9439;"Leve ";"Art. 129, caput, CP.";2929;171
+"Estado";2020;9474;"Furto";"Art. 155, CP.";2557;21
+"Estado";2020;9477;"Roubo";"Art. 157, caput, CP.";2314;14
+"Estado";2020;9475;"Furto Qualificado";"Art. 155, §4º, CP.";1983;19
+"Estado";2020;9493;"Receptação";"Art. 180, caput, CP.";1640;18
+"Estado";2020;9431;"Homicídio Qualificado";"Art. 121, § 2º, CP.";1540;40
+"Estado";2020;9555;"Estupro de vulnerável";"Art. 217-A, CP.";800;70,5
+"Estado";2020;9489;"Estelionato";"Art. 171, CP.";764;84
+"Estado";2020;9851;"Resistência";"Art. 329, CP.";694;17
+"Estado";2020;9771;"Corromper ou facilitar a corrupção de menor de 18 anos, com ele praticando infração penal ou induzindo-o a praticar";"Art. 244-B, Lei Federal nº 8069/90 (ECA).";624;15
+"Estado";2020;9736;"Porte Ilegal de Arma de Fogo de Uso Permitido ";"Art. 14, Lei Federal nº 10.826/03.";580;14
+"Estado";2020;9457;"Injúria";"Art. 140, CP.";529;154
+"Estado";2020;6546;"Posse de Drogas para Consumo Pessoal ";"Art. 28, Lei Federal nº 11343/2006";515;123
+"Estado";2020;9727;"Condução de veículo automotor sob efeito de álcool ou de outra substância psicoativa que determine dependência";"Art. 306,  Lei Federal nº 9503/97.";510;15
+"Estado";2020;9846;"Contravenções Penais";"Arts. 18 a 70, Decreto-Lei nº 3688/41.";467;33
+"Estado";2020;9694;"Tráfico Ilícito de Drogas praticado por Funcionário Público";"Art. 40, Lei Federal nº 11.343/06.";455;12
+"Estado";2020;9738;"Posse ou Porte Ilegal de Arma de Fogo de Uso Restrito";"Art. 16, Lei Federal nº 10.826/03.";443;14
+"Estado";2020;9441;"Grave ";"Art. 129, § 1º, CP.";399;208
+"Estado";2020;9464;"Violação de domicílio";"Art. 150, CP.";398;40
+"Estado";2020;6669;"Jogo do Bicho ";"Decreto-Lei 3.688/41 - LCP";389;281
+"Estado";2020;6950;"Associação Criminosa";"Art. 288, CP.";366;189
+"Estado";2020;9429;"Homicídio Simples";"Art. 121, CP.";355;67
+"Estado";2020;9924;"Concurso Formal *C";"Art. 70, CP.";338;16
+"Estado";2020;9858;"Desacato";"Art. 331, CP.";328;179
+"Estado";2020;9541;"Estupro";"Art. 213, CP.";291;85
+"Estado";2020;9743;"Porte, Posse, Aquisição,Transporte ou Fornecimento de Arma de Fogo com Numeração, Marca ou Outro Sinal de Identificação Raspado, Suprimido ou Adulterado";"Art. 16, inc. IV, Lei Federal nº 10.826/03.";271;10
+"Estado";2020;9478;"Extorsão";"Art. 158, CP.";265;31
+"Estado";2020;9684;"Posse de Drogas para Consumo Pessoal";"Art. 28, Lei Federal nº 11.343/06.";262;146,5
+"Estado";2020;9734;"Posse Irregular de Arma[s] de Fogo de Uso Permitido ";"Art. 12, Lei Federal nº 10.826/03.";239;14
+"Estado";2020;9615;"Quadrilha ou Bando";"Art. 288, CP.";226;23
+"Estado";2020;9484;"Dano";"Art. 163, CP.";213;91
+"Estado";2020;9723;"Lesão corporal culposa na direção de veículo automotor";"Art. 303, Lei Federal nº 9503/97. ";202;331,5
+"Estado";2020;11375;"Importunação Sexual";"Art. 215-A do Código Penal";199;26
+"Estado";2020;9632;"Uso de documento falso";"Art. 304,  CP.";199;177
+"Estado";2020;9857;"Desobediência";"Art. 330, CP.";185;136
+"Estado";2020;9518;"Receptação Qualificada";"Art. 180, § 1º, CP.";181;25
+"Estado";2020;9925;"Crime Continuado *C";"Art. 71, CP.";181;26
+"Estado";2020;9730;"Direção de Veículo sem Habilitação ";"Art. 309,  Lei Federal nº 9503/97";173;169
+"Estado";2020;9503;"Dano Qualificado";"Art. 163, § único, CP.";170;29
+"Estado";2020;6951;"Promoção, constituição, financiamento ou integração de Organização Criminosa";"Lei 12.850/2013, artigo 2";162;478
+"Estado";2020;9494;"Apropriação indébita";"Art. 168, caput, CP.";155;287
+"Estado";2020;9722;"Homicídio culposo na direção de veículo automotor ";"Art. 302, Lei Federal nº 9503/97.";154;338,5
+"Estado";2020;6518;"Furto de energia elétrica (ou outra de valor econômico)";"Art. 155, § 3º, CP.";148;46
+"Estado";2020;6976;"Feminicídio (Lei n° 13.104/2015)";"Art. 121, parágrafo 2º, VI (Lei n° 13.104/2015)";145;25
+"Estado";2020;9461;"Seqüestro e cárcere privado";"Art. 148, CP.";137;33
+"Estado";2020;9638;" Adulteração de Sinal Identificador de Veículo Automotor";"Art. 311, CP.";133;18
+"Estado";2020;9443;"Privilegiada";"Art. 129, § 4º, CP.";127;233
+"Estado";2020;9691;"Colaboração com Grupo, Organização ou Associação Destinados à Produção ou Tráfico de Drogas";"Art. 37, Lei Federal nº 11.343/06.";121;13
+"Estado";2020;9459;"Constrangimento ilegal";"Art. 146, CP.";106;35,5
+"Estado";2020;9585;"Incêndio";"Art. 250, CP.";104;46
+"Estado";2020;9853;"Corrupção ativa";"Art. 333, CP.";98;10
+"Estado";2020;9499;"Latrocínio";"Art. 157, §3º, segunda parte, CP.";95;30
+"Estado";2020;9868;"Denunciação caluniosa";"Art. 339, CP.";95;148
+"Estado";2020;9915;"Crimes Hediondos *C";"Art. 2º, § 2º, Lei Federal nº 8072/1990 (Lei dos Crimes Hediondos).";90;29
+"Estado";2020;9624;"Falsificação de documento público";"Art. 297, CP.";87;54
+"Estado";2020;9737;"Disparo de Arma de Fogo";"Art. 15, Lei Federal nº 10.826/03.";86;24,5
+"Estado";2020;9872;"Coação no curso do processo";"Art. 344, CP.";86;65
+"Estado";2020;10495;"Prisão em flagrante ";"Art. 5º, inc. LXI, CF; Arts. 301 a 310, CPP e Arts. 243 e 244, CPPM.";84;19,5
+"Estado";2020;9707;"Da Poluição";"Arts. 54 a 61, Lei Federal nº 9605/98.";76;108
+"Estado";2020;9626;"Falsidade ideológica";"Art. 299, CP.";75;162
+"Estado";2020;9705;"Crimes contra a Fauna";"Lei Federal nº 5.197/67 e Arts. 29 a 37, Lei Federal nº 9605/98.";74;443
+"Estado";2020;8670;"Corromper ou facilitar a corrupção de menor de 18 anos, com ele praticando infração penal ou induzindo-o a praticar";"Art. 244-B, Lei Federal nº 8069/90 (ECA).";69;16
+"Estado";2020;9721;"Crimes de Trânsito";"Arts. 302 a 312, Lei Federal nº 9503/97.";65;108
+"Estado";2020;9635;"Falsa identidade";"Art. 307 e 308, CP.";59;28
+"Estado";2020;6859;"Constituição de milícia privada";"Art. 288-A, CP.";56;17
+"Estado";2020;9745;"Produção, Recarga, Reciclagem sem Autorização Legal ou Adulteração de Munição ou Explosivo ";"Art. 12, Lei Federal nº 10.826/03.";56;28,5
+"Estado";2020;9452;"Maus Tratos";"Art. 136, CP.";54;441,5
+"Estado";2020;9701;"Crimes contra a Ordem Econômica";"Arts. 4º ao 6º, Lei Federal nº 8.137/90 e  e arts. 1º e 2, Lei Federal nº 8.176/91.";54;68
+"Estado";2020;9742;"Posse, detenção, Fabrico ou Emprego de Artefato Explosivo ou Incendiário";"Arts. 16, inc. III, Lei Federal nº 10.826/03.";54;10
+"Estado";2020;9731;"Permissão, Confiança ou Entrega da Direção de veículo à Pessoa não Habilitada - Art. 310";"Art. 310,  Lei Federal nº 9503/97";50;196,5
+"Estado";2020;9687;"Indução, Instigação ou Auxílio ao Uso de Drogas";"Art. 33, § 2º, Lei Federal nº 11.343/06.";48;17
+"Estado";2020;6667;"Exercício Ilegal de Profissão Ou Atividade";"DL 3688/1941 Art. 47.";47;401
+"Estado";2020;11376;"Divulgação de cena de estupro, sexo ou pornografia";"Art. 218-C do Código Penal";46;59
+"Estado";2020;8096;"Violência Doméstica contra a Mulher";"Lei 11.340/2006 - Artigo 7º";44;40
+"Estado";2020;9749;"Crimes Previstos no Estatuto da criança e do adolescente";"Arts. 228 a 244-B, Lei Federal nº 8069/90 (ECA).";44;14,5
+"Estado";2020;9519;"Roubo Qualificado pelo Resultado Lesão Corporal Grave";"Art. 157, § 3º , primeira parte, CP.";43;34
+"Estado";2020;6864;"Tortura Simples";"art. 1º, caput, incisos I e II, e §1º, da Lei nº 9.455/97";42;42
+"Estado";2020;9535;"Destruição / Subração / Ocultação de Cadáver";"Art. 211, CP.";41;64
+"Estado";2020;9700;"Crimes contra a Ordem Tributária";"Art. 1º a 3º, Lei Federal nº 8.137/90 e art 1º, Lei Federal nº 4.729/65.";41;359
+"Estado";2020;9442;"Gravíssima ";"Art. 129, § 2º, CP.";40;49
+"Estado";2020;9733;"Crimes do Sistema Nacional de Armas";"Arts. 12 a 18, Lei Federal nº 10.826/03.";40;22,5
+"Estado";2020;6702;"Porte de arma (branca)";"DL 3688/1941, art 19. ";35;57
+"Estado";2020;9521;"Violação de direito autoral";"Art. 184, CP e art. 12, Lei Federal n. 9609/98.";35;694
+"Estado";2020;9479;"Extorsão mediante seqüestro";"Art. 159, CP.";34;53
+"Estado";2020;9561;"Estupro qualificado pelo resultado lesão corporal grave ou contra vítima entre 14 e 18 anos";"Art. 213, § 1º, CP.";33;28
+"Estado";2020;9625;"Falsificação de documento particular";"Art. 298, CP.";33;251
+"Estado";2020;8473;"Estupro de Vulnerável";"Art. 217-A, CP.";32;35
+"Estado";2020;9633;"Supressão de documento";"Art. 305,  CP.";32;152
+"Estado";2020;10821;"Lesão corporal culposa";"Art. 129, § 6°, CP.";31;64
+"Estado";2020;9448;"Abandono de incapaz";"Art. 133, CP.";30;356,5
+"Estado";2020;9556;"Satisfação de lascívia mediante presença de criança ou adolescente";"Art. 218-A, CP.";30;110
+"Estado";2020;9871;"Falso testemunho ou falsa perícia";"Arts. 342 e 343, CP.";30;60
+"Estado";2020;9652;"Peculato";"Art. 312, caput e § 1º, CP.";27;69
+"Estado";2020;9702;"Crimes contra as Relações de Consumo";"Art. 7º, Lei Federal nº 8.137/90 e Arts. 61 a 80, Lei Federal nº 8078/90.";27;31
+"Estado";2020;8392;"Furto (art. 155)";"Art. 155, CP.";26;49
+"Estado";2020;9600;"Falsificação / Corrupção / Adulteração / Alteração de produto destinado a fins terapêuticos ou medicinais";"Art. 273, CP.";26;27
+"Estado";2020;8395;"Roubo (art. 157)";"Art. 157, CP.";25;53
+"Estado";2020;9725;"Afastamento do Local do Acidente";"Art. 305, Lei Federal nº 9503/97. ";25;35
+"Estado";2020;9741;"Modificação das Características de Arma de Fogo - Art. 16, § único, II";"Art. 16, inc. II, Lei Federal nº 10.826/03.";25;8
+"Estado";2020;9807;"Crimes Previstos no Estatuto do Idoso";"Arts. 96 a 108, Lei Federal nº 10.741/03. ";25;273
+"Estado";2020;8588;"Tráfico de Drogas e Condutas Afins";"Art. 33, caput e  § 1º, Lei Federal nº 11.343/06.";24;10
+"Estado";2020;9545;"Ultraje Público ao Pudor (Ato/Escrito Obsceno)";"Arts. 233 e 234, CP.";24;235,5
+"Estado";2020;9563;"Estupro de pessoa equiparada a vulnerável por qualquer causa que diminua a resistência";"Art. 217-A, § 1º, CP.";24;30
+"Estado";2020;6706;"Promoção de Tumulto, Prática Ou Incitação de Violência";"Art. 41-B, 1ª parte, da Lei 10671/2003";23;326
+"Estado";2020;9542;"Atentado Violento ao Pudor";"Art. 214, CP.";23;2357
+"Estado";2020;9680;"Crimes contra a Economia Popular";"Arts. 1º a 30, Lei Federal nº 1521/51.";23;196
+"Estado";2020;9706;"Crimes contra a Flora";"Arts. 38 a 53, Lei Federal nº 9605/98.";23;99
+"Estado";2020;9869;"Comunicação falsa de crime ou de contravenção";"Art. 340, CP.";23;136
+"Estado";2020;6708;"Vender Ingresso de Evento Esportivo Por Preço Superior ao Estampado No Bilhete - Cambismo";"art. 41-F da Lei 10671/2003";22;530,5
+"Estado";2020;8416;"Roubo Majorado";"Art. 157, § 2º, CP.";22;20
+"Estado";2020;9688;"Oferecimento de Drogas para Consumo Conjunto";"Art. 33, § 3º,  Lei Federal nº 11.343/06.";22;64
+"Estado";2020;9740;"Supressão ou Alteração de Marca, Numeração ou Sinal de identificação de Arma de Fogo ou Artefato ";"Art. 16, inc. I, Lei Federal nº 10.826/03.";22;13
+"Estado";2020;8355;"Homicídio Qualificado";"Art. 121, § 2º, CP.";21;43
+"Estado";2020;8593;"Associação para a Produção e Tráfico e Condutas Afins";"Art. 35, Lei Federal nº 11.343/06.";21;21
+"Estado";2020;9607;"Infração de Medida Sanitária Preventiva";"Art. 268, CP.";21;53
+"Estado";2020;9609;"Outras Substâncias Nocivas a Saúde Pública";"Art. 278, CP.";21;2
+"Estado";2020;9717;"Crimes de Lavagem ou Ocultação de Bens, Direitos ou Valores";"Art. 1º, Lei Federal nº 9.613/98.";21;82
+"Estado";2020;8722;"Análogo ao Crime Tentado *C";"Art. 14, II, CP.";20;2049,5
+"Estado";2020;9496;"Furto Privilegiado";"Art. 155,§, 2º, CP.";19;28
+"Estado";2020;9544;"Corrupção de Menores";"Art. 218, CP.";19;22
+"Estado";2020;9658;"Corrupção passiva";"Art. 317, CP.";18;496
+"Estado";2020;9770;"Aliciar, assediar, instigar ou constranger criança com fim de com ela praticar ato libidinoso";"Art. 241-D, Lei Federal nº 8069/90 (ECA).";18;101,5
+"Estado";2020;11498;"Contra a Mulher";"CP, Art. 129, § 9º e 11.";17;31
+"Estado";2020;6866;"Tortura Qualificada";"art. 1º, §3º, da Lei nº 9.455/97";17;4
+"Estado";2020;8378;"Ameaça (art. 147)";"Art. 147, CP.";17;76
+"Estado";2020;8396;"Extorsão (art. 158)";"Art. 158, CP.";17;42
+"Estado";2020;9887;"Desobediência a decisão judicial sobre perda ou suspensão de direitos";"Art. 359, CP.";17;524
+"Estado";2020;9940;"Crime / Contravenção contra Idoso ";"Art. 61, inc. II, ""h"", CP e 1º, Lei Federal nº 10.741/.";17;13
+"Estado";2020;8845;"Alimentos";"Art. 7º, inc. IX, Lei Federal nº 8137/90.";16;31,5
+"Estado";2020;9017;"Inscrição Fraudulenta";"Art. 289, Lei Federal nº 4737/65 (Código Eleitoral).";16;1163
+"Estado";2020;9557;"Favorecimento da prostituição ou outra forma de exploração sexual de vulnerável";"Art. 218-B, CP.";16;69,5
+"Estado";2020;6744;"Medidas Protetivas";"Art. 18, da Lei Fedral nº 11.340/06 e 45 do Estatuto do Idoso.";15;11
+"Estado";2020;8393;"Furto Qualificado (Art. 155, § 4o.)";"Art. 155, § 4º, CP.";15;248
+"Estado";2020;9490;"Estelionato Majorado";"Art. 171, §3º, CP.";15;482
+"Estado";2020;9554;"Violação sexual mediante fraude";"Art. 215, CP.";15;78
+"Estado";2020;9765;"Vender, fornecer, ainda que gratuitamente, ministrar ou entregar a criança ou a adolescente produtos que possam causar dependência";"Art. 243, Lei Federal nº 8069/90 (ECA)";15;48
+"Estado";2020;9865;"Lavagem ou Ocultação de Bens, Direitos ou Valores Oriundos de Corrupção";"Art. 1º, Lei Federal nº 9.613/98.";15;193
+"Estado";2020;9921;"Concurso de Pessoas *C";"Art. 62, CP";15;63
+"Estado";2020;9447;"Perigo para a vida ou saúde de outrem";"Art. 132, CP.";14;42
+"Estado";2020;9732;"Tráfego em Velocidade Acima da Permitida ";"Art. 311, Lei Federal nº 9503/97 ";14;83,5
+"Estado";2020;9430;"Homicídio Privilegiado";"Art. 121, § 1º, CP.";13;69
+"Estado";2020;9548;"Assédio Sexual";"Art. 216-A, CP.";13;229
+"Estado";2020;9744;"Venda, Entrega ou Fornecimento, Ainda que Gratuito, de Arma de Fogo, Acessório, Munição OU Explosivo a Criança ou Adolescente ";"Art. 16, inc. V, Lei Federal nº 10.826/03.";13;7
+"Estado";2020;9440;"Seguida de Morte ";"Art. 129, § 3º, CP.";12;18
+"Estado";2020;9767;"Oferecer, trocar, disponibilizar, transmitir, distribuir, publicar ou divulgar fotografia, vídeo ou registro que contenha cena de sexo explícito ou pornográfica envolvendo criança ou adolescente";"Art. 241-A, Lei Federal nº 8069/90 (ECA).";12;339
+"Estado";2020;9768;"Adquirir, possuir ou armazenar fotografia, vídeo ou registro que contenha cena de sexo explícito que contenha cena de sexo explícito ou pornográfica envolvendo criança ou adolescente";"Art. 241-B, Lei Federal nº 8069/90 (ECA).";12;161
+"Estado";2020;9838;"Crimes Contra o Ordenamento Urbano e o Patrimônio Cultural";"Art. 62 a 65, da Lei Federal nº 9605/98.";12;216
+"Estado";2020;8382;"Violação de domicílio (art. 50)";"Art. 150, CP.";11;60
+"Estado";2020;8550;"Uso de documento falso (art. 304)";"Art. 304, CP.";11;52
+"Estado";2020;8626;"Condução de veículo automotor sob efeito de álcool ou de outra substância psicoativa que determine dependência";"Art. 306,  Lei Federal nº 9503/97.";11;5
+"Estado";2020;9455;" Calúnia";"Art. 138, CP.";11;56
+"Estado";2020;9547;"Posse Sexual Mediante Fraude";"Art. 215, CP.";11;105
+"Estado";2020;9686;"Fabricação de Objeto Destinado a Produção de Drogas e Condutas Afins";"Art. 34, Lei Federal nº 11.343/06.";11;14
+"Estado";2020;8411;"Receptação";"Art. 180, CP.";10;59
+"Estado";2020;9551;"Rufianismo";"Art. 230, CP.";10;1748
+"Estado";2020;9708;"Agrotóxicos";"Art. 56, Lei Federal nº 9605/98 e Arts. 13 a 18, Lei Federal nº 7802/89.";10;29,5
+"Estado";2020;9728;"Violação de Suspensão/Proibição para Dirigir Veículo ";"Art. 307,  Lei Federal nº 9503/97.";10;40
+"Estado";2020;9881;"Motim de presos";"Art. 354, CP.";10;0
+"Estado";2020;10089;"Lesão leve ";"Art. 209, CPM.";9;35
+"Estado";2020;11581;"Crimes cometidos contra autoridade ou agente descrito nos arts. 142 e 143 da CF, integrantes do sistema prisional e da Força Nacional de Seg";"CP e Lei 8.072/1990
+Art. 121, § 2º, VII; 129, § 12 (CP) e Art. 1º, I e II (Lei 8.072/1990)";9;210
+"Estado";2020;8359;"Leve ";"Art. 129, caput, CP.";9;175
+"Estado";2020;9456;"Difamação";"Art. 139, CP.";9;178
+"Estado";2020;9775;"Crimes da Lei de licitações";"Arts. 89 a 98, Lei Federal nº 8.666/93.";9;1392
+"Estado";2020;9874;"Fraude processual";"Art. 347, CP.";9;189
+"Estado";2020;11499;"Contra pessoas não identificadas como mulher";"CP, Art. 129, § 9º e 11.";8;304,5
+"Estado";2020;7459;"Registro / Porte de arma de fogo ";"Lei Federal nº 10.826/2003.";8;5
+"Estado";2020;8648;"Estatuto da criança e do adolescente";"Arts. 228 a 244-B, Lei Federal nº 8069/90 (ECA).";8;2
+"Estado";2020;8700;"Resistência ";"Art. 329, CP.";8;154,5
+"Estado";2020;9436;"Aborto provocado por terceiro";"Art. 125 e 126, CP.";8;76
+"Estado";2020;9491;"Outras fraudes";"Art. 176, CP.";8;218
+"Estado";2020;9550;"Casa de Prostituição";"Art. 229, CP.";8;2177,5
+"Estado";2020;9634;"Falsificação do sinal empregado no contraste de metal precioso ou na fiscalização alfandegária, ou para outros fins";"Art. 306,  CP.";8;22,5
+"Estado";2020;9656;"Concussão";"Art. 316, caput, CP.";8;143
+"Estado";2020;9843;"Entrada de aparelho telefônico de comunicação móvel em estabelecimento prisional";"Art. 349-A, CP.";8;338,5
+"Estado";2020;10065;"Ameaça";"Art. 223, CPM.";7;9
+"Estado";2020;10178;"Roubo qualificado";"Art. 242, § 2º, CPM.";7;642
+"Estado";2020;10525;"Competência do MP ";"Art. 129, inc. III e VII, CF; Art. 9º e 25, inc. IV, Lei Federal nº 8625/1993; Art. 16 e 24, CPP.";7;436
+"Estado";2020;1431;"Roubo ";"art. 157 CP";7;3410
+"Estado";2020;6868;"Cometida contra Criança, Gestante, Portador de Deficiência, Adolescente ou Maior de 60 (sessenta) anos *C";"art. 1º, §4º, inciso II, da Lei nº 9.455/97";7;29
+"Estado";2020;8364;"Decorrente de Violência Doméstica ";"Art. 129, § 9º e 11, CP.";7;50
+"Estado";2020;9568;"Abandono Material";"Art. 244, CP.";7;4
+"Estado";2020;9595;"Atentado contra a segurança de serviços de utilidade pública";"Art. 265, CP.";7;4
+"Estado";2020;9601;"Exercício Ilegal da Medicina, Arte Dentária ou Farmacêutica";"Art. 282, CP.";7;19
+"Estado";2020;9645;"Falsificação de documento Público praticada por Funcionário Público";"Art. 297, §1º, CP.";7;163
+"Estado";2020;9729;"Participação em corrida, disputa ou competição automobilística não autorizada ";"Art. 308,  Lei Federal nº 9503/97";7;32
+"Estado";2020;9966;"Concussão";"Art. 305, CPM.";7;635
+"Estado";2020;10071;"Violação de domicílio";"Art. 226, CPM.";6;85
+"Estado";2020;10139;"Embriaguez ao volante";"Art. 279, CPM.";6;12,5
+"Estado";2020;11489;"Fabrico, comércio ou detenção de arma branca ou munição";"DL 3688/41, Art. 18.";6;18,5
+"Estado";2020;11528;"Registro não autorizado da intimidade sexual";"CP, Art. 216-B";6;149
+"Estado";2020;11584;"Crimes Previstos no Estatuto da Pessoa com Deficiência";"Arts. 88 a 91 da Lei Federal nº 13.146/2015";6;24,5
+"Estado";2020;8642;"Porte, Posse, Aquisição,Transporte ou Fornecimento de Arma de Fogo com Numeração, Marca ou Outro Sinal de Identificação Raspado, Suprimido ou Adulterado";"Art. 16, inc. IV, Lei Federal nº 10.826/03.";6;34
+"Estado";2020;8667;"Adquirir, possuir ou armazenar fotografia, vídeo ou registro que contenha cena de sexo explícito que contenha cena de sexo explícito ou pornográfica envolvendo criança ou adolescente";"Art. 241-B, Lei Federal nº 8069/90 (ECA).";6;40
+"Estado";2020;9217;"Propaganda Política - Propaganda Eleitoral - Internet";"Art. 57-A a 57-I, Lei Federal nº 9.504/97. ";6;2,5
+"Estado";2020;9564;"Estupro de vulnerável com resultado lesão corporal grave";"Art. 217-A, § 3º, CP.";6;62,5
+"Estado";2020;9699;"Crimes Resultante de Preconceito de Raça ou de Cor";"Art. 1º ao 20, Lei Federal nº 7.716/89.";6;90,5
+"Estado";2020;9746;"Comércio Ilegal de Arma de Fogo ";"Art. 17, Lei Federal nº 10.826/03.";6;268
+"Estado";2020;9754;"Submeter criança ou adolescente a vexame ou constrangimento ";"Art. 232, Lei Federal nº 8069/90 (ECA).";6;125
+"Estado";2020;9848;"Crime Culposo *C";"Art. 18, II, CP.";6;427
+"Estado";2020;9918;"Semi-aberto *C";"Art. 35, CP.";6;391,5
+"Estado";2020;9971;"Corrupção passiva";"Art. 308, CPM.";6;291,5
+"Estado";2020;9998;"Desacato a militar";"Art. 299, CPM.";6;6
+"Estado";2020;10066;"Constrangimento ilegal";"Art. 222, CPM.";5;205
+"Estado";2020;10177;"Roubo";"Art. 242, caput, CPM.";5;1
+"Estado";2020;6869;"Cometida Mediante Sequestro *C";"art. 1º, §4º, inciso I, da Lei nº 9.455/97";5;134
+"Estado";2020;8533;"Quadrilha ou Bando (art. 288)";"Art. 288, CP.";5;52
+"Estado";2020;8608;"Contra a Fauna";"Arts. 29 a 37, Lei Federal nº 9605/98.";5;486
+"Estado";2020;9488;"Apropriação indébita Previdenciária";"Art. 168-A, CP. e Lei Federal nº 8212/91.";5;53
+"Estado";2020;9510;"Fraude para Recebimento de Indenização ou Valor de Seguro";"Art. 171,§2º, V, CP.";5;4
+"Estado";2020;9565;"Estupro de vulnerável com resultado morte";"Art. 217-A, § 4º, CP.";5;56
+"Estado";2020;9608;"Omissão de Notificação de Doença";"Art. 269, CP.";5;118
+"Estado";2020;9623;"Falsificação do selo ou sinal público";"Art. 296, CP.";5;5
+"Estado";2020;9630;"Falsidade de atestado médico";"Art. 302, CP.";5;2462
+"Estado";2020;9631;"Reprodução ou adulteração de selo ou peça filatélica";"Art. 303,  CP.";5;902
+"Estado";2020;9808;"Parcelamento do solo urbano";"Art. 50 a 52, Lei Federal nº 6.766/79.";5;1029
+"Estado";2020;9850;"Usurpação de função pública";"Art. 328, CP.";5;108
+"Estado";2020;9939;"Crime / Contravenção contra Criança / Adolescente ";"Art. 61, inc. II, ""h"", CP e 2º, Lei Federal nº 8069/90 (ECA).";5;69
+"Estado";2020;9969;"Corrupção";"Arts. 308 a 310, CPM. ";5;20
+"Estado";2020;10466;"Ausência de Publicidade ";"Arts. 5º, inc. LX, 37, caput, e 93, inc. IX, CF; Art. 564, inc. IV e 792, caput, e § 1º, CPP; Arts. 387 e 500, inc. IV, CPPM.";4;23
+"Estado";2020;10507;"Crimes Hediondos ";"Art. 2º, § 2º, Lei Federal nº 8072/1990 (Lei dos Crimes Hediondos).";4;28
+"Estado";2020;1293;"Homicídio Simples";"art. 121 caput CP";4;4769,5
+"Estado";2020;1427;"Furto ";"art. 155 caput CP";4;3535
+"Estado";2020;6932;"Invasão de dispositivo informático";"Artigo 154-A, do Código Penal.";4;54
+"Estado";2020;8353;"Homicídio Simples";"Art. 121, CP.";4;34
+"Estado";2020;8402;"Dano (art.163)";"Art. 163, caput, CP.";4;166,5
+"Estado";2020;8412;"Apropriação indébita (art. 168, caput)";"Art. 168, CP.";4;1077
+"Estado";2020;8610;"Da Poluição";"Arts. 54 a 61, Lei Federal nº 9605/98.";4;233
+"Estado";2020;8622;"Lesão corporal culposa na direção de veículo automotor";"Art. 303, Lei Federal nº 9503/97. ";4;647
+"Estado";2020;8635;"Porte Ilegal de Arma de Fogo de Uso Permitido ";"Art. 14, Lei Federal nº 10.826/03.";4;53,5
+"Estado";2020;9084;"Arregimentação de Eleitor ou Boca de Urna";"Art. 39, § 5º, inc. II, Lei Federal nº 9.504/97.";4;439,5
+"Estado";2020;9446;"Perigo de contágio de moléstia grave";"Art. 131, CP.";4;112,5
+"Estado";2020;9483;"Esbulho possessório";"Art. 161,§§1º, inc. II, 2º e 3º, CP e  art 9, Lei Federal n. 5.741/71";4;201,5
+"Estado";2020;9506;"Disposição de coisa alheia como própria";"Art. 171, § 2º, I, CP.";4;33
+"Estado";2020;9593;"Atentado contra a segurança de transporte público";"Arts. 261 a 263, CP.";4;64
+"Estado";2020;9617;"Apologia de Crime ou Criminoso";"Art. 287, CP.";4;358
+"Estado";2020;9716;"Crime contra a administração ambiental";"Art. 66 a 69, Lei Federal nº 9605/98.";4;11
+"Estado";2020;9764;"Vender, fornecer, ainda que gratuitamente, ou entregar a criança ou a adolescente fogos de estampido ou de artifício";"Art. 244, Lei Federal nº 8069/90 (ECA)";4;28,5
+"Estado";2020;9781;"Crimes Eleitorais";"Arts. 289 a 354, Lei Federal nº 4737/65 (Código Eleitoral).";4;158
+"Estado";2020;9820;"Corrupção ativa";"Art. 309, Código Penal Militar (Dec. Lei 1001/69).";4;55
+"Estado";2020;9825;"Homicídio qualificado";"Art. 205, § 2°, Código Penal Militar (Dec. Lei 1001/69).";4;56,5
+"Estado";2020;9836;"Crimes contra portadores de deficiência";"Art. 8º, Lei Federal nº 7853/89";4;300,5
+"Estado";2020;9861;"Lavagem ou Ocultação de Bens, Direitos ou Valores Oriundos de Corrupção";"Art. 1º, Lei Federal nº 9.613/98.";4;354
+"Estado";2020;9873;"Exercício arbitrário das próprias razões";"Art. 345, CP.";4;45,5
+"Estado";2020;9909;"Estado de Necessidade ";"Art. 24, CP.";4;36,5
+"Estado";2020;9978;"Exercício funcional ilegal";"Art. 329, CPM.";4;12
+"Estado";2020;10175;"Extorsão mediante sequestro";"Art. 244, CPM.";3;134
+"Estado";2020;10460;"Ação Penal";"Arts. 24 a 62, CPP; Arts. 29 a 35, CPPM.";3;3
+"Estado";2020;10480;"Competência dos Juizados Especiais ";"Art. 61 da Lei Federal nº 9099/1995  e Lei Estadual nº 5781/2010.";3;303
+"Estado";2020;7434;"Comunicação Social ";"Art. 220 e ss., CF; Lei Federal nº 8389/91 e Lei Federal nº 9472/97.";3;11
+"Estado";2020;7748;"Recondução ";"Art. 29, Lei Federal nº 8112/90.";3;46
+"Estado";2020;8211;"Constituição de Renda";"LEI Nº 10.406/02 (CÓDIGO CIVIL) - Artigos 803 à 813";3;6
+"Estado";2020;8379;"Seqüestro e cárcere privado (art. 148)";"Art. 148, CP.";3;33
+"Estado";2020;8475;"Favorecimento de Prostituição ou Outra Forma de Exploração Sexual de Vulnerável";"Art. 218-B, CP.";3;15
+"Estado";2020;8481;"Estupro de vulnerável qualificado pela condição da vítima";"Art. 217-A, § 1º, CP.";3;17
+"Estado";2020;8591;"Indução, Instigação ou Auxílio ao Uso de Drogas";"Art. 33, § 2º, Lei Federal nº 11.343/06.";3;70
+"Estado";2020;8619;"De Tortura";"Art. 1º, Lei Federal nº 9.455/97.";3;151
+"Estado";2020;8664;"Vender, fornecer, ainda que gratuitamente, ministrar ou entregar a criança ou a adolescente produtos que possam causar dependência";"Art. 243, Lei Federal nº 8069/90 (ECA)";3;14
+"Estado";2020;8669;"Aliciar, assediar, instigar ou constranger criança com fim de com ela praticar ato libidinoso";"Art. 241-D, Lei Federal nº 8069/90 (ECA).";3;42
+"Estado";2020;8697;"Contravenções Penais";"Arts. 18 a 70, Dec.Lei nº 3688/41.";3;103
+"Estado";2020;8707;"Desacato ";"Art. 331, CP.";3;63
+"Estado";2020;9018;"Induzimento à Inscrição de Eleitor em Infração às Normas Legais";"Art. 290, Lei Federal nº 4737/65 (Código Eleitoral).";3;1213
+"Estado";2020;9072;"Corrupção Eleitoral";"Art. 299, Lei Federal nº 4737/65 (Código Eleitoral).";3;1213
+"Estado";2020;9476;"Furto de coisa comum";"Art. 156, CP.";3;40
+"Estado";2020;9495;"Apropriação de Coisa Havida por Erro, Caso Fortuito ou Força da Natureza";"Art. 169, § único, I e II, CP.";3;90
+"Estado";2020;9505;"Apropriação de Coisa Achada";"Art. 169, § único, II, CP.";3;416
+"Estado";2020;9511;"Fraude no Pagamento por Meio de Cheque";"Art. 171,§2º, VI, CP.";3;6
+"Estado";2020;9562;"Estupro com resultado morte";"Art. 213, § 2º, CP.";3;1937
+"Estado";2020;9583;"Subtração de Incapazes";"Art. 249, CP.";3;609
+"Estado";2020;9592;"Desastre ferroviário / Perigo de Desastre Ferroviário";"Art. 260, CP.";3;120
+"Estado";2020;9629;"Falsidade material de atestado ou certidão";"Art. 301, § 1º, CP.";3;288
+"Estado";2020;9636;"Fraude de lei sobre estrangeiros";"Art. 309,  CP.";3;2
+"Estado";2020;9660;"Prevaricação";"Art. 319, CP.";3;114
+"Estado";2020;9664;"Abandono de função";"Art. 323, CP.";3;408
+"Estado";2020;9668;"Inserção de dados falsos em sistema de informações";"Art. 313-A, CP.";3;1961
+"Estado";2020;9679;"Crimes de Responsabilidade";"Art. 1º, DL nº 201/67 e Lei Federal nº 1.079/50. ";3;1548
+"Estado";2020;9713;"Utilização de Embrião Humano em Desacordo com a Legislação";"Art. 24, Lei Federal nº 11105/2005.";3;19
+"Estado";2020;9724;"Omissão de socorro à vítima ";"Art. 304, Lei Federal nº 9503/97. ";3;37
+"Estado";2020;9760;"Produzir, reproduzir, dirigir, fotografar, filmar ou registrar cena de sexo explícito ou pornográfica envolvendo criança ou adolescente";"Art. 240, Lei Federal nº 8069/90 (ECA).";3;16
+"Estado";2020;9795;"Obtenção de documento falso";"Art. 354, Código Eleitoral.";3;33
+"Estado";2020;9819;"Concussão";"Art. 305, Código Penal Militar (Dec. Lei 1001/69).";3;141
+"Estado";2020;9824;"Homicídio simples";"Art. 205, Código Penal Militar (Dec. Lei 1001/69).";3;15
+"Estado";2020;9859;"Contrabando ou descaminho";"Art. 334, CP.";3;189
+"Estado";2020;9882;"Patrocínio infiel";"Art. 355, caput, CP.";3;98
+"Estado";2020;9947;"Crime Tentado *C";"Art. 30, inciso II, CPM.";3;134
+"Estado";2020;9970;"Corrupção ativa";"Art. 309, CPM.";3;24
+"Estado";2020;10012;"Peculato";"Art. 303, CPM.";2;26
+"Estado";2020;10069;"Sequestro ou cárcere privado";"Art. 225, CPM.";2;1977,5
+"Estado";2020;10169;"Receptação";"Art. 254, CPM.";2;961
+"Estado";2020;10173;"Extorsão";"Art. 243, CPM.";2;134
+"Estado";2020;10181;"Usurpação";"Art. 305, CPM.";2;26,5
+"Estado";2020;10186;"Abandono de posto";"Art. 195, CPM.";2;9,5
+"Estado";2020;1494;"Estupro ";"art. 213 caput CP";2;3367,5
+"Estado";2020;1608;"Uso de Documento Falso ";"art. 304 CP";2;3165,5
+"Estado";2020;6609;"Concurso de Agentes *C";"art. 53 do Decreto-Lei n.º 1001/69 (CPM)";2;635
+"Estado";2020;6865;"Tortura por Omissão";"art. 1º, §2º, da Lei nº 9.455/97";2;162
+"Estado";2020;6867;"Cometida por Agente Público *C";"art. 1º, §4º, inciso I, da Lei nº 9.455/97";2;134
+"Estado";2020;6890;"Produto impróprio *C";"Artigo 18, par.6º, da Lei 8078/90.";2;25,5
+"Estado";2020;6953;"Crime de discriminação dos portadores da imunodeficiência humana HIV e doentes de AIDS";"Lei Federal nº 12984/2014";2;24,5
+"Estado";2020;7713;"Aposentadoria ";"Art. 40, CF e Arts. 41, inc. V, 50, 56, 74 a 77, LCP nº 35/79.";2;0
+"Estado";2020;7765;"Posse e Exercício ";"Art. 13 a 20, Dec.Estadual 2479/79 e art. 11, Lei Estadual 5891/2011.";2;37
+"Estado";2020;8354;"Homicídio Privilegiado";"Art. 121, § 1º, CP.";2;42,5
+"Estado";2020;8361;"Grave ";"Art. 129, § 6º, CP.";2;709
+"Estado";2020;8375;"Injúria";"Art. 140, CP.";2;171,5
+"Estado";2020;8407;"Estelionato";"Art. 171, CP.";2;85,5
+"Estado";2020;8460;"Estupro";"Art. 213, CP.";2;548,5
+"Estado";2020;8476;"Satisfação de Lascívia Mediante Presença de Criança ou Adolescente";"Art. 218-A, CP.";2;13,5
+"Estado";2020;8479;"Estupro com resultado lesão corporal grave ou contra vítima entre 14 e 18 anos";"Art. 213, § 1º, CP.";2;8
+"Estado";2020;8482;"Estupro de vulnerável qualificado pelo resultado lesão corporal grave";"Art. 217-A, § 3º, CP.";2;181,5
+"Estado";2020;8595;"Colaboração com Grupo, Organização ou Associação Destinados à Produção ou Tráfico de Drogas";"Art. 37, Lei Federal nº 11.343/06.";2;16,5
+"Estado";2020;8609;"Contra a Flora";"Arts. 38 a 53, Lei Federal nº 9605/98.";2;276
+"Estado";2020;8621;"Homicídio culposo na direção de veículo automotor ";"Art. 302, Lei Federal nº 9503/97.";2;1064
+"Estado";2020;8637;"Posse ou Porte Ilegal de Arma de Fogo de Uso Restrito";"Art. 16, Lei Federal nº 10.826/03.";2;17,5
+"Estado";2020;8653;"Submeter criança ou adolescente a vexame ou constrangimento ";"Art. 232, Lei Federal nº 8069/90 (ECA).";2;304
+"Estado";2020;8666;"Oferecer, trocar, disponibilizar, transmitir, distribuir, publicar ou divulgar fotografia, vídeo ou registro que contenha cena de sexo explícito ou pornográfica envolvendo criança ou adolescente";"Art. 241-A, Lei Federal nº 8069/90 (ECA).";2;264,5
+"Estado";2020;8730;"Coação no curso do processo";"Art. 344, CP.";2;55
+"Estado";2020;8842;"Combustíveis e derivados ";"Art. 18, § 6º, inc. II, Lei Federal nº 8078/90 (CDC).";2;1959
+"Estado";2020;9055;"Calúnia na Propaganda Eleitoral";"Art. 324, Lei Federal nº 4737/65 (Código Eleitoral).";2;43,5
+"Estado";2020;9205;"Propaganda Política - Propaganda Eleitoral - Extemporânea/Antecipada";"Art. 36, §3° e 36-A, Lei Federal nº 9.504/97. ";2;11
+"Estado";2020;9466;"Violação de correspondência";"Art. 151, CP.";2;942,5
+"Estado";2020;9497;"Furto de Veículo Automotor a ser Transportado para outro Estado ou Exterior";"Art. 155, §5º, CP.";2;134
+"Estado";2020;9507;"Alienação ou Oneração Fraudulenta de Coisa Própria";"Art. 171, §, 2º, inc. II, CP.";2;75,5
+"Estado";2020;9532;"Frustração de lei sobre a nacionalização do trabalho";"Art. 204, CP.";2;529
+"Estado";2020;9639;"Adulteração de Sinal Identificador de Veículo Automotor por Funcionário Público";"Art. 311, § 2º, CP.";2;20,5
+"Estado";2020;9642;"Falsidade ideológica praticada por Funcionário Público";"Art. 299, § único, CP.";2;1652
+"Estado";2020;9751;"Deixar de Identificar o Neonato e a Parturiente";"Art. 229, Lei Federal nº 8069/90 (ECA).";2;0
+"Estado";2020;9758;"Promover ou efetivar a entrega de filho ou pupilo mediante paga ";"Art. 238, Lei Federal nº 8069/90 (ECA).";2;64
+"Estado";2020;9762;"Submeter criança ou adolescente à prostituição ou à exploração sexual";"Art. 244-A, Lei Federal nº 8069/90 (ECA).";2;53,5
+"Estado";2020;9763;"Vender, fornecer, ainda que gratuitamente, ou entregar a criança ou a adolescente arma, munição ou explosivo";"Art. 242, Lei Federal nº 8069/90 (ECA)";2;671
+"Estado";2020;9769;"Simular a participação de criança ou de adolescente em cena de sexo explícito ou pornográfica por meio de adulteração, montagem ou modificação de fotografia, vídeo ou outra forma de representação visual";"Art. 241-C, Lei Federal nº 8069/90 (ECA).";2;26
+"Estado";2020;9790;"Boca de urna";"Art. 39, § 5º, Lei Federal n. 9504/97";2;543
+"Estado";2020;9797;"Divulgação de pesquisa de fraudulenta";"Art. 33, Lei Federal n. 9504/97.";2;220,5
+"Estado";2020;9800;"Uso de símbolos governamentais em propaganda eleitoral";"Art. 40, Lei Federal n. 9504/97.";2;0
+"Estado";2020;9809;"Crimes Falimentares";"Arts. 168 a 188, Lei Federal nº 11.101/05.";2;170
+"Estado";2020;9818;"Peculato";"Arts. 303, Código Penal Militar (Dec. Lei 1001/69).";2;330,5
+"Estado";2020;9839;"Crimes Previstos no Estatuto de Defesa do Torcedor";"Arts. 41-B a 41-G, Lei Federal nº 10.671/03. ";2;623,5
+"Estado";2020;9875;"Favorecimento pessoal";"Art. 348, CP.";2;329,5
+"Estado";2020;9878;"Fuga de pessoa presa ou submetida a medida de segurança";"Art. 351, CP.";2;1049
+"Estado";2020;9922;"Circunstâncias Atenuantes *C";"Art. 65, CP";2;64,5
+"Estado";2020;9926;"Erro na Execução *C";"Art. 73, CP.";2;544,5
+"Estado";2020;9952;"Corrupção ativa de testemunha, perito ou intérprete";"Art. 347, CPM.";2;95
+"Estado";2020;9984;"Prevaricação";"Art. 319, CPM.";2;36,5
+"Estado";2020;9999;"Desacato a superior";"Art. 298, CPM.";2;606
+"Estado";2020;10000;"Desobediência";"Art. 301, CPM.";1;34
+"Estado";2020;10007;"Falsificação de documento";"Art. 311, CPM.";1;435
+"Estado";2020;10014;"Peculato-furto";"Art. 303, §2º, CPM.";1;72
+"Estado";2020;10025;"Fuga, evasão, arrebatamento e amotinamento de presos";"Arts. 178 a 182, CPM. ";1;22
+"Estado";2020;10042;"Resistência mediante ameaça ou violência";"Art. 177, CPM.";1;12
+"Estado";2020;10045;"Assunção de comando sem ordem ou autorização";"Art. 167, CPM.";1;166
+"Estado";2020;10062;"Injuria real";"Art. 217, CPM.";1;409
+"Estado";2020;10082;"Homicídio";"Art. 205, CPM.";1;48
+"Estado";2020;10083;"Homicidio qualificado";"Art. 205, § 2º, CPM.";1;512
+"Estado";2020;10097;"Maus tratos";"Art. 213, CPM.";1;0
+"Estado";2020;10105;"Desenho ou levantamento de plano ou planta de local militar";"Art. 147, CPM.";1;124
+"Estado";2020;10127;"Tráfico, posse ou uso de entorpecente ou substância de efeito similar";"Art. 290, CPM.";1;155
+"Estado";2020;10164;"Estelionato";"Arts. 251, CPM.";1;342
+"Estado";2020;10187;"Descumprimento de missão";"Art. 196, CPM.";1;249
+"Estado";2020;10484;"Imunidade em razão de função, ofício ou profissão";"Art. 53, caput, CF; Art. 142, inc, I, CP.";1;3
+"Estado";2020;10491;"Recebimento ";"Art. 396 e 399, CPP; Art. 78 e 79, CPPM.";1;22
+"Estado";2020;10502;"Prestação de Serviços à Comunidade ";"Art. 149, Lei Federal nº 7210/1984 (LEP) e Art. 46, C.P.";1;18
+"Estado";2020;10524;"Investigação Penal";"Art. 12, 46, § 1º, CPP.";1;567
+"Estado";2020;10823;"Lesão corporal culposa";"Art. 129,  § 6º, CP.";1;3
+"Estado";2020;11490;"Loteria não autorizada";"DL 3688/1941,  Art. 51. ";1;49
+"Estado";2020;11522;"Descumprimento de determinação de sigilo";"Lei 12.850/2013, atigo 20";1;792
+"Estado";2020;11524;"Recusa ou omissão de dados cadastrais, registros, documentos e informações";"Lei 12.850/2013, artigo 21";1;484
+"Estado";2020;1444;"Apropriação Indébita";"art. 168 CP";1;3660
+"Estado";2020;1606;"Falsificação de Documento Público";"art. 297 CP";1;3224
+"Estado";2020;1633;"Peculato ";"art. 312 caput e § 1º CP";1;3220
+"Estado";2020;5414;"Lesão Corporal Decorrente de Violência Doméstica";"art. 129 § 9º CP ";1;3674
+"Estado";2020;5642;"Estupro de vulnerável";"art. 217 A CP";1;3254
+"Estado";2020;6802;"Porte, Detenção ou Transporte de Instrumento para a Prática de Violência";"Art. 41-B, inc II, Estatuto do Torcedor (Lei Federal nº 10671/2003).";1;137
+"Estado";2020;6883;"Fraudes em certames de interesse público";"Art. 311A, do Código Penal.";1;142
+"Estado";2020;7538;"Fornecimento de Gás ";"Arts. 1º ao 40, Lei Federal nº 8987/95.";1;27
+"Estado";2020;7994;"Sistema Nacional de Trânsito ";"Lei Federal nº 9503/97";1;820
+"Estado";2020;8007;"Equilíbrio Financeiro";"Arts. 57, § 1º, I a II, e 58, § 2º, Lei Federal nº 8666/93.";1;640
+"Estado";2020;8289;"Dano Ambiental";"Lei 10406/02 - Artigo 927";1;1104
+"Estado";2020;8363;"Privilegiada ";"Art. 129, § 4º, CP.";1;501
+"Estado";2020;8368;"Abandono de incapaz (art. 133)";"Art. 133, CP.";1;6
+"Estado";2020;8417;"Latrocínio";"Art. 157, § 3º, CP.";1;0
+"Estado";2020;8421;"Dano Qualificado";"Art. 163, § ún., CP.";1;591
+"Estado";2020;8436;"Receptação Qualificada";"Art. 180, § 2º, CP.";1;53
+"Estado";2020;8439;"Violação de direito autoral";"Art. 184, CP e 12, Lei Federal nº 9609/98.";1;901
+"Estado";2020;8453;"Destruição / Subração / Ocultação de Cadáver";"Art. 211, CP.";1;2935
+"Estado";2020;8466;"Posse Sexual Mediante Fraude";"Art. 215, CP.";1;1
+"Estado";2020;8467;"Assédio Sexual";"Art. 216-A, CP.";1;721
+"Estado";2020;8542;"Falsificação de documento público";"Art. 297, CP.";1;9
+"Estado";2020;8543;"Falsificação de documento particular (art. 298)";"Art. 298, CP.";1;1429
+"Estado";2020;8544;"Falsidade ideológica (art. 299)";"Art. 299, CP.
+
+";1;13
+"Estado";2020;8548;"Falsidade de atestado médico (art. 302)";"Art. 302, CP.";1;44
+"Estado";2020;8551;"Supressão de documento (art. 305)";"Art. 305, CP.";1;242
+"Estado";2020;8556;"Adulteração de Sinal Identificador de Veículo Automotor";"Art. 311, CP.";1;17
+"Estado";2020;8564;"Corrupção passiva ";"Art. 317, CP.";1;2430
+"Estado";2020;8589;"Posse de Drogas para Consumo Pessoal";"Art. 28, Lei Federal nº 11.343/06.";1;27
+"Estado";2020;8603;"Contra a Ordem Tributária";"Art. 1º a 3º, Lei Federal nº 8.137/90 e art 1º, Lei Federal nº 4.729/65.";1;23
+"Estado";2020;8636;"Disparo de Arma de Fogo";"Art. 15, Lei Federal nº 10.826/03.";1;2
+"Estado";2020;8659;"Produzir, reproduzir, dirigir, fotografar, filmar ou registrar cena de sexo explícito ou pornográfica envolvendo criança ou adolescente";"Art. 240, Lei Federal nº 8069/90 (ECA).";1;14
+"Estado";2020;8702;"Corrupção ativa";"Art. 333, CP.";1;102
+"Estado";2020;8726;"Denunciação caluniosa";"Art. 339, CP.";1;222
+"Estado";2020;8727;"Comunicação falsa de crime ou de contravenção";"Art. 340, CP.";1;222
+"Estado";2020;8729;"Falso testemunho ou falsa perícia";"Arts. 342 e 343, CP.";1;1977
+"Estado";2020;8745;"Desobediência a decisão judicial sobre perda ou suspensão de direitos";"Art. 359, CP.";1;864
+"Estado";2020;8844;"Produto Impróprio ";"Art. 18, Lei Federal nº 8078/90 (CDC).";1;16
+"Estado";2020;9044;"Falsidade Ideológica";"Art. 350, Lei Federal nº 4737/65 (Código Eleitoral).";1;9
+"Estado";2020;9056;"Divulgação de Falsa Imputação";"Art. 324, § 1°, Lei Federal nº 4737/65 (Código Eleitoral).";1;394
+"Estado";2020;9067;"Uso, na Propaganda Eleitoral, de Símbolo de Órgãos de Governo";"Art. 40, Lei Federal nº 9.504/97.";1;538
+"Estado";2020;9085;"Divulgação de Propaganda Eleitoral no Dia da Eleição";"Art. 39, § 5º, inc. III, Lei Federal nº 9.504/97.";1;457
+"Estado";2020;9198;"Propaganda Política - Propaganda Eleitoral - Boca de Urna";"Art. 39, §5°, inc. II, Lei Federal nº 9.504/97.";1;908
+"Estado";2020;9206;"Propaganda Política - Propaganda Eleitoral - Folhetos/Volantes/Santinhos/Impressos";"Art. 38, Lei Federal nº 9.504/97. ";1;177
+"Estado";2020;9256;"Abuso - De Poder Econômico ";"Art. 22, Lei Complementar nº 64/90.";1;11
+"Estado";2020;9432;"Induzimento, Instigação ou Auxílio a Suicídio";"Art. 122, CP.";1;1240
+"Estado";2020;9433;"Infanticídio";"Art. 123, CP.";1;15
+"Estado";2020;9451;"Perigo de Contágio Venéreo";"Art. 130, CP.";1;301
+"Estado";2020;9467;"Sonegação ou destruição de correspondência";"Art. 151, § 1º, inc. I, CP.";1;262
+"Estado";2020;9469;"Violação de Correspondência comercial";"Art. 152, CP.";1;2
+"Estado";2020;9472;"Violação do segredo profissional";"Art. 154, CP.";1;413
+"Estado";2020;9486;"Dano em coisa de valor artístico, arqueológico ou histórico";"Art. 165, CP.";1;7
+"Estado";2020;9500;"Extorsão mediante Seqüestro Seguida de Morte";"Art. 159, §3º, CP.";1;66
+"Estado";2020;9501;"Extorsão mediante Sequestro Seguida de Lesão Corporal Grave";"Art. 159, §2º, CP.";1;13
+"Estado";2020;9504;"Apropriação de Tesouro";"Art. 169, inc. I, CP.";1;16
+"Estado";2020;9509;"Fraude na Entrega de Coisa";"Art. 171,§2º, IV CP.";1;196
+"Estado";2020;9531;"Aliciamento de trabalhadores de um local para outro do território nacional";"Art. 207, CP.";1;28
+"Estado";2020;9537;"Vilipêndio a Cadáver";"Art. 212, CP.";1;1937
+"Estado";2020;9570;"Entrega de Filho Menor a Pessoa Inidônea";"Art. 245, CP.";1;391
+"Estado";2020;9586;"Explosão";"Art. 251, CP.";1;2184
+"Estado";2020;9587;"Uso de gás tóxico ou asfixiante";"Art. 252, CP.";1;48
+"Estado";2020;9610;"Substância Destinada à Falsificação";"Art. 277, CP.";1;78
+"Estado";2020;9611;"Fabrico / Fornecimento / Aquisição / Posse ou Transporte de Explosivos ou Gás Tóxico ou Asfixiante";"Art. 253, CP.";1;19
+"Estado";2020;9616;"Incitação ao Crime";"Art. 286, CP.";1;674
+"Estado";2020;9620;"Petrechos para falsificação de moeda";"Art. 291,  CP.";1;2
+"Estado";2020;9622;"Falsificação de papéis públicos";"Art. 293, CP.";1;235
+"Estado";2020;9627;"Falso reconhecimento de firma ou letra";"Art. 300,  CP.";1;114
+"Estado";2020;9649;"Crime de Desvio e/ou Circulação de Moeda Não Autorizada";"Art. 289, e § 4º, CP.";1;9
+"Estado";2020;9657;"Excesso de exação";"Art. 316, §§ 1º e 2º, CP.";1;6
+"Estado";2020;9663;"Violência arbitrária";"Art. 322, CP.";1;1
+"Estado";2020;9670;"Lavagem ou Ocultação de Bens, Direitos ou Valores Oriundos de Corrupção";"Art. 1º, Lei Federal nº 9.613/98.";1;482
+"Estado";2020;9681;"Crimes de Abuso de Autoridade";"Arts. 3º a 28, Lei Federal nº 4.898/65.";1;2875
+"Estado";2020;9703;"Representação caluniosa";"Art. 19, Lei Federal nº 8.429/92.";1;6
+"Estado";2020;9718;"Crimes contra as Telecomunicações";"Art. 183, Lei Federal nº 9.472/97.";1;15
+"Estado";2020;9726;"Inovação artificiosa do lugar, de coisa ou de pessoa ";"Art. 312, Lei Federal nº 9503/97. ";1;6
+"Estado";2020;9748;"Crimes de Imprensa";"Arts. 12 a 22, Lei Federal nº 5.250/67.";1;530
+"Estado";2020;9761;"Vender ou expor à venda fotografia, vídeo ou registro com cena de sexo explícito ou pornográfica envolvendo criança ou adolescente";"Art. 241, Lei Federal nº 8069/90 (ECA).";1;603
+"Estado";2020;9778;"Recusa, retardamento ou omissão de dados técnicos indispensáveis à propositura de Ação Civil Pública";"Art. 10, Lei Federal nº 7.347/85.";1;434
+"Estado";2020;9779;"Crimes Agrários";"Art. 19 e 20, Lei Federal nº 4.947/69.";1;309
+"Estado";2020;9786;"Captação ilícita de votos ou corrupção eleitoral";"Art. 299, Código Eleitoral e Art. 41-a, Lei Federal n. 9504/97";1;0
+"Estado";2020;9788;"Falso eleitoral";"Art. 350, Código Eleitoral.";1;1631
+"Estado";2020;9789;"Desobediência à determinações da Justiça Eleitoral";"Art. 347, Código Eleitoral. ";1;483
+"Estado";2020;9794;"Uso de documento falso";"Art. 353, Código Eleitoral.";1;9
+"Estado";2020;9812;"Pederastia ou outro ato de libidinagem";"Arts. 235, Código Penal Militar (Dec. Lei 1001/69).";1;17
+"Estado";2020;9815;"Roubo qualificado";"Arts. 242, Código Penal Militar (Dec. Lei 1001/69).";1;14
+"Estado";2020;9828;"Leve ";"Arts. 209, Código Penal Militar (Dec. Lei 1001/69).";1;728
+"Estado";2020;9831;"Difamação";"Art. 215, Código Penal Militar (Dec. Lei 1001/69).";1;765
+"Estado";2020;9833;"Latrocínio";"Art. 242, § 3º, Código Penal Militar (Dec. Lei 1001/69).";1;18
+"Estado";2020;9856;"Subtração ou inutilização de livro ou documento";"Art. 337, CP.";1;911
+"Estado";2020;9876;"Favorecimento real";"Art. 349, CP.";1;5
+"Estado";2020;9884;"Sonegação de papel ou objeto de valor probatório";"Art. 356, CP.";1;309
+"Estado";2020;9901;"Corrupção Praticada por Prefeitos e Vereadores";"Art. 1º, DL 201/67. ";1;2294
+"Estado";2020;9913;"Substituição da Pena ";"Art. 44 a 48, 60, § 2º, CP e Art. 113, CPM.";1;655
+"Estado";2020;9919;"Erro Sobre Elementos do Tipo *C";"Art. 20, CP.";1;11
+"Estado";2020;9932;"Pagamento ou Parcelamento do Crédito Tributário ";"Art. 34, Lei Federal n. 8137/91  Lei Federal n. 9249/95";1;213
+"Estado";2020;9937;"Perda de Bens e Valores ";"Art. 45, § 3, CP.";1;68
+"Estado";2020;9945;"Crime Culposo *C";"Art. 33, inciso II, CPM.";1;48
+"Estado";2020;9946;"Crime em tempo de guerra *C";"Arts. 10, 15, 20, 62, § ún., CPM. ";1;16
+"Estado";2020;9950;"Coação";"Art. 342, CPM.";1;1
+"Estado";2020;9967;"Desvio";"Art. 307, CPM.";1;50
+"Estado";2020;9979;"Extravio, sonegação ou inutilização de livro ou documento";"Art. 321, CPM.";1;3
+"Estado";2020;9991;"Impedimento, perturbação ou fraude de concorrencia";"Art. 339, CPM.";1;0

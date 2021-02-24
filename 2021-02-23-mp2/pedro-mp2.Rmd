@@ -1,0 +1,381 @@
+---
+title: "São Paulo"
+author: "João Costa"
+date: "23/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+
+_Esta matéria é a segunda parte de uma série sobre dados do sistema de justiça
+criminal no Rio de Janeiro. Se você quiser ler a primeira parte, sobre como
+funciona o sistema na teoria e na prática, leia [aqui][1]. Se você quiser ler a
+entrevista com a coordenadora do projeto que disponibilizou os dados, leia
+[aqui][2]._
+
+Hoje, [menos de 5% dos homicídios são julgados][1] no estado do Rio de Janeiro.
+Mas mesmo este acesso precário à justiça não é distribuído igualmente entre quem
+mora lá. Dados inéditos revelam que algumas promotorias do estado recebem
+mais recursos do que outras a despeito de terem menos demanda. Além disso,
+algumas promotorias demonstram menos eficiência do que outras ao lidar com
+demandas parecidas.
+
+Um cidadão carioca residente no bairro de Madureira, por exemplo, tem muito
+menos promotores ao seu dispor do que alguém que mora na Tijuca. E ainda é
+possível que, por azar, o seu caso caia nas mãos de uma promotoria menos
+eficiente que a média da região.
+
+É o que mostram dados do Ministério Público do Rio de Janeiro (MPRJ) organizados
+pelo Projeto Farol, que permitem analisar de maneira aprofundada o trabalho do
+sistema de justiça criminal do estado.
+
+Nesta matéria, o _Pindograma_ revela a má alocação de recursos do MP no
+território fluminense, o desempenho heterogêneo de diferentes promotorias e como
+o sistema é menos eficiente para certos crimes.
+
+##### Muita demanda, pouco recurso
+
+```{r}
+finalizacao_ip = read_csv2('BaseFAROL_PIP_FinalizacaoIP.csv',
+                           locale = locale(encoding = 'Latin1')) %>%
+  filter(ano == 2020)
+
+bfp = read_csv2('velho_BaseFAROLPIP_Atividade.csv',
+                locale = locale(encoding = 'Latin1')) %>%
+  filter(grepl('Barra Mansa|Volta Redonda', pip_dscr)) %>%
+  filter(ano != 2020 | mes < 3)
+
+mp_areas_count = finalizacao_ip %>%
+  filter(familia == 'Territorial') %>%
+  distinct(area_atuacao) %>%
+  nrow()
+
+demanda_por_area = finalizacao_ip %>%
+  group_by(familia, nucleo, area_atuacao) %>%
+  summarize(demand = sum(novos), n_pip = n_distinct(codigo_pip), demand_per_pip = demand/n_pip) %>%
+  ungroup()
+
+madureira_inq = demanda_por_area %>%
+  filter(area_atuacao == 'Madureira/Jacarepaguá') %>%
+  pull(demand_per_pip)
+
+meier_inq = demanda_por_area %>%
+  filter(area_atuacao == 'Méier/Tijuca') %>%
+  pull(demand_per_pip)
+
+vr_inqueritos_1 = bfp %>%
+  filter(pip_dscr == 'PIP - Volta Redonda') %>%
+  pull(novos) %>%
+  sum()
+
+vr_inqueritos_2 = demanda_por_area %>%
+  filter(area_atuacao == 'Volta Redonda') %>%
+  pull(demand_per_pip)
+
+vr_inqueritos = vr_inqueritos_1 + vr_inqueritos_2
+
+bm_inqueritos_1 = bfp %>%
+  filter(pip_dscr == 'PIP - Barra Mansa') %>%
+  pull(novos) %>%
+  sum()
+
+bm_inqueritos_2 = demanda_por_area %>%
+  filter(area_atuacao == 'Barra Mansa') %>%
+  pull(demand_per_pip)
+
+bm_inqueritos = bm_inqueritos_1 + bm_inqueritos_2
+```
+
+Desde março de 2020, a capital do estado e dez cidades do entorno estão
+divididas entre `r pn(mp_areas_count)` _áreas de atuação do Ministério Público_.
+Algumas dessas áreas ocupam vários municípios (como a de Nova Iguaçu), enquanto
+outras cobrem apenas certas regiões da capital (como a de Botafogo/Copacabana).
+Quando um crime ocorre em uma dessas áreas, o inquérito policial deve ser
+distribuído aleatoriamente para uma das promotorias de investigação penal que
+atuem dentro da área. As únicas exceções são crimes como violência doméstica,
+que são distribuídos para promotorias especializadas.
+
+O problema é que algumas áreas de atuação recebem menos recursos do que outras.
+De acordo com dados do MPRJ, entre março e dezembro de 2020, chegaram
+`r pn(madureira_inq)` inquéritos policiais para cada promotoria da área de
+Madureira/Jacarepaguá. Enquanto isso, chegaram apenas `r pn(meier_inq)`
+inquéritos na área Méier/Tijuca. Isso significa que **as promotorias de
+Madureira/Jacarepaguá têm de servir quase o dobro da demanda do Méier/Tijuca com
+praticamente a mesma quantidade de recursos**.
+
+```{r fig.width=6}
+load('rj_areas.Rdata')
+
+capital = demanda_por_area %>%
+  filter(nucleo == 'Rio de Janeiro' & familia == 'Territorial')
+
+mp_shape = rj_areas_mp %>%
+  filter(area_atuacao_dk <= 9) %>%
+  mutate(area_atuacao_dscr = word(area_atuacao_dscr, 2, sep = ' - ')) %>%
+  left_join(capital, c('area_atuacao_dscr' = 'area_atuacao'))
+
+ggplot() +
+  ggtitle('Demanda nas áreas de atuação do MP') +
+  geom_sf(data = mp_shape, aes(fill = demand_per_pip)) +
+  labs(subtitle = 'Cidade do Rio de Janeiro, março a dezembro de 2020',
+       caption = 'Fonte: CENPE/MPRJ',
+       fill = 'Inquéritos policiais\npor promotoria') +
+  scale_fill_distiller(direction = 1, palette = 'Oranges') +
+  theme_pindograma_map() +
+  theme(legend.title = element_text())
+
+#ggplot(capital, aes(x = forcats::fct_reorder(area_atuacao, demand_per_pip), y = demand_per_pip)) +
+#  ggtitle('Demanda, por promotoria, nas áreas de atuação do MP') +
+#  labs(subtitle = 'Cidade do Rio de Janeiro, março a dezembro de 2020', caption = 'Fonte: CENPE/MPRJ') +
+#  geom_col(fill = pg_green) +
+#  coord_flip() +
+#  xlab('') + ylab('Inquéritos policiais por promotoria') +
+#  theme_pindograma() +
+#  theme(axis.title.x = element_text(size = 12))
+```
+
+Não é difícil entender por que essas distorções permanecem, mesmo depois de uma
+[reorganização das promotorias][3] em março de 2020. Hoje, há pouco espaço para
+redistribuir promotorias da capital sem gerar assimetrias ainda maiores. Se uma
+promotoria do Méier fosse transferida para Madureira, a área Méier/Tijuca
+passaria a ser a área mais mal-servida pelo Ministério Público na cidade. Há
+certas distorções que só podem ser corrigidas com a criação de novas promotorias
+onde há mais demanda -- tarefa difícil em tempos de crise.
+
+No interior, por outro lado, há pelo menos uma assimetria entre recursos de
+promotorias que parece menos justificável. Desde janeiro de 2016, a promotoria de
+investigação penal de Volta Redonda recebe quase duas vezes mais inquéritos que
+a promotoria de Barra Mansa, cidade vizinha (`r pn(vr_inqueritos)` contra
+`r pn(bm_inqueritos)` inquéritos). A fusão dessas duas cidades em uma única área
+de atuação do Ministério Público poderia diminuir essas diferenças e
+proporcionar um acesso mais equânime à justiça em ambos os municípios.
+
+A reorganização das promotorias na capital e em algumas cidades do entorno é
+fruto dos esforços do então Procurador-Geral Eduardo Gussem e do Centro de
+Pesquisas do MPRJ, que buscaram reequilibrar as demandas de cada promotoria no
+estado. Mas a despeito dos avanços obtidas nesse processo, o MPRJ ainda tem um
+longo caminho a percorrer para que a justiça chegue aos cidadãos fluminenses,
+independentemente de onde residam.
+
+##### A Produtividade das Promotorias
+
+De toda forma, a reorganização das promotorias trouxe uma vantagem inédita para
+quem busca entender o funcionamento do MPRJ: onde ela entrou em vigor, passou a
+ser possível comparar o desempenho de promotorias na mesma área de atuação. Isso
+ocorre porque os crimes que ocorrem em cada área de atuação são distribuídos
+aleatoriamente para qualquer uma das promotorias na área.
+
+Dentre as áreas que já distribuem os inquéritos aleatoriamente, há duas que
+chamam a atenção. Nas áreas de Madureira/Jacarepaguá e de Duque de Caxias, a
+_taxa de finalização_ das promotorias varia muito. (A taxa de finalização é a
+porcentagem de inquéritos policiais denunciados pelo Ministério Público ou
+arquivados por falta de provas ou fundamento legal. Os não-finalizados são os
+casos que ainda estão sendo investigados ou que o Ministério Público ainda não
+apreciou.)
+
+```{r}
+finalizacao_por_promotoria = finalizacao_ip %>%
+  group_by(familia, area_atuacao, nome_pip) %>%
+  summarize(finalizacao = sum(denuncias + arquivamentos) / sum(novos))
+
+state_average_finalizacao = finalizacao_por_promotoria %>%
+  filter(familia == 'Territorial') %>%
+  pull(finalizacao) %>%
+  mean()
+
+mj_pip_1_fin = finalizacao_por_promotoria %>%
+  filter(nome_pip == '1ª PIP - Madureira/Jacarepaguá') %>%
+  pull(finalizacao)
+
+mj_pip_2_fin = finalizacao_por_promotoria %>%
+  filter(nome_pip == '2ª PIP - Madureira/Jacarepaguá') %>%
+  pull(finalizacao)
+
+mj_pip_3_fin = finalizacao_por_promotoria %>%
+  filter(nome_pip == '3ª PIP - Madureira/Jacarepaguá') %>%
+  pull(finalizacao)
+```
+
+A área de Madureira/Jacarepaguá possui três promotorias diferentes recebendo
+inquéritos do mesmo território. Entre março e dezembro de 2020, a 1ª Promotoria
+conseguiu arquivar ou denunciar `r pn(mj_pip_1_fin*100)`% dos inquéritos que
+recebeu. A 2ª atingiu uma taxa de `r pn(mj_pip_2_fin*100)`% e a 3ª Promotoria vem
+muito atrás, com apenas `r pn(mj_pip_3_fin*100)`%.
+
+```{r fig.width=6}
+mj = finalizacao_por_promotoria %>%
+  filter(area_atuacao == 'Madureira/Jacarepaguá') %>%
+  mutate(nome_pip = word(nome_pip, 1, sep = ' - '))
+
+ggplot(mj, aes(x = nome_pip, y = finalizacao)) +
+  ggtitle('Taxa de finalização das promotorias') +
+  labs(subtitle = 'Madureira/Jacarepaguá, março a dezembro de 2020', caption = 'Fonte: CENPE/MPRJ') +
+  geom_col(fill = pg_green) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), name = '') +
+  xlab('') +
+  theme_pindograma()
+```
+
+A área de Duque de Caxias que apresenta variação ainda maior nas taxas de
+finalização:
+
+```{r}
+mj = finalizacao_por_promotoria %>%
+  filter(area_atuacao == 'Duque de Caxias') %>%
+  mutate(nome_pip = word(nome_pip, 1, sep = ' - '))
+
+ggplot(mj, aes(x = nome_pip, y = finalizacao)) +
+  ggtitle('Taxa de finalização das promotorias') +
+  labs(subtitle = 'Duque de Caxias, março a dezembro de 2020', caption = 'Fonte: CENPE/MPRJ') +
+  geom_col(fill = pg_green) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), name = '') +
+  xlab('') +
+  theme_pindograma()
+```
+
+São variações que contrastam com as taxas de finalização na área de atuação de
+Botafogo/Copacabana. Lá, o desempenho das promotorias é bem parecido: entre
+março e dezembro de 2020, a 1ª teve taxa de finalização de 14,4% e a segunda, de
+18,8%.
+
+A promotora titular da 5ª Promotoria de Duque de Caxias, que obteve a taxa de
+finalização mais baixa da sua área, explica que isso se deveu a uma falha de
+preenchimento no sistema do MP. "Isso gerou uma diferença entre meu órgão e os
+demais porque de fato, não fizemos os procedimentos de forma correta. São falhas
+que estamos trabalhando para corrigir e que deverá ser espelhada na estatística
+anual", afirmou.
+
+As outras promotorias, no entanto, não explicaram o baixo desempenho ao
+_Pindograma_.
+
+##### Crimes diferentes, desempenhos diferentes
+
+A destreza do promotor não é o único determinante da eficiência no tratamento
+de um inquérito pelo Ministério Público. O tipo de crime tem um impacto enorme
+sobre o tratamento que ele recebe do sistema de justiça criminal.
+
+```{r}
+estcrimes = read_csv2('BaseFAROL_Estado_EnquadramentoDenuncia.csv',
+                      locale = locale(encoding = 'Latin1')) %>%
+  mutate(nome_assunto = str_squish(tolower(word(nome_assunto, 1, sep = '\\(')))) %>%
+  mutate(nome_assunto = ifelse(grepl('^furto|^roubo|^homicídio', nome_assunto), word(nome_assunto, 1), nome_assunto)) %>%
+  group_by(nome_assunto) %>%
+  summarize(tempo_mediano = weighted.mean(tempo_mediano, denuncias), denuncias = sum(denuncias))
+
+violencia_domestica_total = estcrimes %>%
+  filter(nome_assunto == 'violência doméstica contra a mulher') %>%
+  pull(denuncias)
+
+estcrimes = estcrimes %>%
+  filter(nome_assunto != 'violência doméstica contra a mulher')
+
+total_denuncias = sum(estcrimes$denuncias)
+
+roubo_n = estcrimes %>%
+  filter(nome_assunto == 'roubo') %>%
+  pull(denuncias)
+
+roubo_pct = (estcrimes %>%
+  filter(nome_assunto == 'roubo') %>%
+  pull(denuncias)) / total_denuncias * 100
+
+lesao_corporal_domestica_pct = (estcrimes %>%
+  filter(nome_assunto == 'lesão corporal decorrente de violência doméstica') %>%
+  pull(denuncias)) / total_denuncias * 100
+```
+
+Dentre as `r pn(total_denuncias)` denúncias de crime feitas pelo MP desde março
+de 2020, o crime mais comum é o de **roubo**, com `r pn(roubo_n)`, ou `r pn(roubo_pct)`%,
+das denúncias. Esse tipo de crime é denunciado rapidamente, com um tempo mediano
+de apenas 19 dias -- o que ocorre porque muitas das denúncias resultam de
+prisões feitas em flagrante pela PM, facilitando o processo de investigação.
+
+O segundo lugar fica com o crime de **lesão corporal decorrente de violência
+doméstica**, que representou `r pn(lesao_corporal_domestica_pct)`% das
+denúncias. O tempo de denúncia mediano já é bem maior -- de 54 dias. Caso se
+somassem a esse número denúncias de outros crimes de violência doméstica, como
+ameaça, a cifra chegaria a
+`r pn(violencia_domestica_total/total_denuncias*100)`%, com
+`r pn(violencia_domestica_total)` denúncias. Não à toa, existem promotorias
+especializadas no assunto.
+
+```{r fig.height=5.5, fig.width=7.5}
+top_crimes = estcrimes %>%
+  arrange(desc(denuncias)) %>%
+  filter(row_number() <= 10) %>%
+  mutate(nome_assunto = case_when(
+    nome_assunto == 'lesão corporal decorrente de violência doméstica' ~ 'Lesão corporal por\nviolência doméstica',
+    nome_assunto == 'tráfico de drogas e condutas afins' ~ 'Tráfico de drogas',
+    nome_assunto == 'associação para a produção e tráfico e condutas afins' ~ 'Associação para\ntráfico de drogas',
+    nome_assunto == 'estupro de vulnerável' ~ 'Estupro de\nvulnerável',
+    nome_assunto == 'leve' ~ 'Lesão corporal leve',
+    T ~ str_to_sentence(nome_assunto)
+  ))
+
+plot1 = ggplot(top_crimes, aes(x = forcats::fct_reorder(nome_assunto, denuncias), y = denuncias)) +
+  geom_col(fill = pg_green) +
+  coord_flip() +
+  xlab('') + ylab('') +
+  theme_pindograma() +
+  theme(axis.text = element_text(size = 11)) +
+  labs(subtitle = 'Denúncias')
+
+plot2 = ggplot(top_crimes, aes(x = forcats::fct_reorder(nome_assunto, tempo_mediano), y = tempo_mediano)) +
+  geom_col(fill = pg_green) +
+  coord_flip() +
+  xlab('') + ylab('') +
+  theme_pindograma() +
+  theme(axis.text = element_text(size = 11)) +
+  labs(subtitle = 'Tempo mediano (dias)')
+
+cowplot::plot_grid(plot1, plot2) +
+  ggtitle('Crimes mais denunciados pelo MPRJ em 2020\n') +
+  labs(caption = 'Fonte: CENPE/MPRJ') +
+  theme_pindograma_map()
+```
+
+Entre os crimes com mais de 100 denúncias em 2020, o que tem o tempo mediano de
+denúncia mais alto -- um ano e quatro meses -- é o de promoção, constituição,
+financiamento ou integração de **organização criminosa**. Já o crime com tempo
+mediano mais curto é o de porte de **arma de fogo** com identificação raspada ou
+adulterada. Quando a polícia apreende esse tipo de arma, já há a prova do crime,
+o que facilita muito a denúncia.
+
+Por ora, o MPRJ ainda não divulgou dados que permitam analisar o quanto a
+natureza dos crimes afeta a taxa de finalização de cada promotoria. Mas quando
+os números estiverem disponíveis, o _Pindograma_ retornará ao assunto.
+
+_Essa matéria é a segunda parte de uma série sobre dados do sistema de justiça
+criminal no Rio de Janeiro. Se você quiser ler a primeira parte, sobre como
+funciona o sistema na teoria e na prática, leia [aqui][1]. Se você quiser ler a
+entrevista com a coordenadora do projeto que disponibilizou os dados, leia
+[aqui][2]._
+
+---
+
+**Dados utilizados na matéria**: Desempenho do Ministério Público do Rio de
+Janeiro (CENPE/MPRJ).
+
+**Contribuiu com dados**: Daniel Ferreira.
+
+**Crédito da imagem**: Divulgação/Ministério Público do Rio de Janeiro.
+
+[1]:
+
+[2]: 
+
+[3]: https://www.mprj.mp.br/home/-/detalhe-noticia/visualizar/83704?p_p_state=maximized
