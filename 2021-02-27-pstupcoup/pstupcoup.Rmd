@@ -1,0 +1,780 @@
+---
+title: "Partidos em números: DC e PSC"
+author: "João Costa"
+date: "06/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(treemapify)
+library(ggraph)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+source('../theme.R')
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+party <- "PSTU"
+pcb <- "PCO"
+ptc <- "UP"
+cor <- filter(party_palette, party_name == party)$party_color
+pcb_cor <- filter(party_palette, party_name == pcb)$party_color
+ptc_cor <- filter(party_palette, party_name == ptc)$party_color
+cor_continua <- "Reds"
+pcb_cor_continua <- "Oranges"
+ptc_cor_continua <-  "Blues"
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+Na última edição do [**Partidos em Números**](https://pindograma.com.br/section/partidos), o _Pindograma_ traça o perfil de três partidos brasileiros da esquerda radical: o Partido Socialista dos Trabalhadores Unificado (PSTU), o Partido da Causa Operária (PCO) e a Unidade Popular (UP).
+
+---
+
+#### Eleições 2020
+
+```{r, fig.height=7, fig.width=9}
+prefeito <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito","Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pg_blue, pg_blue),
+                    labels = c( "Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito_b,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pg_blue),
+                    labels = c("Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+prefeito_c <- cand20 %>%
+  filter(PARTIDO == ptc, CARGO == "PREFEITO") %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(result = ifelse(is.na(eleito), 0, ifelse(eleito == "Não eleito", -1, 1))) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = prefeito_c,
+          aes(geometry = geom, fill = factor(eleito, levels = c("Eleito", "Não eleito"))),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd = .25)+
+  scale_fill_manual(values = c(pg_blue),
+                    labels = c("Não eleito", "Sem candidato"),
+                    na.value="grey90")+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(ptc, "Desempenho dos candidatos a prefeito em 2020",
+                  sep = " - "),
+    fill = "Resultado"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Os três partidos lançaram pouquíssimos candidatos a prefeito, concentrados em geral em cidades maiores e capitais. O PSTU teve mais candidatos entre os três partidos (47), distribuídos principalmente em Minas Gerais, São Paulo e no Rio de Janeiro. O PCO teve 10 candidatos e a UP, 15.
+
+Nenhum dos partidos elegeu candidatos em 2020. 
+
+```{r, fig.height=5, fig.width=9}
+edges_l <- coligacoes %>%
+  filter(PARTIDO == party) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader <- tbl_graph(nodes = nodes, edges = edges_l, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == party,
+                    centrality_degree(weights = edges_l$weight, mode = "out"),
+                    centrality_degree(weights = edges_l$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader, layout = "star", center = filter(nodes, value == party)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==party, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 10), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pelo", party,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+```{r, fig.height=5, fig.width=9}
+edges_l_c <- coligacoes %>%
+  filter(PARTIDO == ptc) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+leader_c <- tbl_graph(nodes = nodes, edges = edges_l_c, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == ptc,
+                    centrality_degree(weights = edges_l_c$weight, mode = "out"),
+                    centrality_degree(weights = edges_l_c$weight, mode = "in")
+                    ) 
+  )
+ggraph(leader_c, layout = "star", center = filter(nodes, value == ptc)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = ptc_cor) + 
+  scale_edge_width(range = c(2, 4), breaks = c(1,2))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==ptc, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 10), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas pela", ptc,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+O PSTU recebeu apoio do [PSOL](https://pindograma.com.br/2020/11/06/psol.html) em duas de suas 47 candidaturas, em Mariana, MG e Piripiri, PI. A UP recebeu apoio do [PCB](https://pindograma.com.br/2020/11/28/pcbdob.html) em Recife, PE, e Teresina, PI, e do PSOL em Nova Lima, MG.
+
+O PCO não se coligou com nenhum partido.
+
+```{r, fig.height=6, fig.width=9}
+edges_f_c <- coligacoes %>%
+  filter(LEGENDA == ptc) %>% 
+  left_join(nodes, by = c("PARTIDO"="value")) %>% 
+  rename(from = id, weight = n) %>% 
+  left_join(nodes, by = c("LEGENDA"="value")) %>% 
+  rename(to = id) %>% select(from, to, weight)
+follower_c <- tbl_graph(nodes = nodes, edges = edges_f_c, directed = TRUE) %>% 
+  mutate(
+    degree = ifelse(value == ptc,
+                    centrality_degree(weights = edges_f_c$weight, mode = "in"),
+                    centrality_degree(weights = edges_f_c$weight, mode = "out")
+                    ) 
+  )
+ggraph(follower_c, layout = "star", center = filter(nodes, value == ptc)$id) +
+  geom_edge_link(aes(width = weight), alpha = 0.6, color = ptc_cor) + 
+  scale_edge_width(range = c(0.2, 6))+
+  geom_node_point(aes(color = value, size = degree)) +
+  scale_color_manual(values = nodes$party_color, guide = F) +
+  geom_node_text(
+    aes(label = ifelse(value==ptc, "", value)),
+    nudge_y = .12,
+    family = "Fantasque",
+    fontface = "bold",
+    size = 4,
+    color = "grey10"
+   )+
+  scale_size(range = c(1, 20), guide = F)+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c("Coligações nas eleições municipais de 2020 lideradas\npor outros partidos e integradas pela", ptc,
+                  sep = " "),
+    edge_width = "Número de coligações"
+  )+
+  theme_pindograma()+
+  theme(
+    text = element_text(family = "Fantasque"),
+    axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "bottom"
+    )
+```
+
+A UP apoiou 12 candidaturas do PSOL em 2020 e uma do [PT](https://pindograma.com.br/2020/10/27/pt.html). Nem o PSTU nem o PCO apoiaram candidaturas de outros partidos.
+
+```{r, fig.height=7, fig.width=9}
+vereador <- cand20 %>%
+  filter(PARTIDO == party, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,3,4),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Candidatos à vereança por município em 2020 (nenhum eleito)",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+vereador_b <- cand20 %>%
+  filter(PARTIDO == pcb, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador_b,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,3,4),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Candidatos à vereança por município em 2020 (nenhum eleito)",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+vereador_c <- cand20 %>%
+  filter(PARTIDO == ptc, CARGO == "VEREADOR") %>% 
+  group_by(UF, MUNICIPIO) %>%
+  mutate(n = n(), n_elected = sum(eleito == "Eleito", na.rm = T)) %>% ungroup() %>% 
+  right_join(geoloc_cities, by = c("UF", "MUNICIPIO")) %>% 
+  mutate(candidatos = ifelse(is.na(CARGO), 0, n)) %>% 
+  distinct(UF, MUNICIPIO, .keep_all = T)
+ggplot()+
+  geom_sf(data = vereador_c,
+          aes(geometry = geom, fill = n),
+          lwd = 0)+
+  geom_sf(data = geoloc_states, aes(geometry = geom),fill = NA, lwd=.25)+
+  scale_fill_fermenter(
+    breaks = c(1,2,3,4),
+    palette = ptc_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(ptc, "Candidatos à vereança por município em 2020 (nenhum eleito)",
+                  sep = " - "),
+    fill =  "Candidatos"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+A situação é muito parecida quando se trata dos candidatos a vereador. Foram poucos e, em geral, só se candidataram onde havia candidato a prefeito pelo partido ou por uma coligação que o partido integrava.
+
+Nenhum dos partidos elegeu candidatos em 2020.
+
+```{r, fig.height=5, fig.width=9}
+perfil_cand <- cand20 %>%
+  filter(PARTIDO %in% c(party, pcb, ptc)) %>% 
+  group_by(PARTIDO, RACA, GENERO) %>% summarize(n = n()) %>%
+  mutate(GENERO = ifelse(GENERO == "FEMININO", "Mulheres", "Homens"))
+ggplot(perfil_cand, aes(area = n, subgroup = GENERO, fill = RACA), layout = "srow")+
+  geom_treemap(lwd = 3)+
+  geom_treemap_subgroup_border(lwd = 6, colour = "white")+
+  geom_treemap_subgroup_text(
+    colour = "white",
+    family = "Fantasque",
+    place = "bottom",
+    fontface = "bold",
+    grow = FALSE,
+    size = 22
+  )+
+  labs(
+    caption = "Fonte: TSE",
+    title = "Composicão de sexo e raça dos candidatos em 2020",
+    subtitle = "Área dos retângulos é proporcional à quantidade de candidatos",
+    fill = ""
+  )+
+  scale_fill_manual(
+    values = c(pg_dark_gray, pg_green, pg_yellow, pg_blue, pg_orange, pg_light_gray),
+    labels = c("Amarela", "Branca", "Indígena", "Parda", "Preta", "Sem informação")
+    )+
+  theme_pindograma()+
+  facet_wrap(~PARTIDO)+
+  theme(axis.line.x = element_blank(),
+        legend.position = "bottom")
+```
+
+Os candidatos do PCO foram os candidatos mais brancos de qualquer partido do Brasil: 89%. A proporção de sexo também foi uma das mais desiguais: apenas 22,2% de mulheres.
+
+Tanto o PSTU quanto a UP apresentaram quadros mais equilibrados de sexo e raça. Ambos tiveram cerca de 40% de candidatas mulheres. O PSTU apresentou 45,3% de candidatos brancos e, no caso da UP, foram apenas 28% brancos. Em ambos os casos, negros foram o maior grupo racial.
+
+---
+
+#### Financiamento
+
+```{r, fig.height=6, fig.width=9}
+fundo <- fundo_partidario %>% filter(PARTIDO == party)
+ggplot(fundo, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 5000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.01, big.mark = ".", decimal.mark = ","
+      )),
+    color = pg_dark_gray,
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+```{r, fig.height=6, fig.width=9}
+fundo_b <- fundo_partidario %>% filter(PARTIDO == pcb)
+ggplot(fundo_b, aes(factor(ANO), VALOR_CORRIGIDO))+
+  geom_col(fill = pcb_cor)+
+  scale_y_continuous(
+    labels = scales::label_number_si(
+      prefix = "R$", big.mark = ".", decimal.mark = ","
+      )
+    )+
+  geom_line(aes(y = 750000000*PROPORCAO), group = 1, color = pg_dark_gray, size = 1.5)+
+  geom_point(aes(y = 750000000*PROPORCAO), color = pg_dark_gray, size = 2)+
+  coord_cartesian(ylim = c(0, 5000000))+
+  geom_text(
+    aes(
+      y = 750000000*PROPORCAO,
+      label = scales::percent(
+      PROPORCAO, accuracy = 0.01, big.mark = ".", decimal.mark = ","
+      )),
+    color = pg_dark_gray,
+    family = "Fantasque",
+    fontface = "bold",
+    vjust = -1.5
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Fundo partidário (2008-2019)",
+                  sep = " - "),
+    subtitle = "Linha cinza representa a proporção do valor total distribuído no ano
+Valores em milhões de reais, corrigidos pela inflação"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_blank(),
+    plot.subtitle = element_text(hjust = .5),
+    axis.title.y = element_blank()
+  )
+```
+
+Tanto o PSTU quanto o PCO sempre receberam quantidades muito pequenas do fundo partidário. Por ser maior, o PSTU sempre teve mais candidatos e, portanto, recebia mais verbas.
+
+Nenhum dos dois partidos atingiu a cláusula de barreira em 2018, por isso ficaram sem financiamento do TSE a partir de 2019. A UP nunca recebeu dinheiro do Fundo Partidário.
+
+Em 2020, os três partidos receberam o mesmo valor do TSE para as eleições: R$1.233.305,95, o mínimo distribuído para os partidos.
+
+---
+
+#### Filiados
+
+```{r, fig.height=6, fig.width=9}
+filiados <- filiacoes_total %>% filter(PARTIDO %in% c(party, pcb, ptc))
+ggplot(filiados, aes(DATA, n))+
+  geom_line(aes(color = PARTIDO), size = 2)+
+  geom_point(aes(color = PARTIDO), size = 2.5)+
+#  coord_cartesian(ylim = c(1250000, 1500000))+
+  scale_y_continuous(
+    labels = scales::label_number(
+      accuracy = 1, decimal.mark = ",", big.mark = "."
+      )
+  )+
+  scale_color_manual(values = c(cor, pcb_cor, ptc_cor))+
+  labs(
+    title = "Número de filiados (2010 - 2019)",
+    caption = "Fonte: TSE"
+  )+
+  theme_pindograma()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank()
+  )
+```
+
+Os três partidos são extremamente pequenos. O PSTU é o maior dos três, tendo pouco mais de 15 mil filiados desde 2013, última vez que registrou crescimento significativo no número de militantes. Em termos de membros registrados no TSE, o único outro partido menor que o PSTU é o PCB. 
+
+O PCO mantinha um número estável de cerca de 3,5 mil militantes até 2018, quando o número passou dos 4 mil. 
+
+A Unidade Popular não existia até dezembro de 2019. Em dezembro de 2020, o partido tinha 2.353 filiados e era o menor partido do Brasil.
+
+```{r, fig.height=5, fig.width=9}
+idade_filiados <- filiacoes_idade %>% filter(PARTIDO %in% c(party,pcb,ptc)) %>% 
+  group_by(PARTIDO,DATA) %>% mutate(total = sum(n), prop = n/total) %>% ungroup()
+order_age <- c("16 a 24 anos", "25 a 34 anos","35 a 44 anos", "45 a 59 anos",
+               "60 a 69 anos", "70 anos ou mais") %>% rev()
+ggplot(idade_filiados,
+       aes(DATA, prop, fill = factor(FAIXA,levels = order_age)))+
+  scale_fill_manual(
+    values = c(pg_orange, pg_blue, pg_green, 
+               pg_yellow, pg_light_gray, "#F4Ac90")
+    )+
+  geom_area(stat="identity")+
+  labs(
+    fill = "Faixa etária",
+    caption = "Fonte: TSE",
+    title = "Composição etária dos filiados (2010 - 2019)"
+  )+
+  facet_wrap(~PARTIDO)+
+  coord_cartesian(xlim = c(as.Date("2010-10-01"), as.Date("2018-12-01")))+
+  theme_pindograma()+
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12),
+        panel.background = element_blank())
+```
+
+Tanto o PCO quanto o PSTU têm, em média, filiados mais jovens que a grande maioria dos partidos brasileiros. O PCO é um dos poucos partidos cuja proporção de filiados com menos de 35 anos cresceu nos últimos anos. 
+
+Em dezembro de 2020 a UP era de longe o partido mais jovem do Brasil: 63,4% dos integrantes do partido têm até 34 anos, sendo que 36,1% têm até 24 anos.
+
+```{r, fig.height=4, fig.width=9}
+sexo_filiados <- sexo %>% filter(PARTIDO == party)
+ggplot(sexo_filiados, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5,
+    color = pg_light_gray
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.34,.5))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+```{r, fig.height=4, fig.width=9}
+sexo_filiados_b <- sexo %>% filter(PARTIDO == pcb)
+ggplot(sexo_filiados_b, aes(factor(ANO), PROP_F_DEC, group = 1))+
+  geom_col(fill = pcb_cor)+
+  geom_text(
+    aes(label = scales::percent(PROP_F_DEC, accuracy = 0.1, decimal.mark = ",")),
+    vjust = 2,
+    family = "Fantasque",
+    size = 5,
+    color = pg_light_gray
+    )+
+  theme_pindograma()+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb,"Proporção de mulheres filiadas (2008 - 2020)",
+                  sep = " - ")
+    )+
+  coord_cartesian(ylim = c(.34,.5))+
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()
+    )
+```
+
+O PSTU e o PCO são raros casos de partidos cuja proporção de mulheres diminuiu em anos recentes. O PSTU voltou a ter aumento desde 2014, mas no PCO o número chegou a apenas 35,4%, maior apenas que o [NOVO](https://pindograma.com.br/2020/11/10/novo-patri.html) e o [PSL](https://pindograma.com.br/2020/10/29/psl.html).
+
+48,8% dos militantes da UP são mulheres.
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados <- filiacao_estados %>% filter(PARTIDO == party) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    #breaks = c(500, 1000, 1500, 2000),
+    palette = cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(party, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_b <- filiacao_estados %>% filter(PARTIDO == pcb) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_b, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+    breaks = c(0, 1, 2, 4, 8, 12),
+    palette = pcb_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(pcb, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=9}
+estado_filiados_c <- filiacao_estados %>% filter(PARTIDO == ptc) %>% 
+  right_join(geoloc_states, by = 'UF')
+ggplot(data = estado_filiados_c, aes(geometry = geom))+
+  geom_sf(
+          aes(fill = PROP_100K)
+          )+
+  scale_fill_fermenter(
+#    breaks = c(150, 300, 450, 600),
+    palette = ptc_cor_continua, direction = 1
+    )+
+  labs(
+    caption = "Fonte: TSE",
+    title = str_c(ptc, "Filiados a cada 100 mil eleitores por estado",
+                  sep = " - "),
+    fill = ""
+  )+
+  theme_pindograma()+
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+Os partidos são muito pequenos, o que distorce o mapa proporcional de filiados em prol de estados com menos habitantes. Por isso, o PSTU tem a maior concentração de militantes em Sergipe, o PCO, em Roraima e a UP, em Alagoas. 
+
+O PCO e a UP são os únicos partidos do país que não possuem militantes registrados no TSE em todas as unidades federativas. No caso do PCO, é no Amapá. No caso da UP, são 12 UFs sem registro de militantes.
+
+---
+
+#### Resultados em 2018
+
+O PSTU e o PCO não elegeram nenhum representante em 2018. A UP não existia à época.
+
+---
+
+#### História
+
+O **Partido Socialista dos Trabalhadores Unificado** foi fundado em 1994, na época como uma dissidência do PT. A origem do partido, porém, está na Convergência Socialista, uma organização trotskista fundada na década de 1970. Em 1980, o grupo participou da fundação do Partido dos Trabalhadores e passou a ser uma tendência mais à esquerda dentro da legenda.
+
+As discordâncias ideológicas com a direção do PT, que defendia a social-democracia e não o socialismo revolucionário, levou a atritos com os membros da Convergência Socialista, que romperam com o partido. Outros grupos de esquerda radical que integravam o PT, como a Liga (movimento sindicalista), o Movimento Socialista Revolucionário (MSR), o Partido da Frente Socialista (PFS) e a Democracia Operária, se juntaram em 1993 para a fundação de um novo partido, o PSTU. 
+
+Durante a década de 1990, o PSTU era representado na liderança de diversos movimentos sociais como a Central Única dos Trabalhadores (CUT), o Movimento dos Trabalhadores Rurais Sem-Terra (MST), a União Nacional dos Estudantes (UNE) e a União Brasileira dos Estudantes Secundaristas (UBES). Na época, o partido teve um deputado federal e um vereador, ambos eleitos pelo PT antes da fundação do partido. 
+
+Apesar de ter saído de dentro do PT, o PSTU apoiou a candidatura de Lula (PT) à presidência em 1994. Em eleições subsequentes, o partido lançou candidaturas próprias que tiveram pouco sucesso. O partido lançou também diversas candidaturas em eleições municipais e estaduais, mas todas sem sucesso.
+
+Entre 1998 e 2014, José Maria de Almeida foi candidato à presidência pelo partido em todas as eleições presidenciais, à exceção de 2006, quando a legenda integrou a coligação de Heloísa Helena do PSOL. Em 2018, a candidata foi Vera Lúcia, que se candidatou também à prefeitura de São Paulo em 2020. Os candidatos nunca chegaram ao segundo turno.
+
+Mesmo sem representantes eleitos, o partido se colocava como oposição à esquerda do PT. Em 2016, o impedimento da presidente Dilma Rousseff [causou discordâncias internas](https://www.em.com.br/app/noticia/politica/2016/07/06/interna_politica,780721/impeachment-da-presidente-dilma-racha-o-pstu.shtml) no partido, com uma ala apoiando a destituição. Em oposição à candidatura de Jair Bolsonaro à presidência pelo PSL, o PSTU apoiou Fernando Haddad no segundo turno de 2018, mas disse que [não apoiaria seu governo](https://g1.globo.com/politica/eleicoes/2018/noticia/2018/10/12/pstu-declara-voto-em-haddad-mas-diz-que-nao-dara-apoio-a-eventual-governo-do-pt.ghtml), caso eleito.
+
+O presidente nacional do PSTU é José Maria Almeida e seu número nas urnas é 16.
+
+O **Partido da Causa Operária **surgiu primeiro como uma tendência dentro do Partido dos Trabalhadores. Militantes trotskistas que se filiaram ao partido à época de sua fundação começaram uma publicação intitulada _Causa Operária_. O grupo fazia oposição ao grupo majoritário do partido, defendendo uma política trotskista e revolucionária. Os embates com a direção central foram tantos que, em 1990, todos os integrantes do partido[ ligados à corrente foram expulsos](https://www1.folha.uol.com.br/folha/brasil/ult96u45603.shtml). 
+
+Apesar de não formarem um partido imediatamente, militantes do movimento continuaram organizados. Em 1994, ainda não organizada em partido, a Causa Operária apoiou com ressalvas a campanha de Lula à presidência. No ano seguinte, porém, o grupo fundou oficialmente um partido, que receberia registro definitivo junto ao TSE em 1997.
+
+O PCO lançou diversos candidatos a todos os cargos eletivos no Brasil desde sua fundação, mas elegeu apenas um vereador em 2004, no município amazonense de Benjamin Constant. Entre 2002 e 2014, Rui Costa Pimenta foi candidato à presidência pelo PCO, tendo sua candidatura indeferida pelo TSE em 2006 [devido a supostos erros de prestação de contas](http://stf.jus.br/portal/cms/verNoticiaDetalhe.asp?idConteudo=68184) em sua campanha eleitoral de 2002.
+
+Em 2016, o PCO classificou o impedimento de Dilma Rousseff como golpe. Em 2018, apoiou a candidatura de Lula pelo PT, mas, após sua prisão, o partido [não declarou apoio a Fernando Haddad](https://www.causaoperaria.org.br/rui-costa-pimenta-a-posicao-do-pco-nao-e-contra-haddad-e-contra-as-eleicoes-fraudulentas/) por considerar fraudulenta a realização da eleição sem Lula. 
+
+O partido é presidido por Rui Costa Pimenta e usa o número 29 nas urnas.
+
+A **Unidade Popular** é o partido mais jovem do Brasil. O partido foi fundado em 2014 como a Unidade Popular pelo Socialismo [por integrantes de diversos movimentos sociais e ativistas](http://averdade.org.br/2014/12/unidade-popular-pelo-socialismo-e-necessario-o-poder-politico-nas-maos-dos-trabalhadores/). O nome do partido faz referência à coalizão eleitoral de Salvador Allende nas eleições chilenas de 1970.
+
+Mesmo antes de ter seu registro oficial junto ao TSE, o partido apoiou a candidatura de Guilherme Boulos (PSOL) à presidência em 2018. Em dezembro de 2019, o partido recebeu o registro oficial, permitindo sua participação em eleições pela primeira vez em 2020.
+
+O partido é presidido desde sua fundação por Leonardo Péricles e seu número eleitoral é 80.
+
+Os três partidos fazem oposição categórica ao governo de Jair Bolsonaro (sem partido).
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); Resultados eleições 2020 (TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Contribuiu com dados**: Antonio Piltcher.
+
+**Créditos da imagem**: Marcos Oliveira/Agência Senado.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-02-27-pstupcoup/pstupcoup.Rmd
