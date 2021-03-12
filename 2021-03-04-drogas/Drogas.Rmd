@@ -1,0 +1,288 @@
+---
+title: "São Paulo"
+author: "João Costa"
+date: "23/11/2020"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(gt)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+A [Lei de Drogas de
+2006](http://www.planalto.gov.br/ccivil_03/_Ato2004-2006/2006/Lei/L11343.htm) é
+ambígua ao diferenciar entre o crime de **tráfico de drogas** e o crime de
+**porte de drogas**: o texto legal não determina uma quantidade de droga que
+separe um do outro. Por isso, discernir entre esses dois crimes -- e,
+consequentemente, entre uma pena socioeducativa e uma pena de 5 a 15 anos de
+prisão -- acaba sendo uma decisão subjetiva de policiais, promotores e juízes.
+Uma portadora de 4 g de cocaína em São Paulo, por exemplo, [tem a mesma chance
+de ser considerada traficante ou
+usuária](https://www.estadao.com.br/infograficos/cidades,sem-lei-que-cite-quantidades-policia-da-destinos-diversos-a-flagrados-com-droga,977293)
+pela polícia.
+
+O espaço para arbitrariedade por parte dos agentes de segurança pública é grande
+e cria oportunidades para quantias pequenas serem classificadas como tráfico e para
+grandes quantidades serem classificadas como uso. Pesquisadores da Associação
+Brasileira de Jurimetria (Abjur) já [provaram
+estatisticamente](https://abj.org.br/pdf/20190402_abj_criterios_objetivos.pdf)
+que há grande dose de subjetividade na classificação praticada pelos policiais.
+E essa subjetividade tem consequências sérias -- em caso de flagrante, a
+classificação da ocorrência pode determinar se uma pessoa é ou não presa.
+
+Outra pesquisa também já mostraram como essas decisões casuísticas prejudicam,
+no âmbito do Judiciário, [a população
+negra](https://apublica.org/2019/05/negros-sao-mais-condenados-por-trafico-e-com-menos-drogas-em-sao-paulo/).
+
+Para ilustrar ainda mais intuitivamente os absurdos que essa falta de
+objetividade na lei produz, o _Pindograma_ analisou algumas ocorrências anômalas
+de porte de drogas no estado de São Paulo em 2019. São casos que, embora
+excepcionais, revelam o problema de não haver critérios objetivos para
+classificar ocorrências como de uso ou de tráfico.
+
+---
+
+```{r}
+drogas = readRDS('drogas_2019.rda')
+
+trafd = drogas %>%
+  filter(grepl('Art.33', RUBRICA)) %>%
+  distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC, DATAHORA_REGISTRO_BO, BAIRRO, LATITUDE, LONGITUDE, DESCR_TIPOLOCAL, FLAG_FLAGRANTE)
+```
+
+```{r}
+anomalias = drogas %>%
+  filter(DESCR_TOXICO %in% c('Maconha', 'Cocaína', 'Crack')) %>%
+  filter(grepl('Art.28', RUBRICA)) %>%
+  filter(QTDE_ENCONTRADA >= 50) %>%
+  anti_join(trafd, c('ANO_BO', 'NUM_BO', 'NOME_DELEGACIA_CIRC'))
+
+uso_bo = drogas %>%
+  filter(DESCR_TOXICO %in% c('Maconha', 'Cocaína', 'Crack')) %>%
+  filter(grepl('Art.28', RUBRICA)) %>%
+  distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC, CIDADE)
+
+anomalias_bo = anomalias %>%
+  distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC, CIDADE)
+```
+
+No estado de São Paulo, entre janeiro e dezembro de 2019, foram registrados
+aproximadamente `r nrow(anomalias_bo)` casos de porte de drogas nos quais a
+quantidade de maconha, cocaína ou crack encontrada foi registrada como igual ou
+superior a 50 g. Esse número representa
+`r pn(nrow(anomalias_bo)/nrow(uso_bo)*100)`% das ocorrências de porte dessas
+drogas no ano.
+
+```{r}
+selection = tribble(
+  ~Cidade, ~Droga,
+  'Campinas', '2,9 kg de cocaína e 2,92 kg de maconha em milhares de invólucros',
+  'Marília', '2,24 kg de maconha em 2 tijolos',
+  'Capão Bonito', '1,4 kg de maconha em 4 tijolos',
+  'Serra Negra', '1,3 kg de maconha em 8 porções',
+  'São Vicente', '1,2 kg de cocaína em 994 invólucros',
+  'São José dos Campos', '390 g de cocaína em 200 invólucros',
+  'Ilha Comprida', '188 g de cocaína em 241 invólucros'
+)
+
+gt(selection) %>%
+  tab_header('Algumas ocorrências anômalas registradas como porte de drogas para uso pessoal',
+             subtitle = 'Estado de São Paulo') %>%
+  tab_source_note('Fonte: SSP-SP') %>%
+  theme_pindograma_table() %>%
+  tab_style(cell_fill(pg_light_gray), cells_body())
+```
+
+**Erros de preenchimento** de boletins de ocorrência podem ocorrer. Em um caso
+no qual constavam 171 kg de maconha nos dados, a delegacia responsável informou
+que, na realidade, se tratavam de 2 pés de maconha que pesavam apenas 1,71 kg ao
+todo. Também é possível que, no sistema, um policial tenha classificado uma
+ocorrência de tráfico como de porte por engano. Ainda assim, é improvável que
+_todas_ as `r nrow(anomalias_bo)` anomalias na amostra do _Pindograma_ tenham se
+devido apenas a erros de preenchimento.
+
+```{r}
+median_age_n = anomalias %>%
+  distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC, CONT_PESSOA, IDADE_PESSOA) %>%
+  pull(IDADE_PESSOA) %>%
+  median(na.rm = T)
+
+median_age = anomalias %>%
+  mutate(age_group = case_when(
+    IDADE_PESSOA < 16 ~ 'Menor de 16',
+    IDADE_PESSOA >= 16 & IDADE_PESSOA < 18 ~ '16-17',
+    IDADE_PESSOA >= 18 & IDADE_PESSOA < 20 ~ '18-19',
+    IDADE_PESSOA >= 20 & IDADE_PESSOA < 25 ~ '20-24',
+    IDADE_PESSOA >= 25 & IDADE_PESSOA < 30 ~ '25-29',
+    IDADE_PESSOA >= 30 & IDADE_PESSOA < 35 ~ '30-34',
+    IDADE_PESSOA >= 35 & IDADE_PESSOA < 40 ~ '35-39',
+    IDADE_PESSOA >= 40 & IDADE_PESSOA < 45 ~ '40-44',
+    IDADE_PESSOA >= 45 & IDADE_PESSOA < 50 ~ '45-50',
+    IDADE_PESSOA >= 50 ~ 'Maior de 50',
+    T ~ 'Idade Desconhecida'
+  )) %>%
+  mutate(order = case_when(
+    IDADE_PESSOA < 16 ~ 1,
+    IDADE_PESSOA >= 16 & IDADE_PESSOA < 18 ~ 2,
+    IDADE_PESSOA >= 18 & IDADE_PESSOA < 20 ~ 3,
+    IDADE_PESSOA >= 20 & IDADE_PESSOA < 25 ~ 4,
+    IDADE_PESSOA >= 25 & IDADE_PESSOA < 30 ~ 5,
+    IDADE_PESSOA >= 30 & IDADE_PESSOA < 35 ~ 6,
+    IDADE_PESSOA >= 35 & IDADE_PESSOA < 40 ~ 7,
+    IDADE_PESSOA >= 40 & IDADE_PESSOA < 45 ~ 8,
+    IDADE_PESSOA >= 45 & IDADE_PESSOA < 50 ~ 9,
+    IDADE_PESSOA >= 50 ~ 10,
+    T ~ 11
+  )) %>%
+  group_by(age_group, order) %>%
+  summarize(n = n_distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC, CONT_PESSOA))
+```
+
+A idade mediana dos infratores foi de `r pn(median_age_n)` anos. O infrator mais
+jovem tinha apenas 13 anos e foi encontrado numa praça de Cajamar portando --
+não traficando -- 62 g de maconha, o equivalente a pelo menos 60 cigarros. Já o
+denunciado mais velho portava uma quantidade similar da mesma droga, 50 g, e
+tinha 63 anos. O caso ocorreu em Franca.
+
+```{r}
+ggplot(median_age, aes(x = forcats::fct_rev(forcats::fct_reorder(age_group, order)), y = n), group = 1) +
+  labs(title = 'Idade dos envolvidos em ocorrências anômalas', subtitle = 'Estado de São Paulo', caption = 'Fonte: SSP-SP') +
+  geom_col(fill = pg_green) +
+  coord_flip() +
+  xlab('') + ylab('Pessoas Indiciadas') +
+  theme_pindograma()
+```
+
+
+```{r}
+professions = anomalias %>%
+  distinct(DESCR_PROFISSAO)
+
+professions_count = anomalias %>%
+  group_by(DESCR_PROFISSAO) %>%
+  summarize(n = n_distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC, CONT_PESSOA))
+
+student_count = professions_count %>%
+  filter(DESCR_PROFISSAO == 'ESTUDANTE') %>%
+  pull(n)
+```
+
+`r nrow(professions)` profissões diferentes foram listadas para os autores desses
+crimes. A categoria de estudante, a mais comum, apareceu `r pn(student_count)`
+vezes. O valor é 27 vezes maior que a quantidade de artistas, artistas plásticos
+e fotógrafos juntos.
+
+```{r}
+rmsp = c('S.PAULO', 'S.CAETANO DO SUL', 'S.ANDRE', 'S.BERNARDO DO CAMPO', 'DIADEMA', 'MAUA', 'RIBEIRAO PIRES', 'RIO GRANDE DA SERRA', 'GUARULHOS', 'ARUJA', 'S.ISABEL', 'ITAQUAQUECETUBA', 'POA', 'FERRAZ DE VASCONCELOS', 'SUZANO', 'MOGI DAS CRUZES', 'BIRITIBA-MIRIM', 'GUARAREMA', 'SALESOPOLIS', 'FRANCISCO MORATO', 'FRANCO DA ROCHA', 'CAJAMAR', 'CAIEIRAS', 'MAIRIPORA', 'PIRAPORA BOM JESUS', 'SANTANA DE PARNAIBA', 'BARUERI', 'JANDIRA', 'ITAPEVI', 'CARAPICUIBA', 'OSASCO', 'VARGEM GRANDE PAULISTA', 'COTIA', 'TABOAO DA SERRA', 'EMBU DAS ARTES', 'ITAPECERICA DA SERRA', 'S.LOURENCO DA SERRA', 'EMBU-GUACU', 'JUQUITIBA')
+
+uso_rmsp = uso_bo %>%
+  filter(CIDADE %in% rmsp) %>%
+  nrow()
+
+anomalous_rmsp = anomalias_bo %>%
+  filter(CIDADE %in% rmsp) %>%
+  nrow()
+```
+
+Apesar de corresponder a quase metade da população do estado, apenas
+`r pn(anomalous_rmsp/nrow(anomalias_bo)*100)`% dos casos anômalos, ou
+`r pn(anomalous_rmsp)` ocorrências, foram localizados na Grande São Paulo. Os
+`r pn((1 - (anomalous_rmsp/nrow(anomalias_bo))) * 100)`% restantes
+(`r pn(nrow(anomalias_bo)-anomalous_rmsp)` casos) estavam em municípios **fora
+da região metropolitana**. As cidades do interior com o maior número de
+ocorrências anômalas foram Campinas (13), São José do Rio Preto (11) e Bauru
+(8).
+
+```{r}
+race_makeup = anomalias %>%
+  distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC, CONT_PESSOA, COR_CUTIS) %>%
+  count(COR_CUTIS)
+
+white_people = race_makeup %>%
+  filter(COR_CUTIS == 'Branca') %>%
+  pull(n)
+
+pp_people = race_makeup %>%
+  filter(COR_CUTIS %in% c('Preta', 'Parda')) %>%
+  pull(n) %>%
+  sum()
+```
+
+A maioria dos envolvidos nessas ocorrências anômalas eram pessoas brancas
+(`r pn(white_people)`), o que equivale a
+`r pn(white_people/sum(race_makeup$n, na.rm = T)*100)`% das ocorrências.
+Enquanto isso, `r pn(pp_people)` ou `r pn(pp_people/sum(race_makeup$n, na.rm = T)*100)`%
+dos envolvidos eram pessoas pretas ou pardas. Esses números estão próximos às
+proporções raciais do estado (64% e 35% respectivamente), indicando que **dentre
+estes casos anômalos**, não parece haver um viés muito forte que favoreça os
+brancos com penas mais brandas.
+
+```{r}
+drugs_makeup = anomalias %>%
+  distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC, CONT_ENTORPECENTE, DESCR_TOXICO) %>%
+  count(DESCR_TOXICO)
+
+maconha_n = drugs_makeup %>%
+  filter(DESCR_TOXICO == 'Maconha') %>%
+  pull(n)
+
+cocaina_n = drugs_makeup %>%
+  filter(DESCR_TOXICO == 'Cocaína') %>%
+  pull(n)
+```
+
+A **maconha** foi a droga mais comum dentre esses casos: foram `r pn(maconha_n)`
+ocorrências, ou 3 em cada 4 registros. Em segundo lugar veio a **cocaína**,
+com `r pn(cocaina_n)` casos.
+
+```{r fig.height=4}
+ggplot(drugs_makeup, aes(x = forcats::fct_reorder(DESCR_TOXICO, n), y = n)) +
+  labs(title = 'Drogas mais frequentes em ocorrências anômalas', subtitle = 'Estado de São Paulo', caption = 'Fonte: SSP-SP') +
+  geom_col(fill = pg_green) +
+  coord_flip() +
+  theme_pindograma() +
+  xlab('') + ylab('Apreensões')
+```
+
+```{r}
+variety_bo = drogas %>%
+  filter(grepl('Art.28', RUBRICA)) %>%
+  anti_join(trafd, c('ANO_BO', 'NUM_BO', 'NOME_DELEGACIA_CIRC')) %>%
+  group_by(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC) %>%
+  filter(n_distinct(DESCR_TOXICO) >= 3) %>%
+  ungroup() %>%
+  distinct(ANO_BO, NUM_BO, NOME_DELEGACIA_CIRC)
+```
+
+Além dos casos de grandes quantidades de drogas enquadradas como porte, há
+também os casos nos quais infratores foram encontrados com uma **grande variedade
+de drogas**. Em 99% dos casos no estado, um indivíduo encontrado com 3 ou mais
+entorpecentes é indiciado por tráfico pela polícia. Mesmo assim, o _Pindograma_
+encontrou `r nrow(variety_bo)` ocorrências em 2019 nas quais uma pessoa ou um
+grupo de pessoas foram encontrados com 3 ou mais drogas e o caso foi considerado
+porte para uso pessoal.
+
+É o caso, por exemplo, do grupo de 4 amigos encontrados em Lagoinha com mais de
+23 porções de 7 tipos de drogas diferentes. O grupo, formado por dois artistas,
+um fotógrafo e um cozinheiro, carregava consigo maconha, LSD, cogumelos de
+psilocibina, haxixe, ecstasy e duas drogas não identificadas pela polícia. Todos
+tinham entre 27 e 30 anos e eram brancos.
+
+A maconha, novamente, é a droga que mais figura nesta lista. Dos 128 casos
+analisados, apenas 4 não incluíam o entorpecente.
+
+---
+
+**Dados utilizados na matéria**: Ocorrências de posse e porte de drogas em
+São Paulo (SSP-SP).
