@@ -1,0 +1,192 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+
+load('policiais_output.Rdata')
+source('~/pindograma/materias/theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Uma teoria comum para explicar o sucesso eleitoral de candidatos das forças de
+segurança pública, como policiais e membros das Forças Armadas, é a de que as
+populações impactadas pela criminalidade escolhem esses candidatos como uma
+resposta à ausência de segurança em suas comunidades.
+
+No entanto, **não é o que mostram os números**. Cruzando dados de criminalidade
+e com resultados de votação para vereador nas eleições de 2020 em 4 capitais, o
+_Pindograma_ procurou saber se havia uma relação direta entre viver em áreas
+violentas e votar em candidatos fardados.
+
+Nos casos das cidades de São Paulo, Fortaleza, Salvador e Rio de Janeiro, **não
+encontramos uma associação** entre o voto em candidatos de segurança pública e a
+criminalidade ao redor dos locais de votação.
+
+O mapa à esquerda, por exemplo, mostra o desempenho eleitoral de todos os
+militares ou policiais que se candidataram a vereador em Salvador. Comparado com
+o mapa de homicídio doloso à direita, fica claro que bairros com altos índices
+de crimes violentos não puxaram os votos dos candidatos:
+
+```{r}
+salvador_map = salvador_crime %>%
+  left_join(ba_shape, 'area') %>%
+  st_as_sf()
+
+p1 = ggplot() +
+  labs(subtitle = 'Votos obtidos por candidatos de\nsegurança pública (2020)') +
+  geom_sf(data = salvador_map, aes(fill = police_ratio)) +
+  scale_fill_distiller(palette = 'Blues', direction = 1, labels = scales::percent_format(accuracy = 1), breaks = c(.02, .03, .04)) +
+  theme_pindograma_map()
+
+p2 = ggplot() +
+  labs(subtitle = 'Homicídios Dolosos (2019)') +
+  geom_sf(data = salvador_map, aes(fill = `homicidio-doloso`)) +
+  scale_fill_distiller(palette = 'Oranges', direction = 1) +
+  theme_pindograma_map()
+
+cowplot::plot_grid(p1, p2) +
+  labs(title = 'Crime e candidatos de segurança pública em Salvador', caption = 'Fonte: SSP-BA, TSE, Pindograma') +
+  theme_pindograma_map()
+```
+
+O mesmo padrão se repete para crimes como roubo, furto, estupro e uso de drogas.
+Em **Fortaleza**, a situação é parecida com a de Salvador.
+
+Em São Paulo, o terceiro vereador com o maior número de votos foi o Delegado
+Mario Palumbo (MDB). O Instagram do delegado conta com vídeos de [ações
+policiais](https://www.instagram.com/p/CMIF-iZgGNX/?utm_source=ig_web_copy_link)
+e [denúncias à
+criminalidade](https://www.instagram.com/p/CLb8zD2A45b/?utm_source=ig_web_copy_link).
+Na hora do voto, porém, não houve correlação entre altos índices de crime e seus
+votos, ou os de seus colegas:
+
+```{r}
+sp_map = sp_crime %>%
+  left_join(sp_shape, 'area') %>%
+  st_as_sf()
+
+p1 = ggplot() +
+  labs(subtitle = 'Votos obtidos por candidatos de\nsegurança pública (2020)') +
+  geom_sf(data = sp_map, aes(fill = police_ratio)) +
+  scale_fill_distiller(palette = 'Blues', direction = 1, labels = scales::percent_format(accuracy = 1), breaks = c(.02, .03, .04, .05, .06, .07, .08)) +
+  theme_pindograma_map()
+
+p2 = ggplot() +
+  labs(subtitle = 'Homicídios Dolosos (2020)') +
+  geom_sf(data = sp_map, aes(fill = no_de_vitimas_em_homicidio_doloso_3)) +
+  scale_fill_distiller(palette = 'Oranges', direction = 1) +
+  theme_pindograma_map()
+
+cowplot::plot_grid(p1, p2) +
+  labs(title = 'Crime e candidatos de segurança pública em São Paulo', caption = 'Fonte: SSP-SP, TSE, Pindograma') +
+  theme_pindograma_map()
+```
+
+Somente no Rio de Janeiro houve uma associação maior entre certos crimes e a
+votação em candidatos de segurança pública. No entanto, quando levamos em conta
+as diferenças de renda entre as regiões da cidade, essas associações
+ficam passam a ser baixíssimas ou estatisticamente insignificantes. Como um
+todo, a renda média dos bairros explica essas diferenças melhor do que os
+índices de criminalidade:
+
+```{r eval=F}
+# Para conferir a falta de associação quando se leva em conta a renda, executar,
+# por exemplo:
+
+lm(police_ratio ~ hom_doloso + renda, data = rio_ver_areas%>%left_join(population_by_cisp, 'area')%>%mutate(police_ratio=police_ratio*100, renda=renda/100)) %>% summary()
+
+lm(police_ratio ~ ameaca + renda, data = rio_ver_areas%>%left_join(population_by_cisp, 'area')%>%mutate(police_ratio=police_ratio*100, renda=renda/100)) %>% summary()
+
+lm(police_ratio ~ trafico_drogas + renda, data = rio_ver_areas%>%left_join(population_by_cisp, 'area')%>%mutate(police_ratio=police_ratio*100, renda=renda/100)) %>% summary()
+
+lm(police_ratio ~ furto_bicicleta + renda, data = rio_ver_areas%>%left_join(population_by_cisp, 'area')%>%mutate(police_ratio=police_ratio*100, renda=renda/100)) %>% summary()
+```
+
+```{r fig.width=6, fig.height=7}
+rj_map = rio_ver_areas %>%
+  left_join(population_by_cisp, c('area' = 'dp')) %>%
+  left_join(rj_shape, c('area' = 'dp')) %>%
+  st_as_sf()
+
+p1 = ggplot() +
+  labs(subtitle = 'Votos obtidos por candidatos de segurança pública (2020)') +
+  geom_sf(data = rj_map, aes(fill = police_ratio)) +
+  scale_fill_distiller(palette = 'Blues', direction = 1, labels = scales::percent_format(accuracy = 1), breaks = c(.02, .03, .04, .05, .06, .07, .08, .09)) +
+  theme_pindograma_map()
+
+p2 = ggplot() +
+  labs(subtitle = 'Homicídios Dolosos (2019)') +
+  geom_sf(data = rj_map, aes(fill = hom_doloso)) +
+  scale_fill_distiller(palette = 'Oranges', direction = 1) +
+  theme_pindograma_map()
+
+p3 = ggplot() +
+  labs(subtitle = 'Renda Média (2010)') +
+  geom_sf(data = rj_map, aes(fill = renda)) +
+  scale_fill_distiller(palette = 'Greens', direction = 1) +
+  theme_pindograma_map()
+
+cowplot::plot_grid(p1, cowplot::plot_grid(p2, p3), ncol = 1) +
+  labs(title = 'Crime e candidatos de segurança pública no Rio', caption = 'Fonte: ISP-RJ, TSE, Pindograma') +
+  theme_pindograma_map()
+```
+
+Afinal, o que mais parece guiar o voto em candidatos de segurança pública no
+Rio é o corporativismo: os próprios policiais, militares e suas famílias são as
+pessoas que [mais votam em colegas de profissão][2]. Tanto que os locais da cidade
+onde esses candidatos mais obtiveram votos foram Marechal Hermes -- onde fica a
+Vila Militar -- e São Cristóvão -- onde fica o bairro do Caju.
+
+Como sugere o nome, a Vila Militar reúne diversas instituições ligadas às Forças
+Armadas e, por isso, o bairro tem um contingente grande de militares eleitores.
+É, inclusive, onde vota o presidente Jair Bolsonaro (sem partido). O caso do
+Caju é parecido: o bairro é sede do Arsenal de Guerra do Rio e de uma guarnição
+da Força Aérea Brasileira.
+
+O candidato da segurança pública mais bem-sucedido na cidade foi o youtuber e
+ex-policial militar Gabriel Monteiro (PSD), de apenas 26 anos. Apesar da
+passagem breve pela polícia, o jovem é um grande apoiador das forças de
+segurança. Suas redes sociais contam com várias fotos de policiais e com vídeos
+de suspeitos de crimes sendo humilhados. A principal pauta do vereador é o
+armamento da Guarda Municipal. Antes mesmo de ser eleito já figurou em
+manchetes por [agredir um
+homem](https://veja.abril.com.br/brasil/caso-agatha-quem-e-o-pm-que-agrediu-jovem-durante-enterro/)
+que protestava contra a violência policial no dia do enterro de Ágatha Felix,
+menina de 8 anos morta por policiais na Zona Norte do Rio.
+
+Tudo isso indica que **os candidatos de segurança pública não são a prioridade de
+eleitores em zonas de alta criminalidade** -- seja em Salvador, Fortaleza, São
+Paulo ou no Rio. Muito provavelmente, a popularidade desses candidatos é maior
+entre a população que já concorda com o discurso de "pegar pesado com o crime",
+independente de onde moram na cidade.
+
+---
+
+**Dados utilizados na matéria**: Estatísticas de Segurança Pública (SSP-BA,
+SSP-SP, SSPDS-CE, ISP-RJ); Resultados das Eleições (Tribunal Superior Eleitoral);
+Renda Média dos Setores Censitários (Censo 2010/IBGE); Localização das Seções
+Eleitorais (_Pindograma_).
+
+**Contribuiu com Dados**: Daniel Ferreira.
+
+**Créditos da imagem**: Afonso Braga; André Moura/Rede Câmara.
+
+Para reproduzir os números e dados dessa matéria, os dados podem ser encontrados
+[aqui][1].
+
+[1]: 
+
+[2]: https://piaui.folha.uol.com.br/cresce-forca-de-pms-na-politica/
