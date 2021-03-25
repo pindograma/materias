@@ -1,0 +1,112 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+
+source('~/pindograma/materias/theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Com a recente decisão do Ministro do Supremo Tribunal Federal Edson Fachin, o
+ex-presidente Luiz Inácio Lula da Silva recuperou seus direitos políticos. A
+possibilidade do retorno de Lula às eleições presidenciais em 2022 disparou uma
+discussão nacional sobre seu efeito no debate político, seu legado como
+presidente e suas chances eleitorais.
+
+Mas como estava a popularidade de Lula em diferentes momentos da história
+recente? O _Pindograma_ compilou pesquisas de opinião dos últimos anos para
+entender a popularidade e a impopularidade de Lula.
+
+Durante seu tempo no governo, a popularidade de Lula permaneceu alta. No seu
+pior momento, quando o escândalo do mensalão estourou com as denúncias do
+deputado Roberto Jefferson, 53% dos brasileiros diziam "confiar" em Lula, de
+acordo com uma [pesquisa
+Ibope](https://www1.folha.uol.com.br/fsp/brasil/fc2007200517.htm). Logo antes
+de se despedir do Palácio do Planalto, de acordo com outra [pesquisa
+Ibope](http://g1.globo.com/politica/noticia/2010/12/popularidade-de-lula-bate-recorde-e-chega-87-diz-ibope.html),
+Lula alcançou um recorde de 87% de aprovação.
+
+Fora do poder, a rejeição ao ex-presidente cresceu. Antes da crise econômica no
+segundo mandato de Dilma Rousseff, a rejeição de Lula era estável, em torno de
+30%. Mas na época em que a
+[reprovação](http://g1.globo.com/politica/noticia/2015/12/governo-dilma-tem-aprovacao-de-9-e-reprovacao-de-70-diz-ibope.html)
+ao governo de Dilma chegava a 70%, **a rejeição de Lula chegou a 51%**.
+
+```{r}
+lula = read_delim('rejeicao.csv', ',', locale = locale(decimal_mark = ',')) %>%
+  mutate(month = as.numeric(word(Data, 1, sep = '/')),
+         year = as.numeric(word(Data, 2, sep = '/'))) %>%
+  mutate(semester = ifelse(month <= 6, 1, 7),
+         date = make_date(year, semester, 1)) %>%
+  group_by(date) %>%
+  summarize(rejection = mean(`Rejeição do Lula`)/100)
+
+ggplot(lula, aes(x = date, y = rejection)) +
+  geom_line(group = 1, size = 1.5, color = pg_blue) +
+  geom_point(size = 3.5, color = pg_orange) +
+  geom_vline(xintercept = make_date(2016, 1, 1), linetype = 'dashed', color = pg_dark_gray) +
+  geom_text(aes(x = make_date(2016, 1, 1), label="\nImpeachment de Dilma", y=0.365), colour=pg_dark_gray, angle=90, text=element_text(size=9), family = 'Fantasque') +
+  geom_vline(xintercept = make_date(2018, 1, 1), linetype = 'dashed', color = pg_dark_gray) +
+  geom_text(aes(x = make_date(2018, 1, 1), label="\nPrisão de Lula", y=0.47), colour=pg_dark_gray, angle=90, text=element_text(size=9), family = 'Fantasque') +
+  scale_x_date(breaks = c(ymd('2014-01-01'), ymd('2015-07-01'), ymd('2016-01-01'), ymd('2016-07-01'),
+                          ymd('2017-01-01'), ymd('2017-07-01'), ymd('2018-01-01'), ymd('2018-07-01'),
+                          ymd('2021-01-01')),
+               labels = function(x) paste0(ifelse(month(x) == 7, 2, 1), 'º s\n', year(x)),
+               name = '') +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), name = '') +
+  labs(title = 'Eleitores que não votariam em Lula "de jeito nenhum"', subtitle = 'Média de pesquisas de opinião nacionais por semestre, 2014-2021',
+       caption = 'Fonte: Ibope/Ipec e Datafolha via Cesop/Unicamp; DataPoder360.\nPesquisas tabuladas pelo Pindograma.') +
+  theme_pindograma() +
+  theme(axis.text.x = element_text(size = 10))
+```
+
+Desde o impeachment, no entanto, a rejeição a Lula vem diminuindo. A [mais
+recente pesquisa Ipec][1] (ex-Ibope), realizada após a volta dos direitos
+políticos do ex-presidente, mostrou que 44% dos brasileiros rejeita o
+presidente. 25% de todos os entrevistados eram bolsonaristas convictos que
+rejeitavam Lula, enquanto os outros 19% rejeitavam votar tanto em Bolsonaro
+quanto no petista.
+
+Ainda assim, não parece que a gestão de Jair Bolsonaro (sem partido) esteja
+afetando a popularidade de seu rival. A rejeição a Lula não muda desde as
+eleições de 2018.
+
+De toda forma, o ex-presidente sempre foi mais popular que seu partido ou que o
+governo de sua sucessora. Segundo uma [pesquisa
+Datafolha](https://www.cesop.unicamp.br/por/banco_de_dados/v/3599) de maio de
+2014, Lula comandava 52% das intenções de voto em um cenário no qual aparecia
+como o candidato do PT. Na mesma pesquisa, a então presidente Dilma Rousseff
+alcançava somente 40% de intenção de voto. 58% dos eleitores preferiam Lula
+como candidato do PT; apenas 19% preferiam Dilma.
+
+Em 2018, com [base na Lei da Ficha
+Limpa](https://g1.globo.com/politica/eleicoes/2018/noticia/2018/08/31/maioria-dos-ministros-do-tse-vota-pela-rejeicao-da-candidatura-de-lula.ghtml),
+Lula ficou de fora das eleições presidenciais. No seu lugar, o candidato a vice
+do partido, Fernando Haddad, chegou ao segundo turno com 29% dos votos. Mas em
+agosto, na última pesquisa Ibope que considerava Lula como o candidato do PT,
+Lula tinha 37% das intenções de voto. Segundo dados de duas pesquisas Datafolha
+analisadas pelo _Pindograma_, eleitores brancos que pretendiam votar em Lula
+parecem ter migrado menos para Haddad do que os pretos e pardos.
+
+---
+
+**Créditos da imagem**: .
+
+Para reproduzir os números e gráficos da matéria, o código pode ser encontrado [aqui][2].
+
+[1]: https://piaui.folha.uol.com.br/variavel-lula-x-variante-bolsonaro/
+
+[2]: https://github.com/pindograma/materias/blob/master/2021-03-24-lula/Lula.Rmd
