@@ -1,0 +1,165 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+
+source('~/pindograma/materias/theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+O governo do presidente Jair Bolsonaro (sem partido) é o que tem a maior
+presença de militares desde a redemocratização. [Ávido defensor da ditadura
+militar](https://veja.abril.com.br/politica/doze-vezes-em-que-bolsonaro-e-seus-filhos-exaltaram-e-acenaram-a-ditadura/),
+o presidente [abriu o
+caminho](https://www.poder360.com.br/governo/tcu-quer-levantar-numero-total-de-militares-no-governo-bolsonaro/)
+para diversos membros das Forças Armadas dentro de ministérios e agências
+regulatórias nos últimos anos.
+
+Um desses militares destacou-se nos últimos meses pela sua péssima atuação: o
+ministro da Saúde Eduardo Pazuello. Conhecido como
+['pesadelo'](https://istoe.com.br/covid-19-deu-tudo-errado-no-brasil-e-agora-bolsonaro/)
+nos corredores do Congresso, o general de brigada cometeu incontáveis erros na
+gestão contra a pandemia do novo coronavírus e está sob grande pressão de ser
+investigado por ações ilegais quando deixar o ministério e perder [o foro
+privilegiado](https://congressoemfoco.uol.com.br/saude/bolsonaro-quer-garantir-foro-privilegiado-a-pazuello-antes-de-nomear-novo-ministro/). 
+
+Nesse contexto, não impressiona que algumas vozes da sociedade civil afirmem
+que os militares estariam extremamente desgastados e que sua ligação com o
+atual governo esteja [acabando com a
+imagem](https://www.nexojornal.com.br/entrevista/2021/03/16/%E2%80%98A-ideia-de-que-militar-%C3%A9-competente-est%C3%A1-gravemente-alterada%E2%80%99)
+de que militares são competentes e técnicos, cultivada pelos fardados desde a
+redemocratização. 
+
+Parece natural presumir que, dados os inúmeros casos de incompetência, o
+governo mais militar da Nova República pioraria a imagem do Exército para a
+população. Porém, não é isso que está ocorrendo. **As Forças Armadas ainda são
+a instituição que goza da maior confiança dos brasileiros. E não parece que
+esse cenário irá mudar tão cedo**.
+
+Diversos levantamentos revelam que uma maioria significativa da sociedade
+confia mais nos militares do que em outras instituições nacionais. Segundo o
+Datafolha, 42% confiavam muito e 38% confiavam "um pouco" nos militares em
+julho de 2019, somando **80% de confiança**. Esse grau de confiança foi muito menor
+para outras instituições, como o Congresso Nacional (53%) e os partidos
+políticos (40%), que gozam de grande desconfiança. Só o Judiciário não ficou
+tão mal: em 2019, 72% dos brasileiros afirmaram confiar muito ou "um pouco" nos
+tribunais.
+
+```{r}
+serie = read_csv('militares-serie.csv') %>%
+    mutate(Ano = lubridate::make_date(Ano, 1, 1))
+
+ggplot(serie, aes(x = Ano, y = ConfiamMuito, group = 1)) +
+    geom_line(color = pg_blue, size = 1.5) +
+    geom_point(size = 3.5, color = pg_orange) +
+    labs(title = 'Brasileiros que confiam "muito" ou "totalmente" nos militares',
+         subtitle = 'Segundo pesquisas de opinião, 2011-2019',
+         caption = 'Fonte: Datafolha e SIPS/Ipea, tabulados pelo Pindograma') +
+    theme_pindograma() +
+    scale_x_date(date_labels = '%Y', breaks = c(ymd('2011-01-01'), ymd('2014-01-01'), ymd('2017-01-01'), ymd('2018-01-01'), ymd('2019-01-01'))) +
+    scale_y_continuous(name = '', labels = function(x) paste0(x, '%'), limits = c(20, 80))
+```
+
+Mais recentemente, alguns levantamentos do DataPoder360 e Paraná Pesquisas —
+dois institutos com [bom
+desempenho](https://pindograma.com.br/2020/11/20/rating-update.html) no
+[ranking do Pindograma](https://pindograma.com.br/ranking) — mostram que o
+cenário continua bem parecido.
+
+Em junho de 2020, quando Pazuello completava um mês no Ministério da Saúde após
+a renúncia de Nelson Teich, um
+[levantamento](https://www.poder360.com.br/poderdata/29-dizem-confiar-totalmente-nas-forcas-armadas-e-14-nao-confiam/)
+do DataPoder360 mostrou que **37% dos brasileiros acreditavam que a presença de
+militares no governo era "boa para o Brasil"**. Segundo a mesma pesquisa, 79%
+dos brasileiros afirmaram que _confiavam muito_, _confiavam mais ou menos_ ou
+_confiavam um pouco_ nas Forças Armadas. Nos primórdios da gestão Pazuello, os
+militares ainda mantinham alta aprovação da população. 
+
+No momento em que a gestão Pazuello chegava ao fim, o Instituto Paraná
+Pesquisas voltou ao assunto. Pazuello apresentou um desgaste na opinião
+pública: 44,3% dos brasileiros afirmam que sua gestão foi "negativa". Porém,
+sua rejeição — o 'efeito pesadelo' — não parece ter transbordado para a
+instituição da qual faz parte. Nessa mesma pesquisa, 50% afirmaram que a
+presença militar no governo Bolsonaro era "positiva". Esse número representa
+até um crescimento em relação aos 37% que acreditavam, dez meses antes, que
+militares no governo eram algo bom para o país.
+
+Além disso, 53,5% afirmaram que a participação dos militares na pandemia foi
+"positiva". Isso reforça a ideia de que a incompetência de Pazuello e seu
+desgaste público não transbordaram para seus colegas, muitos dos quais
+participaram de
+[decisões](https://www.em.com.br/app/noticia/nacional/2021/02/24/interna_nacional,1240729/ministerio-da-saude-admite-erro-ao-trocar-doses-de-vacinas-entre-am-e-ap.shtml)
+[mortais](https://oglobo.globo.com/sociedade/coronavirus/veja-os-sete-erros-de-logistica-cometidos-recentemente-pelo-ministerio-da-saude-na-pandemia-da-covid-19-24901227)
+do Ministério da Saúde que foram questionadas pela sociedade durante os últimos
+meses. 
+
+```{r}
+parana = read_csv('parana.csv')
+
+p1p = parana %>%
+    filter(pergunta %in% c(
+        'A participação das Forças Armadas no Governo do Presidente Jair Bolsonaro é positiva ou negativa?',
+        'O fato de o Presidente Bolsonaro ter militares em seu Governo, influência de forma positiva ou negativa na hora de votar?',
+        'Como o(a) Sr(a) avalia a participação dos militares na pandemia, positiva ou negativa?'
+    )) %>%
+    mutate(pergunta = case_when(
+        startsWith(pergunta, 'A') ~ 'A participação das\nForças Armadas no\nGoverno do Presidente\nJair Bolsonaro é\npositiva ou negativa?',
+        startsWith(pergunta, 'O') ~ 'O fato de o Presidente\nBolsonaro ter militares\n em seu Governo,\ninfluencia de forma\npositiva ou negativa na\nhora de votar?',
+        startsWith(pergunta, 'C') ~ 'Como o(a) Sr(a)\navalia a participação\ndos militares na pandemia,\npositiva ou negativa?',
+        T ~ pergunta
+    )) %>%
+    mutate(resposta = ifelse(resposta == 'NS', 'Não sabe', resposta))
+
+ggplot(p1p, aes(x = factor(resposta, levels = c('Positiva', 'Indiferente', 'Negativa', 'Não sabe')), y = pct, fill = factor(resposta, levels = c('Positiva', 'Indiferente', 'Negativa', 'Não sabe')))) +
+    geom_col() +
+    scale_fill_manual(values = c(pg_green, pg_blue, '#ff6961', pg_dark_gray)) +
+    facet_wrap(~pergunta) +
+    labs(title = 'Opinião pública sobre os militares no governo',
+         subtitle = 'Brasil, março de 2021',
+         caption = 'Fonte: Paraná Pesquisas') +
+    theme_pindograma() +
+    xlab('') +
+    scale_y_continuous(name = '', labels = function(x) paste0(x, '%'), breaks = c(0, 10, 20, 30, 40, 50)) +
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.title = element_blank())
+```
+
+Será interessante analisar se a tendência recente de aumento na rejeição do
+presidente Bolsonaro indicada por
+[algumas](https://www1.folha.uol.com.br/poder/2021/03/datafolha-rejeicao-a-bolsonaro-na-gestao-da-pandemia-bate-recorde-e-vai-a-54.shtml)
+[pesquisas](https://www.poder360.com.br/poderdata/rejeicao-ao-trabalho-de-bolsonaro-volta-a-48-o-recorde-na-pandemia/)
+será seguida por um aumento na desconfiança frente aos militares. Afinal, o
+mesmo levantamento do Paraná Pesquisas mostrou que 56,9% acreditavam que o
+presidente era mais militar do que civil. Mas por ora, **apenas 43,7% dos
+brasileiros acreditam que a participação no governo Bolsonaro compromete
+a imagem dos militares**.
+
+Pelo contrário: parece que o apoio militar continua dando legitimidade ao
+governo. 40,3% afirmaram ao Paraná Pesquisas que o fato do atual governo ter
+presença militar tem implicações positivas na hora do voto. Uma parcela
+significativa do eleitorado ainda gosta da possibilidade de ter militares no
+governo, o que pode ser um indicador positivo para a campanha de Bolsonaro em
+2022. 
+
+Considerando todos esses fatores, **não é correto afirmar que os militares
+estão saindo muito desgastados da gestão da pandemia até agora**. Pazuello, de
+fato, perdeu muita popularidade. Porém, a opinião pública parece separar
+Pazuello de sua instituição e seus colegas. Os outros militares, principalmente
+os associados a Bolsonaro, continuam contando com a confiança da maioria da
+população e atribuindo mais legitimidade ao governo nos olhos dessas pessoas. 
+
