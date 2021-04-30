@@ -1,0 +1,223 @@
+---
+title: "O que aprendemos com o Partidos em Números"
+author: "João Costa e Fernanda Nunes"
+date: "30/04/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(sf)
+library(tidyverse)
+library(tidygraph)
+
+load('./data/partidos_em_numeros.Rdata')
+load('./data/plots.Rdata')
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+**Dados e infografia**: Antonio Piltcher.
+
+---
+
+Entre outubro de 2020 e fevereiro de 2021, ao longo de 18 semanas, o _Pindograma_ publicou [uma série de matérias](https://pindograma.com.br/section/partidos) sobre os 33 partidos do Brasil. Ao analisar dados de todas as siglas, surgiram semelhanças e também pontos fora da curva. Por isso, trazemos agora uma análise compilada sobre a estrutura partidária brasileira, e o que os dados dizem sobre ela.
+
+---
+
+#### Filiados
+
+A filiação partidária é a medida mais simples para avaliar o tamanho de um partido. É um bom indicador para saber quantos eleitores se identificam com a legenda ou quantos políticos a enxergam como um bom veículo para suas candidaturas.
+
+Apesar dos números variarem entre as diferentes legendas, notamos, ao longo da elaboração das matérias da série, alguns padrões sobre a quantidade de filiados em cada partido. 
+
+Com pouquíssimas [exceções](https://pindograma.com.br/2020/11/28/pcbdob.html), é difícil um partido perder filiados com o passar dos anos. Enquanto isso, o crescimento se dá em ciclos bianuais, correspondendo às eleições municipais e gerais. Devido à grande quantidade de candidatos, o crescimento é maior nas eleições municipais. Três partidos que exemplificam esse comportamento bem são o [PSB](https://pindograma.com.br/2020/11/23/psb.html), o [PV](https://pindograma.com.br/2020/12/18/pvrede.html) e o [Podemos](https://pindograma.com.br/2020/12/03/podemos.html).
+
+```{r, fig.height=6, fig.width=8}
+fil_psbpvpode
+```
+
+Alguns poucos partidos, porém, apresentam ritmos acelerados de crescimento mesmo fora de ciclos eleitorais. Esses partidos tendem a ser menores e com posicionamentos e ideologia mais explícitos, como é o caso do [PSOL](https://pindograma.com.br/2020/11/06/psol.html) e o [NOVO](https://pindograma.com.br/2020/11/10/novo-patri.html).
+
+```{r, fig.height=6, fig.width=8}
+fil_novopsol
+```
+
+Nos raros casos em que um partido perde filiados, isso geralmente ocorre devido a um racha interno que leva a uma debandada para outro partido. A fundação do [PSD](https://pindograma.com.br/2020/11/20/psd.html) em 2011, por exemplo, custou muitos membros ao [DEM](https://pindograma.com.br/2020/11/03/dem-rep.html).
+
+Outro caso particular é o do [PT](https://pindograma.com.br/2020/10/27/pt.html). Entre 2014 e 2019 o número de filiados do partido estagnou. As crises políticas e os escândalos de corrupção nos quais esteve a sigla esteve envolvida levaram a desfiliações em massa, mas o ciclo natural de crescimento compensou essas perdas, resultando numa estabilidade no número de filiados. 
+
+```{r, fig.height=6, fig.width=8}
+fil_dempt
+```
+
+Como já discutimos aqui no _Pindograma_, [os jovens](https://pindograma.com.br/2020/10/02/jovens.html) podem ser um bom indicador do apelo popular de um partido. Legendas com mais jovens tendem a ter uma militância mais fiel e ideológica. Partidos como o [PCdoB](https://pindograma.com.br/2020/11/28/pcbdob.html) e o [PSL](https://pindograma.com.br/2020/10/29/psl.html) têm, proporcionalmente, muito mais jovens que o DEM. No PCdoB, a proporção de militantes com menos de 35 anos é de 16,8%, já no DEM é de 7,68%.
+
+```{r, fig.height=6, fig.width=9}
+fxeta_pcdobdem
+```
+
+Já entre os partidos maiores e mais tradicionais, que tendem a ser menos ideológicos, o perfil dos filiados tende a ser bem mais velho, com a faixa dos 45 aos 59 anos sendo a mais prevalente. É o caso do [PP](https://pindograma.com.br/2020/12/08/plpp.html) e do [PL](https://pindograma.com.br/2020/12/08/plpp.html), por exemplo. Ambos possuem menos de 10% de filiados com menos de 35 anos, mas mais de 70% de membros entre os 35 e os 69 anos.
+
+```{r, fig.height=6, fig.width=9}
+fxeta_pppl
+```
+
+Outro padrão interessante que notamos foi o maior equilíbrio entre as faixas etárias em partidos fundados mais recentemente. O [PMB](https://pindograma.com.br/2021/01/30/pmbpros.html), o PSD e a [Rede](https://pindograma.com.br/2020/12/18/pvrede.html) têm uma distribuição parecida de filiados em diferentes idades.
+
+```{r, fig.height=6, fig.width=9}
+fxeta_pmbredepsd
+```
+
+A vasta maioria dos partidos tem entre 40% e 50% de seus filiados composta por mulheres. A proporção vem se igualando lentamente ao longo dos anos: em 2008, a média era de 43,9%, e passou para 44,2% em 2020. Apenas 2 partidos tinham uma maioria de mulheres entre seus filiados em 2020: o [Republicanos](https://pindograma.com.br/2020/11/03/dem-rep.html), com 50,3% e o PMB, com 54,9%. Mas, curiosamente, essa porcentagem vem diminuindo nos últimos anos nos dois partidos.
+
+Do lado oposto, destacam-se o PSL, o NOVO e o [PCO](https://pindograma.com.br/2021/02/27/pstupcoup.html), que tinham menos de 40% de filiadas mulheres. O PSL teve uma diminuição brusca na proporção de mulheres filiadas entre 2018 e 2020, uma vez que os bolsonaristas que ingressaram no partido são predominantemente homens.
+
+```{r, fig.height=6, fig.width=9}
+mulheres_filiados
+```
+
+Os partidos mais antigos e tradicionais têm mais capilaridade pelo país. Por isso, legendas como [MDB](https://pindograma.com.br/2020/10/21/mdb.html), [PDT](https://pindograma.com.br/2020/11/14/pdt.html), PP e PT lideram quando analisamos as taxas de concentração de filiados por 100 mil eleitores em cada estado. Mas, em alguns com população menor e desenvolvimento mais recente, partidos menores conseguem ocupar posições de protagonismo: no Amapá, o PSOL tem o maior número de filiados entre as legendas. O mesmo ocorre com o Patriota em Roraima e com o Republicanos no Amazonas.
+
+```{r, fig.height=7, fig.width=9}
+estado_fil
+```
+
+---
+
+#### Financiamento
+
+O Fundo Partidário foi criado em 1995 e, desde então, vem sendo a principal fonte de renda das legendas brasileiras.  Entre 2010 e 2020, o valor aumentou de R$200 milhões para R$834 milhões, com destaque para 2015, quando aconteceu o maior salto no valor total.
+
+```{r, fig.height=6, fig.width=9}
+fp_top4
+```
+
+As quantias recebidas pelos partidos são um reflexo da expressão de cada um deles na Câmara. MDB, PT, PSD e PP receberam, historicamente, as maiores fatias do Fundo. De 2018 para 2019, a quantia recebida pelo PSL aumentou em 10 vezes, devido a sua expansão no cenário nacional com a eleição de Jair Bolsonaro. Isso fez o partido de Luciano Bivar pular da vigésima posição para a primeira no que tange verba recebida do fundo em apenas um ano.
+
+Outros partidos tradicionais, como PP, PL e [PSDB](https://pindograma.com.br/2020/11/02/psdb.html), tiveram uma diminuição da sua bancada na Câmara e, consequentemente, receberam menos do Fundo.
+
+O partido Novo não utiliza a quantia do Fundo Partidário que recebe e procura devolvê-la ao Tesouro Nacional. O [PRTB](https://pindograma.com.br/2021/02/12/prtbpmn.html) foi o único outro partido que abriu mão de receber recursos federais, recusando os recursos do Fundo Eleitoral em 2020.
+
+---
+
+#### Eleições 2020
+
+Além de seus filiados, outra maneira de analisar um partido é por sua presença no território nacional, isto é, onde o partido lança candidatos e onde tem mais sucesso. Com os dados das eleições municipais de 2020, é possível ter uma ideia das diferentes estratégias dos partidos brasileiros.
+
+O primeiro grupo é o dos grandes partidos, que têm candidatos por todo o país. O exemplo mais óbvio disso é o MDB. O partido teve candidatos em todos os estados da federação e alcançou muitos municípios pequenos do interior. A capacidade de chegar a lugares distantes dos grandes centros urbanos é um dos principais atrativos do MDB para candidatos. Em menor grau, o PT também tem um alcance nacional, embora suas chapas sejam mais comuns no Sudeste, Nordeste e Sul, e o seu  sucesso eleitoral em 2020 tenha sido bem mais restrito. 
+
+```{r, fig.height=7, fig.width=10}
+ptmdb
+```
+
+Outro grupo é o dos partidos com fortes bases regionais. O PSDB, por exemplo, tem projeção nacional, mas os estados de São Paulo e do Mato Grosso do Sul, ambos governados por tucanos, são regiões de maior influência do partido. Outras legendas menores também apresentam esses focos regionais, como o PCdoB, que concentrou candidatos no Maranhão, estado governado pelo partido desde 2015.
+
+```{r, fig.height=7, fig.width=10}
+psdbpcdob
+```
+
+Por fim, há alguns partidos que eventualmente têm projeção nacional, mas não têm capilaridade para sustentar candidaturas em cidades menores e mais interioranas. É o caso do partido Novo, que teve apenas 28 candidatos, todos em capitais ou em grandes centros urbanos.
+
+```{r, fig.height=7, fig.width=9}
+prefeito_novo
+```
+
+A vasta maioria dos partidos brasileiros forma coligações independentemente de identificações ideológicas, principalmente nas eleições municipais. Vale lembrar que 2020 foi o primeiro ano em que partidos não puderam formar coligações para as eleições de cargos legislativos, apenas para as de cargos executivos, medida aprovada na reforma eleitoral de 2017.
+
+```{r, fig.height=8, fig.width=9}
+xadrez
+```
+
+De todas as candidaturas à prefeitura em 2020, 11.884 foram coligadas e 6.272 foram chapas únicas. Os partidos do Centrão e de centro-direita, maiores e historicamente mais fisiológicos, costumam fazer mais coligações. Lideram o ranking PSDB, PP, DEM, PSD e MDB, que formaram coligações em mais de 70% das candidaturas que lideraram. O PT coliga-se pouco considerando o padrão de outros partidos do seu tamanho, sendo o campeão de chapas únicas, com 605. 
+
+Além do PT, os partidos que menos se coligam também estão à esquerda do espectro político: PSOL, [PSTU](https://pindograma.com.br/2021/02/27/pstupcoup.html) e [PCB](https://pindograma.com.br/2020/11/28/pcbdob.html), além da recém-criada [UP](https://pindograma.com.br/2021/02/27/pstupcoup.html). As coligações representaram não mais de 20% das candidaturas desses partidos. Vemos estes partidos isolados no canto superior direito do gráfico, coligando-se apenas entre si e sem interação com outros partidos maiores. Por fim, o PCO, de extrema esquerda, e o NOVO, de direita, não formam coligações.
+
+A falta de diversidade de sexo dos políticos brasileiros parece ser um problema que atravessa todos os partidos. Há poucos partidos que fogem do padrão de filiar e [eleger poucas mulheres](https://pindograma.com.br/2020/11/13/prefeitas-viaveis.html), apesar do [recorde de mulheres que se candidataram](https://www1.folha.uol.com.br/poder/2020/09/eleicao-tem-recorde-de-mulheres-candidatas-e-pela-1a-vez-mais-negros-que-brancos.shtml) em 2020. 
+
+A porcentagem de todos os candidatos que eram mulheres foi de 34% em 2020. Olhando para cada partido individualmente, elas representavam em média um de cada três candidatos. Dos 33 partidos brasileiros, apenas 6 fugiram deste padrão: o PCO teve apenas 25% de candidaturas femininas. Já o PT, PMB, PSOL, PSTU e UP tiveram entre 35% e 43%. Apesar desses exemplos positivos, vale lembrar que esses números ficam muito próximos da proporção mínima de candidaturas femininas estabelecida pelo TSE e válida pela primeira vez em 2020: 30%. 
+
+```{r, fig.height=8, fig.width=6}
+genero_candidatos
+```
+
+Apesar desse incentivo para as candidaturas femininas, a lei não parece ter surtido muito efeito, pois pouquíssimos partidos efetivamente elegeram mulheres numa porcentagem próxima a esse número. O número de candidatas eleitas ou que foram ao segundo turno em 2020 foi de apenas 15,6%. Poucos partidos ficaram distantes desse número: a [DC](https://pindograma.com.br/2020/12/25/cristaos.html) foi o destaque negativo, elegendo apenas 8% de mulheres; enquanto o destaque positivo vai para o PT (21,1%), NOVO (33,3%) e PSOL (35,5%). As mulheres representam 51,8% da população brasileira.
+
+```{r, fig.height=8, fig.width=6}
+genero_eleitos
+```
+
+A situação da raça dos candidatos é, em média, mais parecida com o perfil da população brasileira. A proporção de candidatos brancos foi de 47,7%, o mesmo número do total da população, de acordo com dados do [Censo de 2010](https://economia.estadao.com.br/noticias/geral,censo-demografico-pode-ficar-para-2023-apos-novo-corte-no-orcamento,70003691006). A grande maioria dos partidos (29 dos 33) teve entre 37% e 55% de candidatos brancos. Apenas dois partidos tiveram uma maioria significativa de candidatos negros: o PCdoB e a UP. Já o NOVO e o PCO, chegaram às urnas com mais de 80% de candidatos brancos. 
+
+Candidatos indígenas e asiáticos são uma parcela ínfima em quase todos os partidos. Em apenas três partidos sua proporção passou de 1,5%: na UP, com 1,7%, na Rede, com 2,1% e no PSTU, com 3,4%.
+
+```{r, fig.height=9, fig.width=9}
+raca_comparacao
+```
+
+Os brancos, no entanto, ainda foram a maioria dos candidatos eleitos: 54,6% do total. Olhando para os partidos, vemos uma distribuição relativamente uniforme,  quase todos ficando entre 42% e 59% de brancos eleitos. O PCdoB foi o único partido cujos eleitos eram significativamente menos brancos que a população: mais de 70% dos seus eleitos eram negros. 
+
+Os partidos com mais eleitos brancos foram o NOVO, MDB, PSL e PSDB. Os três últimos elegeram cerca de 64% de candidatos brancos. Já no NOVO, 96,6% dos candidatos eleitos eram brancos, deixando o partido isolado no quesito racial.
+
+No caso de candidatos asiáticos e indígenas, o número de eleitos foi muito baixo, como esperado dado o baixo número de candidaturas. O número de eleitos não passou de 1% entre os indígenas em nenhum partido exceto a Rede, onde foi de 2,7%. Já no caso dos asiáticos, somente o PSOL superou a cifra de 1% de eleitos: o grupo representou 3,3% de seus eleitos.
+
+---
+
+#### Eleições 2018
+
+Em geral, os partidos que mais elegeram deputados estaduais foram os partidos maiores e mais tradicionais. O MDB elegeu 93 deputados estaduais, seguido pelo PT, com 85, e o PSL, com 76. O PSL é o partido que mais se destaca pelo número de representantes eleitos em comparação com seu tamanho. De resto, o PT, o PSB e os grandes partidos do Centrão — DEM, PP e PSD — estão entre os partidos mais fortes.
+
+```{r, fig.height=8, fig.width=6}
+plot_depest
+```
+
+A dominância do PT e PSL nas eleições de 2018 também se reflete na Câmara dos Deputados, mas na Câmara o PT é que domina, tanto em número de deputados (56). O PSL fica logo atrás com 52 deputados. Diferentemente dos deputados estaduais, o MDB não é mais a terceira potência, ficando atrás do PP no número de deputados.
+
+```{r, fig.height=8, fig.width=6}
+plot_depfed
+```
+
+No Senado, o partido que representa o maior número de pessoas é o PSDB. Com apenas 8 senadores, o partido representa 48 milhões de brasileiros. Em comparação, o MDB elegeu 12 senadores, mas representa apenas 17 milhões de brasileiros, número similar ao do PT.
+
+```{r, fig.height=8, fig.width=6}
+plot_sen
+```
+
+O PSDB também é o partido que representa o maior número de brasileiros nos governos estaduais. Juntando São Paulo, Rio Grande do Sul e Mato Grosso do Sul, o partido soma mais de 60 milhões de brasileiros sob seu governo. O PT, próximo partido na lista, tem quatro governadores, mas governa apenas 30 milhões de pessoas. Note que o mapa reflete os partidos dos governadores à época da eleição de 2018. No caso do Tocantins, o PHS não existe mais e o governador Mauro Carlesse está filiado ao PSL atualmente. 
+
+```{r, fig.height=7, fig.width=9}
+mapa_gov
+```
+
+---
+
+#### História
+
+É possível dividir os partidos brasileiros em quatro grandes grupos no que tange a suas histórias.
+
+Os partidos mais antigos têm origem em movimentos das décadas de 40 e 50. Foram banidos pelo regime militar, mas foram refundados durante a redemocratização. É o caso do PDT, [PTB](https://pindograma.com.br/2021/01/18/avanteptb.html), PCB, PCdoB, [Cidadania](https://pindograma.com.br/2021/02/05/cidsd.html), PSB, Podemos e DC. 
+
+O segundo bloco de partidos surgiu durante os anos 80, durante a efervescência da redemocratização: PT, PSDB, DEM (ex-PFL), e PL. Os partidos políticos atuantes durante a Ditadura Militar — a ARENA e o MDB — também deram origem a novos partidos nessa época: o PP (ex-PDS) e o PMDB (atual MDB), respectivamente.
+
+O terceiro grupo é de partidos que surgiram a partir dos anos 90 com a iniciativa de diversos setores da sociedade, como movimentos sociais e o empresariado. É o caso do PV, Rede, NOVO, UP, PSL, Republicanos, [Patriota](https://pindograma.com.br/2020/11/10/novo-patri.html), PMB, [PSC](https://pindograma.com.br/2020/12/25/cristaos.html), [PTC](https://pindograma.com.br/2020/12/25/cristaos.html), [PROS](https://pindograma.com.br/2021/01/30/pmbpros.html), [Solidariedade](https://pindograma.com.br/2021/02/05/cidsd.html) e [PMN](https://pindograma.com.br/2021/02/12/prtbpmn.html).
+
+Por fim, temos partidos que foram criados a partir de dissidências de outras siglas: PSOL, PSTU, [Avante](https://pindograma.com.br/2021/01/18/avanteptb.html), PSD, PCO e PRTB.
+
+Quase todos os principais partidos da Nova República se encontram no primeiro ou no segundo grupo. Com poucas exceções, os demais partidos surgidos de dissidências e outros movimentos tendem a ser secundários e até marginais no processo político atual.
+
+---
+
+**Dados utilizados na matéria**: Filiados a partidos (Tribunal Superior
+Eleitoral); Resultados eleições 2018 (TSE/Cepespdata); Candidatos eleições 2020
+(TSE); Resultados eleições 2020 (TSE); IGPM (cortesia de Fernando Meireles, pacote deflateBR).
+
+**Créditos da imagem**: Wilson Dias/Agência Brasil.
+
+Para reproduzir os números citados, o código e os dados podem ser encontrados
+[aqui][1].
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-04-30-partidos/partidos.Rmd
