@@ -1,0 +1,243 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+
+source('~/pindograma/materias/theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+
+ceara_data = readRDS('ceara_data.rds')
+ce_shape = readRDS('ce_shape.rds')
+```
+
+No dia 18 de fevereiro de 2020, os policiais militares do Ceará começaram um
+motim e deixaram de patrulhar as ruas do estado. Marcada por [momentos de
+tensão](https://noticias.uol.com.br/politica/ultimas-noticias/2020/02/19/senador-cid-gomes-e-baleado-no-ceara.htm),
+a paralisação tinha como principal objetivo aumentar o salário considerado
+insatisfatório por parte da corporação. A greve ilegal se encerrou apenas quando
+o governador Camilo Santana ([PT](https://pindograma.com.br/2020/10/27/pt.html))
+fechou um acordo com as lideranças dos amotinados, levando os policiais a
+voltarem a seus postos de trabalho na manhã do dia 2 de março.
+
+Apesar de ter durado apenas 13 dias, o motim resultou em um
+[aumento](https://diariodonordeste.verdesmares.com.br/seguranca/ceara-tem-alta-de-966-em-mortes-violentas-intencionais-em-2020-1.3001561)
+[significativo](https://g1.globo.com/ce/ceara/noticia/2020/08/21/assassinatos-no-ceara-crescem-102percent-no-1o-semestre-o-maior-aumento-do-pais.ghtml)
+nos índices de criminalidade da capital, e afetou desproporcionalmente os
+periféricos. A greve ilegal, seguida pela pandemia, mudou o perfil do crime na cidade,
+com um aumento de roubos, crimes contra a vida e dos furtos em certas
+comunidades.
+
+```{r fig.height=6, fig.width=6}
+crimes_total = ceara_data %>%
+  filter(area <= 10) %>%
+  filter((year == 2019 & month >= 12) | (year == 2020 & month <= 5)) %>%
+  group_by(year, month, crime_big) %>%
+  summarize(value = sum(value)) %>%
+  mutate(ym = forcats::fct_reorder(paste0(str_pad(month, 2, pad = '0'), '/\n', year), year)) %>%
+  mutate(crime_big = case_when(
+    crime_big == 'cvli' ~ 'Crimes Violentos Letais\nIntencionais (vítimas)',
+    crime_big == 'furto' ~ 'Furto (ocorrências)',
+    crime_big == 'roubo' ~ 'Roubo (ocorrências)',
+    crime_big == 'sexuais' ~ 'Crimes sexuais (vítimas)'
+  )) %>%
+  mutate(period = case_when(
+    year == 2020 & month == 2 ~ 'Paralisação',
+    T ~ 'Sem Paralisação'
+  ))
+
+ggplot(crimes_total, aes(x = ym, y = value, fill = period)) +
+  labs(title = 'Crimes em Fortaleza, antes e depois da paralisação', caption = 'Fonte: SSPDS-CE') +
+  geom_col() +
+  scale_fill_manual(values = c(pg_orange, pg_blue), name = '') +
+  facet_wrap(~crime_big, scales = 'free') +
+  theme_pindograma() +
+  xlab('') + ylab('') +
+  theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 12)) +
+  theme(legend.position = 'bottom')
+```
+
+```{r}
+area_1_increase_ = ceara_data %>%
+  filter(area == 1 & year == 2020 & (month == 1 | month == 2) & crime_big == 'roubo') %>%
+  pull(value)
+
+area_7_increase_ = ceara_data %>%
+  filter(area == 7 & year == 2020 & (month == 1 | month == 2) & crime_big == 'roubo') %>%
+  pull(value)
+
+area_1_increase = (area_1_increase_[2] - area_1_increase_[1]) / area_1_increase_[1] * 100
+area_7_increase = (area_7_increase_[2] - area_7_increase_[1]) / area_7_increase_[1] * 100
+```
+
+As ocorrências de **roubo** cresceram muito na capital durante o motim. No
+entanto, essa mudança nos números foi distribuída de maneira desigual pelos
+bairros da cidade. Enquanto o aumento de roubos entre janeiro e fevereiro foi de apenas
+`r pn(area_1_increase)`% na área de segurança 1, que inclui bairros de renda
+alta como o Meireles e Jardim Iracema, houve um aumento de
+`r pn(area_7_increase)`% na área de segurança 7, assinalada no mapa.
+
+```{r fig.width=5, fig.height=6}
+fort_roubos = ceara_data %>%
+  filter(area <= 10 & crime_big == 'roubo') %>%
+  filter(year == 2020 & month >= 1 & month <= 4) %>%
+  mutate(ym = forcats::fct_reorder(paste0(str_pad(month, 2, pad = '0'), '/', year), year)) %>%
+  left_join(ce_shape, c('area' = 'ais')) %>%
+  st_as_sf() %>%
+  nngeo::st_remove_holes()
+
+ggplot() +
+  labs(title = 'Ocorrências de Roubo em Fortaleza\n', caption = 'Fonte: SSPDS-CE') +
+  geom_sf(data = fort_roubos, aes(fill = value)) +
+  scale_fill_continuous(low = 'white', high = pg_orange) +
+  facet_wrap(~ym) +
+  theme_pindograma_map() +
+  theme(strip.text = element_text(size = 12))
+```
+
+Como os mapas mostram, esse quadro não voltou aos níveis de janeiro após o fim
+da paralisação. Segundo César Barreira, sociólogo e coordenador do Laboratório de
+Estudos da Violência da Universidade Federal do Ceará, “a ausência de
+policiamento leva diretamente a um aumento das taxas de roubos e assaltos”. E a
+pandemia contribuiu com essa ausência: “Nós tivemos uma sequência muito negativa
+nessa situação, pois tivemos o motim e logo em seguida a pandemia... Ou os
+policiais foram deslocados para outras ações ou os policiais ficaram infectados
+com o vírus”, disse o professor. A diminuição considerável do policiamento
+ostensivo  — seja devido à paralisação, seja devido à pandemia — levou a números de
+crimes bem altos em fevereiro e março.
+
+Já outros crimes não apresentaram tanto crescimento. Os **furtos**, por exemplo,
+apresentaram taxas pequenas de mudança. Em fevereiro, a greve ilegal dos policiais
+levou as pessoas a ficar em casa e comércios a fecharem. E dado que
+furtos geralmente ocorrem quando há alguém na rua para ser furtado, houve uma
+queda leve desse tipo de crime. A pandemia prolongou essa situação e as taxas de
+furto continuaram baixas até junho de 2020, quando a primeira onda do vírus
+começou a diminuir.
+
+Segundo Barreira, contudo, a pandemia trouxe uma mudança na dinâmica dos furtos
+que os dados não capturam muito bem. O professor afirma que houve uma mudança no
+_ethos_ de facções dominantes do crime local. Antes da pandemia, os grupos
+criminosos que dominavam certas regiões não permitiam roubos e furtos. Porém,
+isso mudou: “nessa época da pandemia, em função até da não circulação das
+pessoas, começou a ser permitido”.  Passou a haver maior leniência das facções
+com crimes menores para “compensar” a falta de rendimento advindo dos crimes
+realizados anteriormente nas regiões mais centrais da cidade.
+
+Enquanto isso, os **Crimes Violentos Letais Intencionais (CVLIs)** — categoria
+que inclui o homicídio doloso, lesão corporal seguida de morte e latrocínios —
+aumentaram muito no mês da paralisação. No entanto, essa alta se sustentou durante os
+próximos meses, o que enfraquece a hipótese de que o motim tenha sido
+responsável por este aumento.
+
+```{r}
+cvli = ceara_data %>%
+  filter(area <= 10 & crime_big == 'cvli') %>%
+  filter(year >= 2018) %>%
+  group_by(year, month, crime_big) %>%
+  summarize(value = sum(value)) %>%
+  mutate(ym = forcats::fct_reorder(paste0(str_pad(month, 2, pad = '0'), '/\n', year), year)) %>%
+  mutate(period = case_when(
+    year == 2020 & month == 2 ~ 'Greve',
+    T ~ 'Sem Greve'
+  ))
+
+ggplot(cvli, aes(x = ym, y = value, fill = period)) +
+  labs(title = 'Crimes Violentos Letais Intencionais em Fortaleza, 2018-2020',
+       caption = 'Fonte: SSPDS-CE') +
+  geom_col() +
+  scale_fill_manual(values = c(pg_orange, pg_green)) +
+  theme_pindograma() +
+  scale_x_discrete(labels = function(x) word(x, 1, sep = '/'), name = '') +
+  ylab('') +
+  theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 12)) +
+  theme(legend.position = 'none')
+```
+
+Segundo Barreira, “é importante ressaltar que não houve nenhuma alteração com
+relação a esse tipo de crime”. Diferente de roubos e furtos, que são fortemente
+afetados por mudanças no policiamento e esvaziamento das ruas, Barreira afirma
+que os homicídios seguem uma lógica própria e que “a disputa de território entre
+facções é o grande explicador dos aumentos de taxas de homicídio”.
+
+Após o racha entre o Primeiro Comando da Capital (PCC) e o Comando Vermelho (CV)
+[em
+2016](https://brasil.elpais.com/brasil/2016/10/17/politica/1476734977_178370.html),
+que teve repercussões nacionais no mundo do crime, Fortaleza começou a ter mais
+conflitos. Atualmente, o estado do Ceará está sendo
+[disputado](https://tab.uol.com.br/noticias/redacao/2020/03/08/no-ceara-machismo-das-faccoes-mata-as-mulheres-sem-do.htm)
+por dois grupos: a aliança entre a Família do Norte (FDN) e o CV, que tentam
+controlar o litoral do estado; e o grupo rival composto pelo PCC e pelos
+Guardiões Do Estado (GDE), a facção cearense [mais
+poderosa](https://diariodonordeste.verdesmares.com.br/seguranca/gde-tem-mais-de-25-mil-membros-e-domina-maioria-dos-bairros-de-fortaleza-diz-pc-1.3034221).
+Barreira afirma que "logo que se inicia a pandemia, há um aumento [das disputas
+entre facções]. Então, tranquilamente, os [aumentos das] taxas de homicídios vão
+decorrer desse fato".
+
+Esses aumentos afetaram particularmente as regiões de Vila Velha e Barra do
+Ceará, no noroeste da cidade, entre abril e junho de 2020. Ambas estão na área
+de segurança 8, que é adjacente a uma área
+[controlada](https://diariodonordeste.verdesmares.com.br/seguranca/homicidios-sao-impulsionados-por-disputa-de-territorios-entre-tres-faccoes-criminosas-em-fortaleza-1.3057851)
+pelo CV. Já em maio, a região de Granja Lisboa, na AIS 2, mostrou um aumento
+considerável no número de CVLIs. Esse fenômeno pode ser explicado pelo fato que
+a AIS 2 [tem presença
+tanto](https://diariodonordeste.verdesmares.com.br/seguranca/homicidios-sao-impulsionados-por-disputa-de-territorios-entre-tres-faccoes-criminosas-em-fortaleza-1.3057851)
+do PCC, GDE e do CV.
+
+##### A politização das paralisações e da segurança pública
+
+Diversas paralisações policiais que ocorreram nos últimos anos, principalmente desde
+2013, contribuíram para desestabilizar governos estaduais e se tornaram eventos
+políticos importantes para a consolidação do bolsonarismo. Barreira, que observa
+a presença de policiais na política desde 1999, afirma que "as pessoas não se
+apresentavam na política como policiais, elas negavam as suas patentes".
+Atualmente, a situação se inverteu.
+
+O caso do motim no Ceará é um bom exemplo de como a politização das forças
+policiais está afetando a vida das pessoas e as dinâmicas do crime, além de ser
+uma [força
+eleitoral](https://pindograma.com.br/2021/03/18/vereadores-policiais.html)
+significativa. O estado já havia passado por uma série de paralisações relevantes nos
+anos 2010 que marcaram o cenário político do estado.
+
+O maior proponente do fenômeno é Capitão Wagner
+([PROS](https://pindograma.com.br/2021/01/30/pmbpros.html)), atualmente deputado
+federal pelo estado e segundo colocado nas [eleições para prefeito
+](https://pindograma.com.br/2020/11/28/fortaleza.html) da capital cearense em
+2020. Sua carreira política foi alavancada pelo motim policial em 2011. Como
+explica Barreira, "Todo o capital político dele decorre daí, então ele se torna
+uma pessoa forte e ímpar nas forças de segurança."
+
+E ele continua [verdadeiro às causas
+iniciais](https://mais.opovo.com.br/colunistas/carlosmazza/2020/03/04/capitao-wagner-apresenta-lei-para-anistiar-pms-do-ceara--maia-rejeita-tese.html):
+em 2020 tentou passar uma lei no Congresso que garantiria a anistia a todos os
+líderes da greve ilegal no Ceará. A paralisação também foi [utilizada por
+aliados](https://piaui.folha.uol.com.br/greve-motim-e-chantagem-pelo-poder/) do
+presidente da República no Congresso para constranger governadores e adicionar
+à retórica bolsonarista.
+
+Recentemente, discutiu-se a possibilidade de um encorajar um motim de PMs no
+estado da Bahia, após o policial militar Wesley Goés violentamente atacar seus
+colegas em Salvador no dia
+[28 de
+março](https://www.portalviu.com.br/cidades/o-que-se-sabe-sobre-o-caso-do-pm-morto-apos-atirar-contra-policiais-em-salvador).
+Deputados da base do governo como Bia Kicis
+([PSL](https://pindograma.com.br/2020/10/29/psl.html)-DF) encorajaram
+abertamente um levante policial no estado. O motim não ocorreu, mas foi outro
+episódio de consequência da politização das polícias e da lógica bolsonarista
+[de se aproveitar do fenômeno
+político](https://piaui.folha.uol.com.br/bolsonaro-e-logica-miliciana/) sem
+realmente se importar com as péssimas condições de trabalho sofridas por
+policiais.
+
