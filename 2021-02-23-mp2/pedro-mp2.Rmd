@@ -20,7 +20,6 @@ knitr::opts_chunk$set(warning = FALSE)
 pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
 ```
 
-
 _Esta matéria é a segunda parte de uma série sobre dados do sistema de justiça
 criminal no Rio de Janeiro. Se você quiser ler a primeira parte, sobre como
 funciona o sistema na teoria e na prática, leia [aqui][1]. Se você quiser ler a
@@ -30,14 +29,14 @@ entrevista com a coordenadora do projeto que disponibilizou os dados, leia
 Hoje, [menos de 5% dos homicídios são julgados][1] no estado do Rio de Janeiro.
 Mas mesmo este acesso precário à justiça não é distribuído igualmente entre quem
 mora lá. Dados inéditos revelam que algumas promotorias do estado recebem
-mais recursos do que outras a despeito de terem menos demanda. Além disso,
-algumas promotorias demonstram menos eficiência do que outras ao lidar com
-demandas parecidas.
+mais recursos do que outras a despeito de terem menos demanda. Em paralelo,
+algumas promotorias são menos eficientes do que outras ao lidar com demandas
+equivalentes.
 
 Um cidadão carioca residente no bairro de Madureira, por exemplo, tem muito
 menos promotores ao seu dispor do que alguém que mora na Tijuca. E ainda é
 possível que, por azar, o seu caso caia nas mãos de uma promotoria menos
-eficiente que a média da região.
+eficiente do que a média de Madureira.
 
 É o que mostram dados do Ministério Público do Rio de Janeiro (MPRJ) organizados
 pelo Projeto Farol, que permitem analisar de maneira aprofundada o trabalho do
@@ -104,16 +103,19 @@ Desde março de 2020, a capital do estado e dez cidades do entorno estão
 divididas entre `r pn(mp_areas_count)` _áreas de atuação do Ministério Público_.
 Algumas dessas áreas ocupam vários municípios (como a de Nova Iguaçu), enquanto
 outras cobrem apenas certas regiões da capital (como a de Botafogo/Copacabana).
-Quando um crime ocorre em uma dessas áreas, o inquérito policial deve ser
-distribuído aleatoriamente para uma das promotorias de investigação penal que
-atuem dentro da área. As únicas exceções são crimes como violência doméstica,
-que são distribuídos para promotorias especializadas.
+
+Quando um crime ocorre em uma dessas `r pn(mp_areas_count)` áreas, o inquérito
+policial deve ser distribuído aleatoriamente para uma das várias promotorias de
+investigação penal que atuam dentro da área. A área de atuação de Nova Iguaçu,
+por exemplo, tem quatro promotorias -- e qualquer uma delas pode receber um
+inquérito. (As exceções são os crimes de violência doméstica, que são
+distribuídos para promotorias especializadas).
 
 O problema é que algumas áreas de atuação recebem menos recursos do que outras.
 De acordo com dados do MPRJ, entre março e dezembro de 2020, chegaram
 `r pn(madureira_inq)` inquéritos policiais para cada promotoria da área de
 Madureira/Jacarepaguá. Enquanto isso, chegaram apenas `r pn(meier_inq)`
-inquéritos na área Méier/Tijuca. Isso significa que **as promotorias de
+inquéritos na área do Méier/Tijuca. Isso significa que **as promotorias de
 Madureira/Jacarepaguá têm de servir quase o dobro da demanda do Méier/Tijuca com
 praticamente a mesma quantidade de recursos**.
 
@@ -137,24 +139,21 @@ ggplot() +
   scale_fill_distiller(direction = 1, palette = 'Oranges') +
   theme_pindograma_map() +
   theme(legend.title = element_text())
-
-#ggplot(capital, aes(x = forcats::fct_reorder(area_atuacao, demand_per_pip), y = demand_per_pip)) +
-#  ggtitle('Demanda, por promotoria, nas áreas de atuação do MP') +
-#  labs(subtitle = 'Cidade do Rio de Janeiro, março a dezembro de 2020', caption = 'Fonte: CENPE/MPRJ') +
-#  geom_col(fill = pg_green) +
-#  coord_flip() +
-#  xlab('') + ylab('Inquéritos policiais por promotoria') +
-#  theme_pindograma() +
-#  theme(axis.title.x = element_text(size = 12))
 ```
 
-Não é difícil entender por que essas distorções permanecem, mesmo depois de uma
-[reorganização das promotorias][3] em março de 2020. Hoje, há pouco espaço para
-redistribuir promotorias da capital sem gerar assimetrias ainda maiores. Se uma
-promotoria do Méier fosse transferida para Madureira, a área Méier/Tijuca
-passaria a ser a área mais mal-servida pelo Ministério Público na cidade. Há
-certas distorções que só podem ser corrigidas com a criação de novas promotorias
-onde há mais demanda -- tarefa difícil em tempos de crise.
+A situação costumava ser bem pior: antes de uma [reorganização das
+promotorias][3] em março de 2020, havia diferenças ainda maiores entre as
+demandas de diferentes promotorias. A reorganização das promotorias na capital e
+em algumas cidades do entorno é fruto dos esforços do então Procurador-Geral
+Eduardo Gussem e do Centro de Pesquisas do MPRJ, que buscaram reequilibrar as
+demandas de cada promotoria no estado.
+
+No entanto, sem poder criar promotorias novas, foi impossível para os
+reorganizadores resolver todas as distorções de demanda. Se uma única
+promotoria do Méier, por exemplo, fosse transferida para Madureira, a área
+Méier/Tijuca passaria a ser a área mais mal-servida pelo Ministério Público na
+cidade. A solução seria criar uma nova promotoria em Madureira -- tarefa
+difícil em tempos de crise.
 
 No interior, por outro lado, há pelo menos uma assimetria entre recursos de
 promotorias que parece menos justificável. Desde janeiro de 2016, a promotoria de
@@ -164,18 +163,11 @@ a promotoria de Barra Mansa, cidade vizinha (`r pn(vr_inqueritos)` contra
 de atuação do Ministério Público poderia diminuir essas diferenças e
 proporcionar um acesso mais equânime à justiça em ambos os municípios.
 
-A reorganização das promotorias na capital e em algumas cidades do entorno é
-fruto dos esforços do então Procurador-Geral Eduardo Gussem e do Centro de
-Pesquisas do MPRJ, que buscaram reequilibrar as demandas de cada promotoria no
-estado. Mas a despeito dos avanços obtidas nesse processo, o MPRJ ainda tem um
-longo caminho a percorrer para que a justiça chegue aos cidadãos fluminenses,
-independentemente de onde residam.
-
 ##### A Produtividade das Promotorias
 
 De toda forma, a reorganização das promotorias trouxe uma vantagem inédita para
 quem busca entender o funcionamento do MPRJ: onde ela entrou em vigor, passou a
-ser possível comparar o desempenho de promotorias na mesma área de atuação. Isso
+ser possível **comparar o desempenho de promotorias na mesma área de atuação**. Isso
 ocorre porque os crimes que ocorrem em cada área de atuação são distribuídos
 aleatoriamente para qualquer uma das promotorias na área.
 
@@ -374,8 +366,12 @@ Janeiro (CENPE/MPRJ).
 
 **Crédito da imagem**: Divulgação/Ministério Público do Rio de Janeiro.
 
-[1]:
+Para reproduzir os números da matéria, o código e os dados podem ser
+encontrados <a
+href="https://github.com/pindograma/materias/blob/master/2021-02-23-mp2/pedro-mp2.Rmd">aqui</a>.
 
-[2]: 
+[1]: https://pindograma.com.br/2021/02/23/mp1.html
+
+[2]: /2021/04/07/mp3.html
 
 [3]: https://www.mprj.mp.br/home/-/detalhe-noticia/visualizar/83704?p_p_state=maximized
