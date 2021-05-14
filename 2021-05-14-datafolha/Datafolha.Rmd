@@ -1,0 +1,175 @@
+---
+title: "O que aprendemos com o Partidos em Números"
+author: "João Costa e Fernanda Nunes"
+date: "30/04/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(gt)
+
+load('model_polls_2.Rdata')
+lula22 = read_csv('lula.csv')
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Durante os últimos quinze dias, cinco institutos de pesquisa brasileiros
+publicaram intenções de voto para as eleições de 2022. O Datafolha [deu uma
+vantagem](https://www1.folha.uol.com.br/poder/2021/05/datafolha-aprovacao-a-bolsonaro-recua-seis-pontos-e-chega-a-24-a-pior-marca-do-mandato-rejeicao-e-de-45.shtml)
+colossal para Lula contra Bolsonaro no primeiro turno; já o DataPoder e o
+Ipespe indicaram um empate entre os dois, enquanto o Atlas e o Paraná Pesquisas
+deram uma vantagem leve para Bolsonaro.
+
+```{r}
+lula22 %>%
+    select(-`Média`) %>%
+    gt(rowname_col = 'cand') %>%
+    tab_header('Algumas Pesquisas Eleitorais Recentes (30/4 - 12/5)') %>%
+    tab_source_note('Fonte: Datafolha, Ipespe, PoderData, Atlas Político, Paraná Pesquisas') %>%
+    cols_align('center') %>%
+    fmt_missing(everything()) %>%
+    fmt_number(everything(), dec_mark = ',', decimals = 1) %>%
+    theme_pindograma_table() %>%
+    theme_pindograma_table_stub()
+```
+
+Desde ontem, analistas têm dado duas explicações para essa diferença entre o
+Datafolha e seus concorrentes. A primeira é que **o Datafolha seria mais ou
+menos competente do que os outros institutos**. Muitos bolsonaristas [atacam a
+empresa](https://twitter.com/folha/status/1392644029645471748) como pouco
+confiável, enquanto outras pessoas defendem o histórico do instituto.
+
+Os dados do _Pindograma_ mostram que essa explicação está completamente
+equivocada. Datafolha, Atlas, Paraná Pesquisas e Ipespe todos têm bom
+desempenho (notas A ou B+) no nosso [Ranking de Institutos de
+Pesquisa](https://pindograma.com.br/ranking.html), que considera o histórico de
+acertos dos institutos entre 2012 e 2020. Já o PoderData não pôde ser avaliado
+porque produziu muito poucas pesquisas eleitorais até agora. Em outras
+palavras: nada indica que devemos confiar mais (ou menos) no histórico do
+Datafolha que no de outros institutos.
+
+A segunda explicação para a diferença nos resultados é que **a metodologia do
+Datafolha seria diferente**. O Datafolha é o único instituto que fez uma
+pesquisa presencial, isto é, entrevistando pessoas nas ruas. Ipespe, Paraná e
+PoderData fizeram pesquisas telefônicas, enquanto o Atlas usou uma metodologia
+de coleta online.
+
+Para alguns, a metodologia presencial [seria
+superior](https://twitter.com/guilherme_amado/status/1392605890512048131) à
+não-presencial e, por isso, deveríamos confiar mais no Datafolha. Já outros
+argumentam que pesquisas presenciais [funcionariam mal no contexto da
+pandemia](https://twitter.com/LavaredaAntonio/status/1392937924119912451), uma
+vez que transeuntes tenderiam a evitar responder um questionário aplicado por
+um estranho de máscara na rua.
+
+```{r}
+presphone = model_polls_2 %>%
+    filter(CD_CARGO == 1) %>%
+    filter(year == 2018) %>%
+    filter(days_apart != 0) %>%
+    filter(polled_UE == 'BR') %>%
+    filter(is_phone)
+
+presnophone = model_polls_2 %>%
+    filter(CD_CARGO == 1) %>%
+    filter(year == 2018) %>%
+    filter(days_apart != 0) %>%
+    filter(polled_UE == 'BR') %>%
+    filter(!is_phone)
+```
+
+Ambos os lados têm bons argumentos. Entre as pesquisas nacionais para
+presidente em 2018, as presenciais tiveram desempenho melhor que o das
+telefônicas, em média. O erro médio das pesquisas presenciais conduzidas a três
+semanas ou menos do primeiro turno, ou a duas semanas ou menos do segundo
+turno, foi de **`r pn(mean(presnophone$mm3))` pontos percentuais**. Já o erro
+médio das telefônicas foi de **`r pn(mean(presphone$mm3))` pontos percentuais**
+(a amostra de presenciais foi de `r pn(nrow(presnophone))` pesquisas; a amostra
+de telefônicas foi de `r pn(nrow(presphone))`). Se levarmos em consideração o
+número de dias entre a pesquisa e a eleição ao calcular essa média, o resultado
+é parecido.
+
+```{r}
+nonpres = model_polls_2 %>%
+    filter(year == 2020 & turno == 2 & SG_UE %in% cap) %>%
+    filter(is_phone | pretty_name == 'Atlas Político')
+
+nonpres_error = mean(nonpres$mm3)
+
+pres_error = model_polls_2 %>%
+    filter(year == 2020 & turno == 2 & SG_UE %in% nonpres$SG_UE) %>%
+    filter(!(is_phone | pretty_name == 'Atlas Político')) %>%
+    pull(mm3) %>%
+    mean()
+```
+
+Por outro lado, no contexto da pandemia, as telefônicas tiveram um desempenho
+levemente melhor que o das presenciais. Nas eleições municipais de 2020, as
+pesquisas não-presenciais [tiveram erro
+médio](https://pindograma.com.br/2020/12/11/pesquisas-analise.html) de
+**`r pn(nonpres_error)` pontos percentuais** nas capitais em que foram
+realizadas, comparado a um erro de **`r pn(pres_error)` pontos percentuais**
+entre as presenciais nas mesmas cidades.
+
+Outra discussão metodológica gira em torno da **ponderação por preferência
+política**. Trata-se de achar a melhor resposta para a seguinte pergunta: dado
+que 55% dos brasileiros votaram em Bolsonaro em 2018, isso quer dizer que 55%
+dos entrevistados por uma pesquisa em 2021 deveriam dizer que votaram em
+Bolsonaro em 2018? A resposta do Atlas é _sim_ — e suas amostras são calibradas
+para que isso ocorra. O diretor do Datafolha, por outro lado, [afirma
+que](https://valor.globo.com/politica/noticia/2021/05/14/resultados-divergentes-de-pesquisas-provocam-discussao-sobre-metodos.ghtml)
+"as pessoas esquecem em quem votou ou, conforme a conjuntura, preferem esconder
+qual foi o voto [na última eleição]". Por isso, o instituto não leva em
+consideração o comportamento político passado. No Brasil, não dispomos de dados
+históricos para avaliar qual lado do debate produz melhores resultados.
+
+No _Pindograma_, não escolhemos nenhum dos lados. Em vez disso, preferimos
+**agregar pesquisas que usam diferentes metodologias**. Assim, neutralizamos os
+vieses que uma ou outra metodologia possa ter e levamos em consideração o
+máximo de informação possível na nossa análise. Foi o que [fizemos durante as
+eleições municipais](https://pindograma.shinyapps.io/agregador/) e o que
+fazemos agora com essas últimas pesquisas de intenção de voto presidencial:
+
+```{r}
+lula22 %>%
+    pivot_longer(-cand) %>%
+    group_by(cand) %>%
+    summarize(`Média` = mean(value, na.rm = T)) %>%
+    arrange(desc(`Média`)) %>% filter(row_number() <= 9) %>%
+    rename(Candidato = cand) %>%
+    gt() %>%
+    tab_header(title = 'Média Simples das Intenções de Voto', subtitle = 'Em pesquisas eleitorais recentes (30/4 - 12/5)') %>%
+    tab_source_note('Fonte: Datafolha, Ipespe, PoderData, Atlas Político, Paraná Pesquisas. Foram excluídos candidatos que não aparecem em todas as pesquisas.') %>%
+    fmt_number(vars(`Média`), dec_mark = ',', decimals = 1) %>%
+    theme_pindograma_table() %>%
+    theme_pindograma_table_stub() 
+```
+
+O resultado? **Lula e Bolsonaro estão praticamente empatados** nas preferências
+do eleitorado, com uma ligeira vantagem para Lula. Por isso, nós do
+_Pindograma_ teríamos cautela antes de argumentar que o petista tem ampla
+vantagem sobre Bolsonaro. Não por duvidar do Datafolha, mas por acreditar que
+suas pesquisas têm o mesmo valor que as da concorrência.
+
+---
+
+**Dados utilizados na matéria**: Resultados de Pesquisas Eleitorais
+(_Pindograma_); Resultados das Eleições (Tribunal Superior Eleitoral).
+
+Para reproduzir os números citados na matéria, os dados e o código podem
+ser encontrados [aqui][1].
+
+**Créditos da imagem**: Rovena Rosa/Agência Brasil, José Cruz/Agência Brasil,
+Alan Santos/PR.
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-05-14-datafolha/Datafolha.Rmd
