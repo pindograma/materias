@@ -1,0 +1,582 @@
+id,nome,siglaPartido,siglaUf,fundeb,orcamento,previdencia,wilson
+204554,Abílio Santana,PL,BA,Não,Não,Sim,Sim
+204521,Abou Anni,PSL,SP,Não,Não,Sim,Não
+204379,Acácio Favacho,PROS,AP,Sim,NA,Sim,Sim
+204560,Adolfo Viana,PSDB,BA,Sim,Não,Sim,NA
+204528,Adriana Ventura,NOVO,SP,Não,Não,Sim,Não
+121948,Adriano do Baldy,PP,GO,Sim,Não,Sim,NA
+74646,Aécio Neves,PSDB,MG,Sim,Não,Sim,Sim
+141372,Aelton Freitas,PL,MG,NA,NA,NA,NA
+160508,Afonso Florence,PT,BA,Sim,Sim,Não,Sim
+136811,Afonso Hamm,PP,RS,Sim,Não,Sim,Não
+178835,Afonso Motta,PDT,RS,Sim,Sim,Não,Sim
+160527,Aguinaldo Ribeiro,PP,PB,Sim,Não,Sim,Sim
+204495,Airton Faleiro,PT,PA,Sim,NA,Não,Sim
+204549,AJ Albuquerque,PP,CE,Sim,Não,Sim,Sim
+178836,Alan Rick,DEM,AC,Não,Não,Sim,NA
+160559,Alceu Moreira,MDB,RS,Sim,Não,Sim,Sim
+204413,Alcides Rodrigues,PATRIOTA,GO,NA,Não,Sim,NA
+204545,Alê Silva,PSL,MG,Não,Não,Sim,NA
+204501,Alencar Santana Braga,PT,SP,Sim,Sim,Não,NA
+160511,Alessandro Molon,PSB,RJ,Sim,Sim,Não,NA
+178972,Alex Manente,CIDADANIA,SP,Sim,Sim,Sim,Não
+204571,Alex Santana,PDT,BA,Não,Sim,Sim,Não
+204544,Alexandre Frota,PSDB,SP,Sim,Sim,Sim,Não
+160545,Alexandre Leite,DEM,SP,Não,Não,Sim,NA
+204503,Alexandre Padilha,PT,SP,Sim,Sim,Não,Sim
+178833,Alexandre Serfiotis,PSD,RJ,Sim,NA,Sim,Não
+204516,Alexis Fonteyne,NOVO,SP,Não,Não,Sim,Não
+74057,Alice Portugal,PCdoB,BA,Sim,Sim,Não,Sim
+178927,Aliel Machado,PSB,PR,Sim,Sim,Não,Não
+204353,Aline Gurgel,REPUBLICANOS,AP,Sim,Não,Não,Sim
+204400,Aline Sleutjes,PSL,PR,Não,Não,Sim,Não
+178937,Altineu Côrtes,PL,RJ,NA,NA,Sim,NA
+178881,Aluisio Mendes,PSC,MA,Sim,Não,Sim,NA
+204356,Amaro Neto,REPUBLICANOS,ES,Não,Não,Sim,Sim
+178831,André Abdon,PP,AP,Sim,Não,Sim,Sim
+74471,André de Paula,PSD,PE,Sim,Não,Sim,Sim
+204423,André Ferreira,PSC,PE,Não,NA,Sim,Não
+133439,André Figueiredo,PDT,CE,Sim,Sim,Não,Sim
+178882,André Fufuca,PP,MA,NA,Não,Sim,Sim
+204515,André Janones,AVANTE,MG,Sim,Sim,Não,Não
+73696,Angela Amin,PP,SC,Sim,Não,Sim,Não
+74212,Aníbal Gomes,DEM,CE,NA,NA,Sim,NA
+160553,Antonio Brito,PSD,BA,NA,Não,Sim,NA
+73433,Arlindo Chinaglia,PT,SP,Sim,Sim,Não,Sim
+141391,Arnaldo Jardim,CIDADANIA,SP,Sim,Sim,Sim,Não
+204414,Aroldo Martins,REPUBLICANOS,PR,Sim,Não,Sim,Sim
+160541,Arthur Lira,PP,AL,NA,NA,Sim,Sim
+160600,Arthur Oliveira Maia,DEM,BA,Sim,Não,Sim,NA
+159237,Assis Carvalho,PT,PI,NA,Sim,Não,Sim
+74090,Átila Lins,PP,AM,Sim,Não,Sim,NA
+74459,Átila Lira,PP,PI,Sim,Não,Sim,Sim
+160665,Augusto Coutinho,SOLIDARIEDADE,PE,Sim,Não,Sim,Sim
+204509,Áurea Carolina,PSOL,MG,Sim,NA,Não,NA
+160512,Aureo Ribeiro,SOLIDARIEDADE,RJ,Não,Não,Sim,NA
+69871,Bacelar,PODE,BA,Sim,Sim,NA,Sim
+178975,Baleia Rossi,MDB,SP,Sim,NA,Sim,Sim
+73701,Benedita da Silva,PT,RJ,Sim,NA,Não,Sim
+109429,Benes Leocádio,REPUBLICANOS,RN,Sim,Não,Sim,Não
+141335,Beto Faro,PT,PA,Sim,Sim,Não,Sim
+204358,Beto Pereira,PSDB,MS,Sim,Não,Sim,Não
+178948,Beto Rosado,PP,RN,NA,Não,Sim,Sim
+207176,Bia Cavassa,PSDB,MS,Sim,Sim,NA,Não
+204374,Bia Kicis,PSL,DF,Não,Não,Sim,Não
+204388,Bibo Nunes,PSL,RS,Não,Não,Sim,Não
+141513,Bilac Pinto,DEM,MG,Sim,Não,Sim,NA
+204561,Bira do Pindaré,PSB,MA,Sim,Sim,Não,Não
+204397,Boca Aberta,PROS,PR,NA,Sim,Sim,NA
+160538,Bohn Gass,PT,RS,Sim,Sim,Não,Sim
+74052,Bosco Costa,PL,SE,Não,Não,Sim,Sim
+204551,Bosco Saraiva,SOLIDARIEDADE,AM,NA,Não,Sim,Não
+204502,Bozzella,PSL,SP,Não,Não,Sim,Não
+160589,Bruna Furlan,PSDB,SP,Sim,Sim,Sim,NA
+93083,Cacá Leão,PP,BA,Sim,Não,Sim,Sim
+178853,Caetano,PT,BA,NA,NA,NA,NA
+204352,Camilo Capiberibe,PSB,AP,Sim,Sim,Não,Não
+204572,Capitão Alberto Neto,REPUBLICANOS,AM,Não,Não,Sim,Não
+178829,Capitão Augusto,PL,SP,Não,Não,Sim,NA
+178924,Capitão Fábio Abreu,PL,PI,NA,NA,NA,NA
+204487,Capitão Wagner,PROS,CE,Não,Não,Não,Não
+213762,Carla Dickson,PROS,RN,Sim,NA,NA,NA
+204507,Carla Zambelli,PSL,SP,Não,Não,Sim,Não
+141401,Carlos Bezerra,MDB,MT,NA,Não,Sim,Sim
+204361,Carlos Chiodini,MDB,SC,Sim,Não,Sim,Sim
+178962,Carlos Gomes,REPUBLICANOS,RS,Não,Não,Sim,Sim
+178993,Carlos Henrique Gaguim,DEM,TO,Não,Não,Sim,Sim
+204460,Carlos Jordy,PSL,RJ,Não,Não,Sim,Não
+74262,Carlos Sampaio,PSDB,SP,Sim,Não,Sim,Não
+204426,Carlos Veras,PT,PE,Sim,Sim,Não,NA
+141398,Carlos Zarattini,PT,SP,Sim,Sim,Não,Sim
+164360,Carmen Zanotto,CIDADANIA,SC,Sim,Sim,Sim,Não
+204369,Caroline de Toni,PSL,SC,Não,Não,Sim,Não
+204499,Cássio Andrade,PSB,PA,Sim,Sim,Não,Não
+204380,Celina Leão,PP,DF,Não,Não,Sim,Sim
+204370,Célio Moura,PT,TO,Sim,Sim,Não,Sim
+178876,Célio Silveira,PSDB,GO,Sim,Não,Sim,Não
+204488,Célio Studart,PV,CE,Sim,Sim,Não,Não
+141405,Celso Maldaner,MDB,SC,Sim,Não,Sim,NA
+73441,Celso Russomanno,REPUBLICANOS,SP,Não,Não,Sim,Sim
+204496,Celso Sabino,PSDB,PA,Não,Não,Sim,NA
+204504,Cezinha de Madureira,PSD,SP,Não,Não,Sim,Sim
+205476,Charles Fernandes,PSD,BA,Sim,Não,Sim,Abstenção
+204490,Charlles Evangelista,PSL,MG,Não,Não,Sim,Não
+141439,Chico D'Angelo,PDT,RJ,Sim,Sim,Não,Sim
+141440,CHICO LOPES,PCdoB,CE,NA,NA,NA,NA
+204476,Chiquinho Brazão,AVANTE,RJ,Não,Não,Sim,Sim
+204462,Chris Tonietto,PSL,RJ,NA,Não,Sim,Não
+178928,Christiane de Souza Yared,PL,PR,Não,Não,Sim,Sim
+204440,Christino Aureo,PP,RJ,Sim,Não,Sim,Sim
+178939,Clarissa Garotinho,PROS,RJ,Sim,Sim,Não,Não
+74537,Claudio Cajado,PP,BA,Não,Sim,Sim,Sim
+141408,Cleber Verde,REPUBLICANOS,MA,Não,Não,Sim,NA
+204376,Coronel Armando,PSL,SC,Não,Não,Sim,Não
+204378,Coronel Chrisóstomo,PSL,RO,NA,Não,Sim,Não
+204514,Coronel Tadeu,PSL,SP,Não,Não,Sim,Não
+178963,Covatti Filho,PP,RS,NA,NA,NA,NA
+135054,Cristiano Vale,PL,PA,Não,Não,Sim,Sim
+204355,Da Vitoria,CIDADANIA,ES,Sim,Não,Sim,Não
+141411,Dagoberto Nogueira,PDT,MS,Sim,Sim,Não,Não
+74467,Damião Feliciano,PDT,PB,Sim,Sim,Não,Sim
+74060,Daniel Almeida,PCdoB,BA,Sim,Sim,Não,Sim
+178916,Daniel Coelho,CIDADANIA,PE,Sim,Sim,Sim,Não
+204367,Daniel Freitas,PSL,SC,Não,Não,Sim,Não
+204454,Daniel Silveira,PSL,RJ,Não,Não,Sim,Não
+204409,Daniel Trzeciak,PSDB,RS,Não,Não,Sim,Não
+204459,Daniela do Waguinho,MDB,RJ,Sim,Não,Sim,Sim
+160528,Danilo Cabral,PSB,PE,Sim,Sim,Não,Abstenção
+62881,Danilo Forte,PSDB,CE,Sim,NA,NA,NA
+160552,Danrlei de Deus Hinterholz,PSD,RS,Sim,NA,Sim,NA
+116379,Darci de Matos,PSD,SC,NA,Não,Sim,Sim
+73891,Darcísio Perondi,MDB,RS,NA,NA,Sim,Sim
+205548,David Miranda,PSOL,RJ,Sim,Sim,Não,Não
+204511,David Soares,DEM,SP,Não,Não,Sim,Sim
+204451,Delegado Antônio Furtado,PSL,RJ,Sim,Sim,Sim,Não
+178908,Delegado Éder Mauro,PSD,PA,Não,NA,Sim,NA
+204512,Delegado Marcelo Freitas,PSL,MG,Não,Não,Sim,Não
+204569,Delegado Pablo,PSL,AM,Não,Não,Sim,Não
+164359,Delegado Waldir,PSL,GO,Não,Não,Sim,Não
+204542,Denis Bezerra,PSB,CE,Sim,Sim,Não,Não
+213856,Deuzinho Filho,REPUBLICANOS,CE,NA,NA,NA,NA
+160588,Diego Andrade,PSD,MG,NA,Não,Sim,Sim
+178929,Diego Garcia,PODE,PR,Não,Não,Sim,Não
+160599,Dimas Fabiano,PP,MG,Sim,Não,Sim,Sim
+143632,Domingos Neto,PSD,CE,NA,Não,Sim,Sim
+160758,Domingos Sávio,PSDB,MG,Sim,Não,Sim,Não
+213854,Dr. Agripino Magalhães,PROS,CE,NA,NA,NA,NA
+204518,Dr. Frederico,PATRIOTA,MG,Não,NA,Sim,NA
+212625,Dr. Gonçalo,REPUBLICANOS,MA,NA,NA,NA,Sim
+204481,Dr. Jaziel,PL,CE,Não,Não,Sim,NA
+213679,Dr. João,PROS,BA,NA,NA,NA,NA
+204439,Dr. Leonardo,SOLIDARIEDADE,MT,Sim,Não,Sim,Não
+204450,Dr. Luiz Antonio Teixeira Jr.,PP,RJ,Sim,Não,Sim,Sim
+204351,Dr. Luiz Ovando,PSL,MS,Não,Não,Sim,Não
+178830,Dr. Sinval Malheiros,PODE,SP,NA,Não,NA,NA
+204412,Dr. Zacharias Calil,DEM,GO,Sim,Não,Sim,Não
+81297,Dra. Soraya Manato,PSL,ES,Não,Não,Sim,Não
+204434,Dra. Vanda Milani,SOLIDARIEDADE,AC,NA,Não,Sim,Sim
+178994,Dulce Miranda,MDB,TO,Sim,Não,Sim,Sim
+204562,Edilázio Júnior,PSD,MA,Sim,NA,Sim,Sim
+141417,Edio Lopes,PL,RR,NA,Não,Sim,Sim
+134812,Edmilson Rodrigues,PSOL,PA,NA,Sim,Não,Não
+204421,Edna Henrique,PSDB,PB,Sim,Não,Sim,Abstenção
+74655,Eduardo Barbosa,PSDB,MG,Sim,Não,Sim,NA
+204541,Eduardo Bismarck,PDT,CE,Sim,Sim,Não,Sim
+92346,Eduardo Bolsonaro,PSL,SP,Não,Não,Sim,Não
+204552,Eduardo Braide,PODE,MA,Sim,Sim,Não,NA
+204500,Eduardo Costa,PTB,PA,Sim,Não,Sim,Sim
+178977,Eduardo Cury,PSDB,SP,Não,Não,Sim,Não
+141421,Eduardo da Fonte,PP,PE,Sim,Não,Não,Sim
+141422,Efraim Filho,DEM,PB,Sim,Não,Sim,Sim
+74075,Elcione Barbalho,MDB,PA,Sim,NA,Sim,Sim
+204364,Eli Borges,SOLIDARIEDADE,TO,Não,Sim,Sim,Não
+160532,Eli Corrêa Filho,DEM,SP,Sim,Não,Sim,NA
+204389,Elias Vaz,PSB,GO,Sim,Sim,Não,Não
+178854,Elmar Nascimento,DEM,BA,NA,NA,Sim,Sim
+198783,Emanuel Pinheiro Neto,PTB,MT,Sim,NA,Sim,Sim
+161550,Emidinho Madeira,PSB,MG,Sim,Não,Sim,NA
+207309,Enéias Reis,PSL,MG,NA,Não,NA,Não
+132504,Enio Verri,PT,PR,NA,Sim,Não,Sim
+204537,Enrico Misasi,PV,SP,Não,Sim,Sim,Não
+160575,Erika Kokay,PT,DF,Sim,Sim,Não,Sim
+160640,Eros Biondini,PROS,MG,NA,Não,Sim,Não
+204482,Euclydes Pettersen,PSC,MG,Sim,Não,Sim,Sim
+178871,Evair Vieira de Melo,PP,ES,Sim,Não,Sim,Não
+178953,Expedito Netto,PSD,RO,Sim,Não,Não,Não
+211866,Fabiano Tolentino,CIDADANIA,MG,NA,NA,NA,Não
+141428,Fábio Faria,PSD,RN,NA,Não,Sim,Sim
+68720,Fábio Henrique,PDT,SE,Sim,Sim,Não,Sim
+178969,Fábio Mitidieri,PSD,SE,Sim,Não,Sim,Sim
+141427,Fábio Ramalho,MDB,MG,NA,Não,Sim,Sim
+171623,Fabio Reis,MDB,SE,Sim,Sim,Sim,Sim
+204368,Fabio Schiochet,PSL,SC,Não,Não,Sim,Não
+160587,Fábio Trad,PSD,MS,Sim,Não,Sim,Não
+66828,Fausto Pinato,PP,SP,Não,Não,Sim,Sim
+204477,Felício Laterça,PSL,RJ,Sim,Não,Sim,Não
+72442,Felipe Carreras,PSB,PE,Sim,Sim,Sim,Sim
+204398,Felipe Francischini,PSL,PR,NA,Não,Sim,Não
+204371,Felipe Rigoni,PSB,ES,Sim,NA,Sim,Não
+160666,Félix Mendonça Júnior,PDT,BA,Sim,Sim,Não,Sim
+204407,Fernanda Melchionna,PSOL,RS,Sim,Sim,Não,Não
+212504,Fernando Borja,AVANTE,MG,NA,NA,NA,Não
+141431,Fernando Coelho Filho,DEM,PE,NA,Não,Sim,Sim
+204445,Fernando Mineiro,PT,RN,NA,NA,NA,NA
+92699,Fernando Monteiro,PP,PE,Sim,Não,Não,Sim
+204427,Fernando Rodolfo,PL,PE,Sim,Não,Sim,Sim
+204411,Filipe Barros,PSL,PR,Não,Não,Sim,NA
+204354,Flávia Arruda,PL,DF,NA,Não,Sim,NA
+160598,Flávia Morais,PDT,GO,Sim,Sim,Não,Não
+141434,Flaviano Melo,MDB,AC,Não,Não,Sim,Sim
+191923,Flávio Nogueira,PDT,PI,Sim,Não,Sim,Sim
+204447,Flordelis,PSD,RJ,Sim,Não,Sim,Sim
+204392,Francisco Jr.,PSD,GO,Não,Não,Sim,Não
+204510,Franco Cartafina,PP,MG,Sim,Não,Sim,Não
+204494,Fred Costa,PATRIOTA,MG,Sim,Não,Sim,NA
+204393,Frei Anastacio Ribeiro,PT,PB,Sim,Sim,Não,Sim
+74200,Gastão Vieira,PROS,MA,NA,Não,Sim,Sim
+115746,Gelson Azevedo,PL,RJ,Não,Não,Sim,Sim
+160669,Genecias Noronha,SOLIDARIEDADE,CE,Não,Não,Sim,Sim
+204473,General Girão,PSL,RN,Não,Não,NA,Não
+204484,General Peternelli,PSL,SP,Não,Não,Sim,Não
+204527,Geninho Zuliani,DEM,SP,Sim,Não,Sim,Sim
+178966,Geovania de Sá,PSDB,SC,Sim,NA,Sim,Não
+74374,Geraldo Resende,PSDB,MS,NA,NA,NA,NA
+204394,Gervásio Maia,PSB,PB,Sim,Sim,Não,Sim
+74383,Giacobo,PL,PR,Não,Não,Sim,NA
+204575,Gil Cutrim,REPUBLICANOS,MA,Sim,Não,Sim,Sim
+204491,Gilberto Abramo,REPUBLICANOS,MG,Não,Não,Sim,Sim
+74270,Gilberto Nascimento,PSC,SP,Não,Sim,Sim,NA
+204365,Gilson Marques,NOVO,SC,Não,Não,Sim,Não
+160673,Giovani Cherini,PL,RS,Não,Não,Sim,Sim
+178996,Giovani Feltes,MDB,RS,Sim,Não,Sim,Sim
+152605,Glauber Braga,PSOL,RJ,Sim,Sim,Não,Não
+204419,Glaustin da Fokus,PSC,GO,Não,Não,Sim,NA
+107283,Gleisi Hoffmann,PT,PR,Sim,Sim,Não,Sim
+74419,Gonzaga Patriota,PSB,PE,NA,Sim,Não,NA
+129618,GORETE PEREIRA,PL,CE,NA,NA,NA,NA
+198197,Greyce Elias,AVANTE,MG,Não,Não,Sim,NA
+204513,Guiga Peixoto,PSL,SP,Não,Não,Sim,Não
+204531,Guilherme Derrite,PP,SP,Não,Não,Sim,Não
+160667,Guilherme Mussi,PP,SP,Sim,Não,Sim,NA
+204442,Gurgel,PSL,RJ,Não,Não,Sim,Não
+73460,Gustavo Fruet,PDT,PR,Sim,Sim,Não,Não
+204408,Gustinho Ribeiro,SOLIDARIEDADE,SE,Não,Não,Sim,Sim
+204456,Gutemberg Reis,MDB,RJ,NA,Não,Sim,Sim
+204465,Haroldo Cathedral,PSD,RR,Sim,Não,Sim,NA
+204548,Heitor Freire,PSL,CE,Não,Não,Sim,Não
+178964,Heitor Schuch,PSB,RS,Sim,Sim,Não,Não
+178873,Helder Salomão,PT,ES,Sim,Sim,Não,Não
+204373,Hélio Costa,REPUBLICANOS,SC,Sim,Não,Sim,Não
+178909,Hélio Leite,DEM,PA,Sim,Não,Sim,Sim
+204444,Helio Lopes,PSL,RJ,Não,Não,Sim,Não
+73482,Henrique Fontana,PT,RS,Sim,Sim,Não,Sim
+204539,Hercílio Coelho Diniz,MDB,MG,NA,Não,Sim,NA
+178981,Herculano Passos,MDB,SP,Sim,Não,Sim,NA
+73772,Hermes Parcianello,MDB,PR,Sim,Não,Sim,NA
+178884,Hildo Rocha,MDB,MA,NA,Não,Sim,Sim
+178959,Hiran Gonçalves,PP,RR,Sim,Não,Sim,Sim
+141450,Hugo Leal,PSD,RJ,Não,Não,Sim,Sim
+160674,Hugo Motta,REPUBLICANOS,PB,Sim,Não,Não,Sim
+204533,Idilvan Alencar,PDT,CE,Sim,Sim,Não,Não
+204564,Igor Kannário,DEM,BA,Sim,Sim,Sim,NA
+204508,Igor Timo,PODE,MG,NA,Não,Sim,NA
+67138,Iracema Portella,PP,PI,Sim,Não,Sim,Sim
+204436,Isnaldo Bulhões Jr.,MDB,AL,Sim,Não,Sim,Sim
+73531,Ivan Valente,PSOL,SP,Sim,Sim,Não,Não
+74848,Jandira Feghali,PCdoB,RJ,Sim,Sim,Não,Sim
+108338,Jaqueline Cassol,PP,RO,Sim,Não,Sim,Sim
+160672,Jean Wyllys,PSOL,RJ,NA,NA,NA,NA
+74273,Jefferson Campos,PSB,SP,Não,Não,Sim,NA
+160570,Jerônimo Goergen,PP,RS,Não,NA,Sim,NA
+178839,Jéssica Sales,MDB,AC,NA,Não,Sim,Sim
+204435,Jesus Sérgio,PDT,AC,Sim,Sim,Sim,Não
+178842,Jhc,PSB,AL,Sim,Sim,Não,NA
+160531,Jhonatan de Jesus,REPUBLICANOS,RR,Não,NA,Sim,Sim
+74366,João Campos,REPUBLICANOS,GO,Não,Não,Sim,Não
+141458,João Carlos Bacelar,PL,BA,Não,NA,Sim,NA
+178970,João Daniel,PT,SE,Sim,Sim,Não,Sim
+204429,João H. Campos,PSB,PE,Sim,Sim,Não,Sim
+141459,João Maia,PL,RN,Não,Não,Sim,Sim
+112437,João Marcelo Souza,MDB,MA,Sim,Não,Sim,NA
+204576,João Roma,REPUBLICANOS,BA,Não,Não,Sim,Sim
+178910,Joaquim Passarinho,PSD,PA,Não,Não,Sim,Não
+204468,Joenia Wapichana,REDE,RR,Sim,Sim,Não,Não
+204546,Joice Hasselmann,PSL,SP,Não,Não,Sim,Não
+205550,Jorge Braz,REPUBLICANOS,RJ,Não,Não,Sim,Sim
+214694,Jorge Goetten,PL,SC,Não,NA,NA,NA
+178857,Jorge Solla,PT,BA,Sim,Sim,Não,Sim
+141464,José Airton Félix Cirilo,PT,CE,Sim,Sim,Não,Sim
+141470,José Guimarães,PT,CE,Sim,Sim,Não,Sim
+204386,Jose Mario Schreiner,DEM,GO,Sim,Não,Sim,NA
+204472,José Medeiros,PODE,MT,Sim,Não,Sim,NA
+204391,José Nelto,PODE,GO,Sim,Não,Sim,Não
+160619,José Nunes,PSD,BA,Sim,Não,Sim,Sim
+74079,José Priante,MDB,PA,Sim,Não,Sim,Sim
+204555,José Ricardo,PT,AM,Sim,Sim,Não,Não
+74554,José Rocha,PL,BA,NA,Não,Sim,Sim
+209189,Joseildo Ramos,PT,BA,Sim,Sim,Não,Sim
+74141,Josias Gomes,PT,BA,NA,NA,NA,NA
+204563,Josimar Maranhãozinho,PL,MA,NA,NA,Sim,NA
+215043,Josivaldo JP,PODE,MA,NA,NA,NA,NA
+204474,Juarez Costa,MDB,MT,NA,Não,Sim,Sim
+204420,Julian Lemos,PSL,PB,NA,Não,Sim,NA
+74317,Júlio Cesar,PSD,PI,NA,Não,Sim,Sim
+204372,Julio Cesar Ribeiro,REPUBLICANOS,DF,Não,Não,Sim,Sim
+73586,Júlio Delgado,PSB,MG,Sim,Sim,Não,Não
+204457,Juninho do Pneu,DEM,RJ,Sim,Não,Sim,Sim
+204520,Junio Amaral,PSL,MG,NA,NA,Sim,Não
+204497,Júnior Ferrari,PSD,PA,Sim,Não,Sim,Não
+204574,Junior Lourenço,PL,MA,Não,Não,Sim,NA
+204550,Júnior Mano,PL,CE,NA,Não,Sim,Sim
+178886,Juscelino Filho,DEM,MA,NA,Não,Sim,Sim
+204536,Kim Kataguiri,DEM,SP,Não,NA,Sim,Não
+151208,Laercio Oliveira,PP,SE,Sim,Não,Sim,Não
+141478,Laerte Bessa,PL,DF,NA,NA,NA,NA
+98057,Lafayette de Andrada,REPUBLICANOS,MG,Não,Não,Sim,Sim
+160534,Lauriete,PSC,ES,Sim,Não,Sim,Não
+178832,Leandre,PV,PR,Sim,Sim,Sim,Não
+204375,Leda Sadala,AVANTE,AP,Sim,Não,Sim,Sim
+178825,LEO DE BRITO,PT,AC,Sim,NA,NA,NA
+204359,Léo Moraes,PODE,RO,Sim,Não,Sim,NA
+204547,Léo Motta,PSL,MG,NA,Não,Sim,NA
+122195,Leonardo Gadelha,PSC,PB,NA,NA,NA,NA
+74156,Leonardo Monteiro,PT,MG,Sim,Sim,Não,Sim
+74299,Leônidas Cristino,PDT,CE,Sim,Sim,Não,Sim
+92102,Leur Lomanto Júnior,DEM,BA,Não,Não,Sim,Sim
+139285,Lídice da Mata,PSB,BA,Sim,Sim,Não,Sim
+74585,Lincoln Portela,PL,MG,NA,Não,Sim,NA
+204405,Liziane Bayer,PSB,RS,Não,Não,Sim,Não
+204382,Loester Trutis,PSL,MS,Não,Não,Sim,Não
+196358,Lourival Gomes,PSL,RJ,Sim,Não,Sim,Não
+204523,Lucas Gonzalez,NOVO,MG,Não,Não,Sim,NA
+204404,Lucas Redecker,PSDB,RS,Não,Não,Sim,Não
+178879,Lucas Vergilio,SOLIDARIEDADE,GO,Não,Não,Sim,NA
+74478,Luciano Bivar,PSL,PE,NA,Não,Sim,NA
+178931,Luciano Ducci,PSB,PR,Sim,Sim,Não,Não
+178954,Lucio Mosquini,MDB,RO,NA,Não,Sim,Sim
+204381,Luis Miranda,DEM,DF,Não,Não,Sim,Sim
+160510,Luis Tibé,AVANTE,MG,NA,Não,Sim,Sim
+204410,Luisa Canziani,PTB,PR,Não,Não,Sim,Sim
+204448,Luiz Antônio Corrêa,PL,RJ,Não,Não,Sim,Sim
+160645,Luiz Carlos,PSDB,AP,Sim,NA,Sim,NA
+204485,Luiz Carlos Motta,PL,SP,Não,Não,NA,Sim
+204543,Luiz Flávio Gomes,PSB,SP,NA,NA,Sim,NA
+178982,Luiz Lauro Filho,PSDB,SP,NA,Não,NA,Não
+204455,Luiz Lima,PSL,RJ,Não,Não,Sim,Não
+162332,Luiz Nishimori,PL,PR,NA,Não,Sim,Não
+204526,Luiz Philippe de Orleans e Bragança,PSL,SP,Não,Não,Sim,Não
+74784,Luiza Erundina,PSOL,SP,Sim,Sim,Não,Não
+204418,Luizão Goulart,REPUBLICANOS,PR,Sim,NA,Sim,Sim
+178866,Luizianne Lins,PT,CE,Sim,Sim,Não,Abstenção
+166402,Magda Mofatto,PL,GO,Não,Não,Sim,Sim
+204458,Major Fabiana,PSL,RJ,Não,Não,Sim,NA
+141490,MANOEL JUNIOR,PSC,PB,NA,NA,NA,NA
+204469,Manuel Marcos,REPUBLICANOS,AC,NA,Não,Sim,Sim
+204471,Mara Rocha,PSDB,AC,Sim,Não,Sim,Não
+212749,Marcão Gomes,PL,RJ,NA,Não,NA,Sim
+156190,Marcel van Hattem,NOVO,RS,Não,Não,Sim,NA
+179000,Marcelo Álvaro Antônio,PSL,MG,Não,NA,Sim,NA
+146788,Marcelo Aro,PP,MG,Sim,Não,Sim,NA
+205863,Marcelo Brum,PSL,RS,Não,Não,NA,Não
+204433,Marcelo Calero,CIDADANIA,RJ,Sim,Sim,Sim,Não
+76874,Marcelo Freixo,PSOL,RJ,Sim,Sim,Não,Não
+133810,Marcelo Moraes,PTB,RS,NA,Não,Sim,Sim
+204558,Marcelo Nilo,PSB,BA,Sim,Sim,Não,NA
+204556,Marcelo Ramos,PL,AM,NA,Não,Sim,Sim
+178983,Marcio Alvino,PL,SP,Não,Não,Sim,NA
+179001,Márcio Biolchi,MDB,RS,Sim,Não,Sim,Sim
+81055,Márcio Jerry,PCdoB,MA,Sim,Sim,Não,Sim
+204452,Márcio Labre,PSL,RJ,Não,Não,Sim,Abstenção
+150418,Márcio Marinho,REPUBLICANOS,BA,Não,Não,Sim,Sim
+204522,Marco Bertaiolli,PSD,SP,Sim,Não,Sim,NA
+160536,MARCO TEBALDI,PSDB,SC,NA,NA,NA,NA
+160535,Marcon,PT,RS,Sim,Sim,Não,Sim
+204431,Marcos Aurélio Sampaio,MDB,PI,Sim,Não,Sim,Sim
+204506,Marcos Pereira,REPUBLICANOS,SP,Não,Não,Sim,Sim
+178943,Marcos Soares,DEM,RJ,NA,NA,NA,NA
+159238,Marcus Pestana,PSDB,MG,NA,NA,NA,NA
+204430,Margarete Coelho,PP,PI,NA,Não,Sim,Sim
+171619,Margarida Salomão,PT,MG,Sim,Sim,Não,NA
+74398,Maria do Rosário,PT,RS,Sim,Sim,Não,Sim
+204540,Maria Rosas,REPUBLICANOS,SP,Não,Não,Sim,Sim
+178956,Mariana Carvalho,PSDB,RO,Sim,Não,Sim,Sim
+204428,Marília Arraes,PT,PE,Sim,Sim,Não,NA
+204432,Marina Santos,SOLIDARIEDADE,PI,NA,NA,Sim,Sim
+74158,Mário Heringer,PDT,MG,NA,Sim,Não,Sim
+178858,Mário Negromonte Jr.,PP,BA,Sim,Não,Não,Sim
+204403,Marlon Santos,PDT,RS,Sim,Não,Sim,Não
+204566,Marreca Filho,PATRIOTA,MA,Sim,Não,Sim,NA
+178843,Marx Beltrão,PSD,AL,Sim,Não,Sim,NA
+75431,Maurício Dziedricki,PTB,RS,Não,Não,Sim,Sim
+204486,Mauro Benevides Filho,PDT,CE,Sim,Sim,NA,Sim
+74749,Mauro Lopes,MDB,MG,Sim,Não,Sim,NA
+141508,Mauro Nazif,PSB,RO,Sim,Sim,Não,Não
+188097,Merlong Solano,PT,PI,Sim,NA,NA,NA
+178984,Miguel Haddad,PSDB,SP,NA,NA,NA,Não
+178985,Miguel Lombardi,PL,SP,Sim,Não,Sim,NA
+92172,Milton Coelho,PSB,PE,NA,NA,NA,NA
+154178,Milton Vieira,REPUBLICANOS,SP,Não,Não,Sim,Sim
+178895,Misael Varella,PSD,MG,Não,Não,Sim,Não
+178997,Moses Rodrigues,MDB,CE,NA,Não,Sim,NA
+204453,Natália Bonavides,PT,RN,Sim,Sim,Não,Sim
+204449,Nelson Barbudo,PSL,MT,Não,Não,Sim,Não
+74571,Nelson Pellegrino,PT,BA,NA,NA,Não,NA
+204415,Nereu Crispim,PSL,RS,Não,Não,Sim,Sim
+146307,Neri Geller,PP,MT,NA,Não,Sim,NA
+74165,Neucimar Fraga,PSD,ES,NA,NA,NA,NA
+178896,Newton Cardoso Jr,MDB,MG,Sim,Não,Sim,NA
+204384,Ney Leprevost,PSD,PR,NA,NA,NA,NA
+204479,Nicoletti,PSL,RR,Sim,Não,Sim,Não
+214445,Nilson F. Stainsack,PP,SC,Sim,NA,NA,NA
+74352,Nilson Pinto,PSDB,PA,Sim,Não,Sim,Sim
+178986,Nilto Tatto,PT,SP,Sim,Sim,Não,NA
+194260,Nivaldo Albuquerque,PTB,AL,NA,Não,Sim,Sim
+66179,Norma Ayub,DEM,ES,Sim,Não,Sim,Não
+216198,Norma Pereira,PSDB,SC,NA,NA,NA,NA
+74159,Odair Cunha,PT,MG,Sim,Sim,Não,Sim
+178868,Odorico Monteiro,PSB,CE,NA,NA,NA,NA
+204498,Olival Marques,DEM,PA,Sim,Não,Sim,Sim
+74399,Onyx Lorenzoni,DEM,RS,NA,NA,Sim,NA
+178987,Orlando Silva,PCdoB,SP,Sim,NA,Não,Sim
+204363,Osires Damaso,PSC,TO,Sim,Não,Sim,Não
+73692,Osmar Terra,MDB,RS,Sim,Não,NA,NA
+204422,Ossesio Silva,REPUBLICANOS,PE,Não,Não,Sim,Sim
+141515,Otavio Leite,PSDB,RJ,NA,NA,NA,NA
+204441,Otoni de Paula,PSC,RJ,Não,Não,Sim,Não
+204475,Ottaci Nascimento,SOLIDARIEDADE,RR,NA,Não,Sim,NA
+204573,Otto Alencar Filho,PSD,BA,Sim,NA,Sim,Sim
+160556,Padre João,PT,MG,Sim,Sim,Não,NA
+74319,Paes Landim,PTB,PI,NA,Não,Sim,Sim
+160642,Pastor Eurico,PATRIOTA,PE,Não,Não,Sim,Não
+204570,Pastor Gil,PL,MA,Não,Não,Sim,Sim
+204553,Pastor Sargento Isidório,AVANTE,BA,Sim,Sim,Sim,NA
+205535,Patricia Ferraz,PODE,AP,NA,Sim,NA,Sim
+74160,Patrus Ananias,PT,MG,Sim,Sim,Não,Sim
+204377,Paula Belmonte,CIDADANIA,DF,Não,Não,Sim,Não
+171617,Paulão,PT,AL,Sim,Sim,Não,Sim
+141516,Paulo Abi-Ackel,PSDB,MG,Sim,NA,Sim,Sim
+178860,Paulo Azi,DEM,BA,Não,Não,Sim,Sim
+204538,Paulo Bengtson,PTB,PA,Sim,NA,Sim,Sim
+193726,Paulo Eduardo Martins,PSC,PR,Não,Não,Sim,Não
+160517,Paulo Foletto,PSB,ES,NA,NA,NA,NA
+160558,Paulo Freire Costa,PL,SP,Não,Não,Sim,Não
+204461,Paulo Ganime,NOVO,RJ,Não,Não,Sim,Não
+204492,Paulo Guedes,PT,MG,Sim,Sim,Não,Sim
+74574,Paulo Magalhães,PSD,BA,Sim,Não,Sim,Sim
+128760,Paulo Marinho Jr,PL,MA,NA,Não,NA,NA
+141518,Paulo Pereira da Silva,SOLIDARIEDADE,SP,NA,NA,Não,Sim
+74400,Paulo Pimenta,PT,RS,Sim,Sim,Não,Sim
+133968,Paulo Ramos,PDT,RJ,Sim,Sim,Não,Sim
+141488,Paulo Teixeira,PT,SP,Sim,Sim,Não,Sim
+90201,Pedro Augusto Bezerra,PTB,CE,Sim,Não,Sim,Sim
+215045,Pedro Augusto Palareti,PSD,RJ,NA,NA,NA,NA
+178912,Pedro Cunha Lima,PSDB,PB,Não,Sim,Sim,Não
+122974,Pedro Lucas Fernandes,PTB,MA,NA,Não,Sim,Sim
+204395,Pedro Lupion,DEM,PR,Não,Não,Sim,NA
+122158,Pedro Paulo,DEM,RJ,Sim,Não,Sim,Sim
+160604,Pedro Uczai,PT,SC,Sim,Sim,Não,NA
+178844,Pedro Vilela,PSDB,AL,NA,NA,NA,NA
+204406,Pedro Westphalen,PP,RS,Sim,Não,Sim,NA
+73943,Perpétua Almeida,PCdoB,AC,NA,Sim,Não,Sim
+204524,Pinheirinho,PP,MG,NA,Não,Sim,Sim
+204529,Policial Katia Sastre,PL,SP,Não,NA,Sim,NA
+73486,Pompeo de Mattos,PDT,RS,Sim,Sim,Não,Sim
+160601,Pr. Marco Feliciano,REPUBLICANOS,SP,Não,Não,Sim,Não
+204390,Professor Alcides,PP,GO,Sim,Não,Sim,Sim
+204383,Professor Israel Batista,PV,DF,Sim,Sim,Não,Não
+204446,Professor Joziel,PSL,RJ,Não,Não,Sim,Sim
+204565,Professora Dayane Pimentel,PSL,BA,Não,Não,Sim,Não
+160639,Professora Dorinha Seabra Rezende,DEM,TO,Sim,Não,Sim,NA
+160641,Professora Marcivania,PCdoB,AP,Sim,Sim,Não,Sim
+204467,Professora Rosa Neide,PT,MT,Sim,Sim,Não,Sim
+215361,Rachel Marques,PT,CE,NA,NA,NA,NA
+178951,Rafael Motta,PSB,RN,Sim,Sim,Não,NA
+216313,Rafafá,PSDB,PB,NA,NA,NA,NA
+204567,Raimundo Costa,PL,BA,Não,Não,Sim,Sim
+141523,Raul Henry,MDB,PE,Sim,Não,Sim,Sim
+74161,Reginaldo Lopes,PT,MG,Sim,Sim,Não,Sim
+205865,Reinhold Stephanes Junior,PSD,PR,Não,NA,Sim,Abstenção
+178925,Rejane Dias,PT,PI,Sim,Sim,Não,NA
+178989,Renata Abreu,PODE,SP,Sim,NA,Sim,NA
+214477,Renato Queiroz,MDB,RR,Sim,NA,NA,NA
+73801,Renildo Calheiros,PCdoB,PE,Sim,Sim,Não,NA
+73788,Ricardo Barros,PP,PR,Não,Não,Sim,Sim
+215042,Ricardo da Karol,PSC,RJ,NA,NA,NA,NA
+204362,Ricardo Guidi,PSD,SC,Sim,Não,Sim,Não
+160655,Ricardo Izar,PP,SP,Não,Não,Sim,Sim
+211649,Ricardo Pericar,PSL,RJ,NA,NA,NA,NA
+213274,Ricardo Silva,PSB,SP,Sim,NA,NA,NA
+178920,Ricardo Teobaldo,PODE,PE,Sim,Não,Sim,Sim
+204489,Robério Monteiro,PDT,CE,Sim,Sim,Não,NA
+152610,Roberto Alves,REPUBLICANOS,SP,Não,Não,Sim,Sim
+73674,ROBERTO BALESTRA,PP,GO,NA,NA,NA,NA
+160653,Roberto de Lucena,PODE,SP,Não,Não,Sim,Não
+74305,Roberto Pessoa,PSDB,CE,NA,NA,Sim,NA
+204530,Rodrigo Agostinho,PSB,SP,Sim,Sim,Sim,Não
+204366,Rodrigo Coelho,PSB,SC,Não,Não,Sim,Não
+141531,Rodrigo de Castro,PSDB,MG,Sim,NA,Sim,Sim
+74693,Rodrigo Maia,DEM,RJ,Artigo 17,Não,Sim,Artigo 17
+204480,Rogério Correia,PT,MG,Sim,Sim,Não,Sim
+160651,Rogério Peninha Mendonça,MDB,SC,NA,Não,Sim,Sim
+178930,Roman,PATRIOTA,PR,Sim,Não,Sim,NA
+178861,Ronaldo Carletto,PP,BA,Não,Não,Sim,Sim
+122466,Ronaldo Martins,REPUBLICANOS,CE,NA,NA,NA,NA
+204525,Rosana Valle,PSB,SP,Sim,Não,Sim,Não
+178945,Rosangela Gomes,REPUBLICANOS,RJ,Não,Não,Sim,Sim
+204357,Rose Modesto,PSDB,MS,Sim,Não,Sim,Não
+178935,Rossoni,PSDB,PR,NA,NA,NA,NA
+73466,Rubens Bueno,CIDADANIA,PR,Sim,Sim,Sim,Não
+74371,Rubens Otoni,PT,GO,Sim,Sim,Não,NA
+178887,Rubens Pereira Júnior,PCdoB,MA,Sim,NA,NA,NA
+73604,Rui Falcão,PT,SP,Sim,Sim,Não,Sim
+160635,Ruy Carneiro,PSDB,PB,Sim,Não,Sim,Não
+204535,Sâmia Bomfim,PSOL,SP,Sim,Sim,Não,Não
+178990,Samuel Moreira,PSDB,SP,Sim,Não,Sim,Não
+204416,Sanderson,PSL,RS,Não,Não,Sim,Não
+160621,Sandro Alex,PSD,PR,NA,NA,NA,NA
+90842,Santini,PTB,RS,Não,Não,Sim,Sim
+204387,Sargento Fahur,PSD,PR,Não,Não,Sim,Não
+204399,Schiavinato,PP,PR,Sim,Não,Sim,Sim
+178921,Sebastião Oliveira,AVANTE,PE,Não,Não,Sim,NA
+73808,Sérgio Brito,PSD,BA,NA,Não,NA,Sim
+178933,Sergio Souza,MDB,PR,Sim,Não,Sim,NA
+204438,Sergio Toledo,PL,AL,Não,Não,Sim,Sim
+178874,Sergio Vidigal,PDT,ES,NA,Sim,Não,Não
+204437,Severino Pessoa,REPUBLICANOS,AL,Não,Não,Sim,Sim
+178961,Shéridan,PSDB,RR,Sim,Não,Sim,Sim
+204557,Sidney Leite,PSD,AM,Sim,Não,Sim,NA
+74356,Silas Câmara,REPUBLICANOS,AM,Não,Não,Sim,NA
+204360,Silvia Cristina,PDT,RO,Sim,Sim,Sim,Não
+204425,Silvio Costa Filho,REPUBLICANOS,PE,Sim,Não,Sim,Sim
+168175,Simplício Araújo,SOLIDARIEDADE,MA,NA,NA,NA,NA
+178946,Soraya Santos,PL,RJ,Não,Não,Sim,Sim
+178947,Sóstenes Cavalcante,DEM,RJ,Não,NA,Sim,Não
+92776,Stefano Aguiar,PSD,MG,Não,Não,Sim,Sim
+177282,Subtenente Gonzaga,PDT,MG,Sim,Sim,Sim,Não
+204534,Tabata Amaral,PDT,SP,Sim,Sim,Sim,Não
+178922,Tadeu Alencar,PSB,PE,Sim,Sim,Não,Não
+74806,Tadeu Filippelli,MDB,DF,NA,NA,NA,NA
+204464,Talíria Petrone,PSOL,RJ,Sim,Sim,Não,Não
+206231,Ted Conti,PSB,ES,Sim,Sim,Sim,Não
+178901,Tereza Cristina,DEM,MS,NA,NA,Sim,NA
+204466,Tereza Nelma,PSDB,AL,NA,Sim,Não,NA
+178862,Tia Eron,REPUBLICANOS,BA,NA,NA,NA,NA
+143084,Tiago Dimas,SOLIDARIEDADE,TO,Não,Não,Sim,NA
+204519,Tiago Mitraud,NOVO,MG,Não,Não,Sim,Não
+160976,Tiririca,PL,SP,Sim,Sim,Não,Sim
+197438,Tito,AVANTE,BA,NA,Não,Sim,Não
+178934,Toninho Wandscheer,PROS,PR,Sim,Não,Sim,NA
+157130,Túlio Gadêlha,PDT,PE,Sim,Sim,Não,Não
+178863,Uldurico Junior,PROS,BA,Sim,Não,Sim,NA
+195866,Vaidon Oliveira,PROS,CE,Sim,Não,Sim,Sim
+204385,Valdevan Noventa,PL,SE,Não,Não,Não,Sim
+74010,VALDIR COLATTO,MDB,SC,NA,NA,NA,NA
+160610,Valmir Assunção,PT,BA,Sim,Sim,Não,Sim
+141552,Valtenir Pereira,MDB,MT,NA,NA,NA,NA
+74376,Vander Loubet,PT,MS,Sim,Sim,Não,Sim
+141553,Vanderlei Macris,PSDB,SP,Sim,Não,Sim,Não
+204505,Vavá Martins,REPUBLICANOS,PA,Não,Não,Sim,NA
+204396,Vermelho,PSD,PR,Não,Não,Sim,Sim
+74283,Vicentinho,PT,SP,Sim,Sim,Não,Sim
+137070,Vicentinho Júnior,PL,TO,Não,Não,Sim,NA
+204483,Vilson da Fetaemg,PSB,MG,Sim,Sim,Não,Não
+141555,Vinicius Carvalho,REPUBLICANOS,SP,Não,NA,Sim,Sim
+204478,Vinicius Farah,MDB,RJ,Sim,Não,Sim,Sim
+160591,Vinicius Gurgel,PL,AP,Sim,NA,Sim,NA
+204532,Vinicius Poit,NOVO,SP,Não,Não,Sim,Não
+179587,Vitor Hugo,PSL,GO,Não,Não,Sim,Não
+178992,Vitor Lippi,PSDB,SP,Não,Não,Sim,Não
+215044,Vivi Reis,PSOL,PA,NA,NA,NA,NA
+204443,Wagner Montes,REPUBLICANOS,RJ,NA,NA,NA,NA
+160569,Waldenor Pereira,PT,BA,Sim,Sim,Não,Não
+178952,Walter Alves,MDB,RN,Sim,Não,Sim,Sim
+160518,Weliton Prado,PROS,MG,Sim,Sim,Não,Não
+74043,Wellington Roberto,PL,PB,NA,NA,Sim,Sim
+74044,Wilson Santiago,PTB,PB,Sim,Não,Sim,NA
+204463,Wladimir Garotinho,PSD,RJ,NA,Não,Não,Sim
+74439,Wolney Queiroz,PDT,PE,Sim,Sim,Não,Sim
+178889,Zé Carlos,PT,MA,Sim,Sim,Não,Abstenção
+204559,Zé Neto,PT,BA,Sim,Sim,Não,NA
+160632,Zé Silva,SOLIDARIEDADE,MG,Não,Não,Sim,Sim
+204517,Zé Vitor,PL,MG,NA,Não,Sim,Sim
+160592,Zeca Dirceu,PT,PR,Sim,NA,Não,Sim
