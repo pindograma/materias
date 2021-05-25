@@ -1,0 +1,1189 @@
+UF;CATEGORIA;ESPECIE_ARMA;TOTAL
+AC;Caçador de Subsistência;Carabina;2
+AC;Caçador de Subsistência;Espingarda;3950
+AC;Caçador de Subsistência;Pistola;12
+AC;Caçador de Subsistência;Revolver;25
+AC;Caçador de Subsistência;Rifle;86
+AC;Cidadão;Carabina;31
+AC;Cidadão;Espingarda;424
+AC;Cidadão;Garrucha;2
+AC;Cidadão;Pistola;1874
+AC;Cidadão;Pistolao;2
+AC;Cidadão;Revolver;423
+AC;Cidadão;Rifle;875
+AC;Empresa com Segurança Orgânica;Revolver;2
+AC;Empresa de Segurança Privada;Espingarda;89
+AC;Empresa de Segurança Privada;Pistola;46
+AC;Empresa de Segurança Privada;Revolver;612
+AC;Órgão público com taxa;Pistola;1299
+AC;Órgão público sem taxa;Carabina;52
+AC;Órgão público sem taxa;Espingarda;92
+AC;Órgão público sem taxa;Metralhadora;56
+AC;Órgão público sem taxa;Pistola;1968
+AC;Órgão público sem taxa;Revolver;461
+AC;Órgão público sem taxa;Rifle;67
+AC;Órgão público sem taxa;Submetralhadora;3
+AC;Outras Categorias;Pistola;52
+AC;Outras Categorias;Revolver;8
+AC;Revendedor;Revolver;144
+AC;Servidor Público(Porte por prerrogativa de função);Carabina;5
+AC;Servidor Público(Porte por prerrogativa de função);Espingarda;43
+AC;Servidor Público(Porte por prerrogativa de função);Pistola;345
+AC;Servidor Público(Porte por prerrogativa de função);Revolver;114
+AC;Servidor Público(Porte por prerrogativa de função);Rifle;123
+AL;Caçador de Subsistência;Revolver;1
+AL;Cidadão;Carabina;29
+AL;Cidadão;Carabina/espingarda;1
+AL;Cidadão;Escopeta;2
+AL;Cidadão;Espingarda;467
+AL;Cidadão;Pistola;3886
+AL;Cidadão;Pistolete;2
+AL;Cidadão;Revolver;861
+AL;Cidadão;Rifle;160
+AL;Empresa com Segurança Orgânica;Carabina;5
+AL;Empresa com Segurança Orgânica;Revolver;225
+AL;Empresa com Segurança Orgânica;Rifle;15
+AL;Empresa Comercial;Pistola;16
+AL;Empresa Comercial;Revolver;28
+AL;Empresa Comercial;Rifle;2
+AL;Empresa de Segurança Privada;Carabina;2
+AL;Empresa de Segurança Privada;Espingarda;248
+AL;Empresa de Segurança Privada;Pistola;95
+AL;Empresa de Segurança Privada;Revolver;2362
+AL;Empresa de Segurança Privada;Rifle;3
+AL;Órgão público com taxa;Carabina;1
+AL;Órgão público com taxa;Espingarda;22
+AL;Órgão público com taxa;Metralhadora;11
+AL;Órgão público com taxa;Pistola;155
+AL;Órgão público com taxa;Revolver;203
+AL;Órgão público sem taxa;Carabina;194
+AL;Órgão público sem taxa;Espingarda;224
+AL;Órgão público sem taxa;Fuzil;83
+AL;Órgão público sem taxa;Metralhadora;89
+AL;Órgão público sem taxa;Pistola;5101
+AL;Órgão público sem taxa;Revolver;3
+AL;Órgão público sem taxa;Submetralhadora;73
+AL;Servidor Público(Porte por prerrogativa de função);Carabina;17
+AL;Servidor Público(Porte por prerrogativa de função);Espingarda;140
+AL;Servidor Público(Porte por prerrogativa de função);Pistola;1302
+AL;Servidor Público(Porte por prerrogativa de função);Revolver;514
+AL;Servidor Público(Porte por prerrogativa de função);Rifle;62
+AM;Caçador de Subsistência;Espingarda;193
+AM;Caçador de Subsistência;Rifle;2
+AM;Cidadão;Carabina;34
+AM;Cidadão;Espingarda;541
+AM;Cidadão;Garrucha;1
+AM;Cidadão;Pistola;1203
+AM;Cidadão;Pistolao;1
+AM;Cidadão;Pistolete;4
+AM;Cidadão;Revolver;431
+AM;Cidadão;Rifle;291
+AM;Empresa com Segurança Orgânica;Revolver;72
+AM;Empresa de Segurança Privada;Carabina;20
+AM;Empresa de Segurança Privada;Espingarda;497
+AM;Empresa de Segurança Privada;Pistola;215
+AM;Empresa de Segurança Privada;Revolver;4028
+AM;Órgão público com taxa;Carabina;14
+AM;Órgão público com taxa;Espingarda;198
+AM;Órgão público com taxa;Pistola;333
+AM;Órgão público com taxa;Submetralhadora;12
+AM;Órgão público sem taxa;Carabina;18
+AM;Órgão público sem taxa;Espingarda;91
+AM;Órgão público sem taxa;Fuzil;6
+AM;Órgão público sem taxa;Metralhadora;50
+AM;Órgão público sem taxa;Pistola;971
+AM;Órgão público sem taxa;Revolver;485
+AM;Órgão público sem taxa;Rifle;4
+AM;Órgão público sem taxa;Submetralhadora;9
+AM;Servidor Público(Porte por prerrogativa de função);Carabina;9
+AM;Servidor Público(Porte por prerrogativa de função);Espingarda;75
+AM;Servidor Público(Porte por prerrogativa de função);Pistola;469
+AM;Servidor Público(Porte por prerrogativa de função);Revolver;204
+AM;Servidor Público(Porte por prerrogativa de função);Rifle;54
+AP;Caçador de Subsistência;Espingarda;6
+AP;Caçador de Subsistência;Rifle;3
+AP;Cidadão;Carabina;13
+AP;Cidadão;Espingarda;365
+AP;Cidadão;Pistola;824
+AP;Cidadão;Revolver;213
+AP;Cidadão;Rifle;227
+AP;Empresa com Segurança Orgânica;Revolver;5
+AP;Empresa de Segurança Privada;Carabina;3
+AP;Empresa de Segurança Privada;Espingarda;98
+AP;Empresa de Segurança Privada;Pistola;64
+AP;Empresa de Segurança Privada;Revolver;912
+AP;Empresa de Segurança Privada;Rifle;1
+AP;Órgão público sem taxa;Carabina;95
+AP;Órgão público sem taxa;Espingarda;67
+AP;Órgão público sem taxa;Fuzil;2
+AP;Órgão público sem taxa;Metralhadora;30
+AP;Órgão público sem taxa;Pistola;1706
+AP;Órgão público sem taxa;Revolver;147
+AP;Órgão público sem taxa;Submetralhadora;19
+AP;Servidor Público(Porte por prerrogativa de função);Carabina;13
+AP;Servidor Público(Porte por prerrogativa de função);Espingarda;85
+AP;Servidor Público(Porte por prerrogativa de função);Pistola;554
+AP;Servidor Público(Porte por prerrogativa de função);Revolver;125
+AP;Servidor Público(Porte por prerrogativa de função);Rifle;69
+BA;Caçador de Subsistência;Espingarda;4
+BA;Caçador de Subsistência;Pistola;6
+BA;Cidadão;Carabina;84
+BA;Cidadão;Carabina/cartucheira;1
+BA;Cidadão;Carabina/espingarda;1
+BA;Cidadão;Carabina/Fuzil;1
+BA;Cidadão;Escopeta;4
+BA;Cidadão;Espingarda;1003
+BA;Cidadão;Garrucha;3
+BA;Cidadão;Outras especies;1
+BA;Cidadão;Pistola;7552
+BA;Cidadão;Pistolao;1
+BA;Cidadão;Revolver;1369
+BA;Cidadão;Rifle;404
+BA;Empresa com Segurança Orgânica;Carabina;2
+BA;Empresa com Segurança Orgânica;Revolver;125
+BA;Empresa Comercial;Carabina;2
+BA;Empresa Comercial;Espingarda;4
+BA;Empresa Comercial;Pistola;33
+BA;Empresa Comercial;Revolver;23
+BA;Empresa de Segurança Privada;Carabina;101
+BA;Empresa de Segurança Privada;Espingarda;1326
+BA;Empresa de Segurança Privada;Pistola;478
+BA;Empresa de Segurança Privada;Revolver;13273
+BA;Empresa de Segurança Privada;Rifle;4
+BA;Órgão público sem taxa;Carabina;327
+BA;Órgão público sem taxa;Espingarda;283
+BA;Órgão público sem taxa;Fuzil;2
+BA;Órgão público sem taxa;Metralhadora;414
+BA;Órgão público sem taxa;Pistola;11752
+BA;Órgão público sem taxa;Revolver;237
+BA;Órgão público sem taxa;Submetralhadora;120
+BA;Outras Categorias;Espingarda;1
+BA;Outras Categorias;Pistola;15
+BA;Revendedor;Revolver;49
+BA;Servidor Público(Porte por prerrogativa de função);Carabina;43
+BA;Servidor Público(Porte por prerrogativa de função);Espingarda;215
+BA;Servidor Público(Porte por prerrogativa de função);Pistola;3423
+BA;Servidor Público(Porte por prerrogativa de função);Revolver;548
+BA;Servidor Público(Porte por prerrogativa de função);Rifle;85
+CE;Caçador de Subsistência;Espingarda;9
+CE;Cidadão;Carabina;31
+CE;Cidadão;Carabina/Fuzil;2
+CE;Cidadão;Espingarda;598
+CE;Cidadão;Garrucha;1
+CE;Cidadão;Pistola;3423
+CE;Cidadão;Pistolao;2
+CE;Cidadão;Revolver;1410
+CE;Cidadão;Rifle;217
+CE;Empresa com Segurança Orgânica;Carabina;1
+CE;Empresa com Segurança Orgânica;Espingarda;3
+CE;Empresa com Segurança Orgânica;Revolver;222
+CE;Empresa Comercial;Espingarda;10
+CE;Empresa Comercial;Pistola;6
+CE;Empresa Comercial;Revolver;31
+CE;Empresa de Segurança Privada;Carabina;26
+CE;Empresa de Segurança Privada;Espingarda;580
+CE;Empresa de Segurança Privada;Pistola;465
+CE;Empresa de Segurança Privada;Revolver;7504
+CE;Empresa de Segurança Privada;Rifle;15
+CE;Órgão público com taxa;Espingarda;5
+CE;Órgão público com taxa;Pistola;9
+CE;Órgão público com taxa;Revolver;16
+CE;Órgão público sem taxa;Carabina;1
+CE;Órgão público sem taxa;Espingarda;361
+CE;Órgão público sem taxa;Metralhadora;30
+CE;Órgão público sem taxa;Pistola;3612
+CE;Órgão público sem taxa;Revolver;80
+CE;Órgão público sem taxa;Submetralhadora;13
+CE;Revendedor;Revolver;7
+CE;Servidor Público(Porte por prerrogativa de função);Carabina;12
+CE;Servidor Público(Porte por prerrogativa de função);Espingarda;102
+CE;Servidor Público(Porte por prerrogativa de função);Pistola;2485
+CE;Servidor Público(Porte por prerrogativa de função);Revolver;628
+CE;Servidor Público(Porte por prerrogativa de função);Rifle;56
+DF;Caçador de Subsistência;Carabina;1
+DF;Caçador de Subsistência;Pistola;2
+DF;Cidadão;Carabina;130
+DF;Cidadão;Carabina/Fuzil;2
+DF;Cidadão;Escopeta;2
+DF;Cidadão;Espingarda;584
+DF;Cidadão;Fuzil;1
+DF;Cidadão;Garrucha;10
+DF;Cidadão;Pistola;5995
+DF;Cidadão;Pistolao;3
+DF;Cidadão;Pistolete;3
+DF;Cidadão;Revolver;2163
+DF;Cidadão;Rifle;652
+DF;Empresa com Segurança Orgânica;Revolver;12
+DF;Empresa Comercial;Carabina;4
+DF;Empresa Comercial;Espingarda;33
+DF;Empresa Comercial;Pistola;282
+DF;Empresa Comercial;Revolver;277
+DF;Empresa de Segurança Privada;Carabina;8
+DF;Empresa de Segurança Privada;Espingarda;653
+DF;Empresa de Segurança Privada;Pistola;469
+DF;Empresa de Segurança Privada;Revolver;7124
+DF;Empresa de Segurança Privada;Rifle;6
+DF;Fabricante/Importador;Pistola;2
+DF;Fabricante/Importador;Revolver;3
+DF;Órgão público com taxa;Carabina;93
+DF;Órgão público com taxa;Espingarda;353
+DF;Órgão público com taxa;Fuzil;18
+DF;Órgão público com taxa;Lancador;28
+DF;Órgão público com taxa;Pistola;5740
+DF;Órgão público com taxa;Revolver;174
+DF;Órgão público com taxa;Rifle;1
+DF;Órgão público com taxa;Submetralhadora;68
+DF;Órgão público sem taxa;Carabina;9180
+DF;Órgão público sem taxa;Escopeta;272
+DF;Órgão público sem taxa;Espingarda;12043
+DF;Órgão público sem taxa;Fuzil;2467
+DF;Órgão público sem taxa;Garrucha;17
+DF;Órgão público sem taxa;Metralhadora;1479
+DF;Órgão público sem taxa;Outras especies;3
+DF;Órgão público sem taxa;Pistola;137718
+DF;Órgão público sem taxa;Revolver;38746
+DF;Órgão público sem taxa;Rifle;144
+DF;Órgão público sem taxa;Submetralhadora;4494
+DF;Outras Categorias;Carabina;40
+DF;Outras Categorias;Espingarda;10
+DF;Outras Categorias;Pistola;179
+DF;Outras Categorias;Revolver;10
+DF;Revendedor;Pistola;2
+DF;Revendedor;Revolver;4
+DF;Servidor Público(Porte por prerrogativa de função);Carabina;89
+DF;Servidor Público(Porte por prerrogativa de função);Carabina/cartucheira;1
+DF;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;1
+DF;Servidor Público(Porte por prerrogativa de função);Escopeta;2
+DF;Servidor Público(Porte por prerrogativa de função);Espingarda;251
+DF;Servidor Público(Porte por prerrogativa de função);Fuzil;1
+DF;Servidor Público(Porte por prerrogativa de função);Garrucha;3
+DF;Servidor Público(Porte por prerrogativa de função);Pistola;2748
+DF;Servidor Público(Porte por prerrogativa de função);Pistolao;2
+DF;Servidor Público(Porte por prerrogativa de função);Pistolete;2
+DF;Servidor Público(Porte por prerrogativa de função);Revolver;1265
+DF;Servidor Público(Porte por prerrogativa de função);Rifle;227
+ES;Caçador de Subsistência;Espingarda;1
+ES;Caçador de Subsistência;Pistola;4
+ES;Caçador de Subsistência;Revolver;1
+ES;Cidadão;Carabina;280
+ES;Cidadão;Carabina/cartucheira;5
+ES;Cidadão;Carabina/espingarda;3
+ES;Cidadão;Carabina/Fuzil;1
+ES;Cidadão;Derringer;1
+ES;Cidadão;Escopeta;3
+ES;Cidadão;Espingarda;1417
+ES;Cidadão;Fuzil;1
+ES;Cidadão;Garrucha;26
+ES;Cidadão;Garruchao;7
+ES;Cidadão;Pistola;11304
+ES;Cidadão;Pistolao;13
+ES;Cidadão;Pistolete;1
+ES;Cidadão;Revolver;2744
+ES;Cidadão;Rifle;1783
+ES;Empresa com Segurança Orgânica;Espingarda;4
+ES;Empresa com Segurança Orgânica;Revolver;25
+ES;Empresa Comercial;Carabina;2
+ES;Empresa Comercial;Pistola;18
+ES;Empresa Comercial;Revolver;110
+ES;Empresa de Segurança Privada;Carabina;7
+ES;Empresa de Segurança Privada;Espingarda;513
+ES;Empresa de Segurança Privada;Pistola;166
+ES;Empresa de Segurança Privada;Revolver;4623
+ES;Fabricante/Importador;Pistola;1
+ES;Órgão público com taxa;Pistola;50
+ES;Órgão público com taxa;Revolver;24
+ES;Órgão público sem taxa;Carabina;275
+ES;Órgão público sem taxa;Espingarda;654
+ES;Órgão público sem taxa;Fuzil;71
+ES;Órgão público sem taxa;Pistola;4660
+ES;Órgão público sem taxa;Revolver;149
+ES;Órgão público sem taxa;Submetralhadora;9
+ES;Servidor Público(Porte por prerrogativa de função);Carabina;59
+ES;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;1
+ES;Servidor Público(Porte por prerrogativa de função);Escopeta;5
+ES;Servidor Público(Porte por prerrogativa de função);Espingarda;136
+ES;Servidor Público(Porte por prerrogativa de função);Garrucha;5
+ES;Servidor Público(Porte por prerrogativa de função);Mosquetao;2
+ES;Servidor Público(Porte por prerrogativa de função);Pistola;1271
+ES;Servidor Público(Porte por prerrogativa de função);Pistolao;3
+ES;Servidor Público(Porte por prerrogativa de função);Pistolete;1
+ES;Servidor Público(Porte por prerrogativa de função);Revolver;598
+ES;Servidor Público(Porte por prerrogativa de função);Rifle;118
+GO;Caçador de Subsistência;Carabina;1
+GO;Caçador de Subsistência;Pistola;5
+GO;Caçador de Subsistência;Rifle;1
+GO;Cidadão;Carabina;1201
+GO;Cidadão;Carabina/Fuzil;1
+GO;Cidadão;Escopeta;1
+GO;Cidadão;Espingarda;3319
+GO;Cidadão;Garrucha;4
+GO;Cidadão;Pistola;14058
+GO;Cidadão;Pistolao;7
+GO;Cidadão;Pistolete;15
+GO;Cidadão;Revolver;5046
+GO;Cidadão;Rifle;6210
+GO;Empresa com Segurança Orgânica;Carabina;7
+GO;Empresa com Segurança Orgânica;Espingarda;2
+GO;Empresa com Segurança Orgânica;Revolver;155
+GO;Empresa Comercial;Carabina;33
+GO;Empresa Comercial;Espingarda;196
+GO;Empresa Comercial;Pistola;4336
+GO;Empresa Comercial;Revolver;625
+GO;Empresa de Segurança Privada;Carabina;57
+GO;Empresa de Segurança Privada;Espingarda;736
+GO;Empresa de Segurança Privada;Pistola;565
+GO;Empresa de Segurança Privada;Revolver;8572
+GO;Empresa de Segurança Privada;Rifle;6
+GO;Órgão público sem taxa;Carabina;539
+GO;Órgão público sem taxa;Espingarda;668
+GO;Órgão público sem taxa;Fuzil;15
+GO;Órgão público sem taxa;Pistola;4438
+GO;Órgão público sem taxa;Revolver;1658
+GO;Órgão público sem taxa;Submetralhadora;240
+GO;Outras Categorias;Pistola;12
+GO;Revendedor;Revolver;5
+GO;Servidor Público(Porte por prerrogativa de função);Carabina;132
+GO;Servidor Público(Porte por prerrogativa de função);Espingarda;195
+GO;Servidor Público(Porte por prerrogativa de função);Fuzil;1
+GO;Servidor Público(Porte por prerrogativa de função);Pistola;1676
+GO;Servidor Público(Porte por prerrogativa de função);Pistolete;3
+GO;Servidor Público(Porte por prerrogativa de função);Revolver;654
+GO;Servidor Público(Porte por prerrogativa de função);Rifle;307
+MA;Caçador de Subsistência;Pistola;1
+MA;Cidadão;Carabina;45
+MA;Cidadão;Carabina/cartucheira;4
+MA;Cidadão;Escopeta;5
+MA;Cidadão;Espingarda;712
+MA;Cidadão;Fuzil;1
+MA;Cidadão;Pistola;3408
+MA;Cidadão;Pistolao;1
+MA;Cidadão;Pistolete;1
+MA;Cidadão;Revolver;842
+MA;Cidadão;Rifle;769
+MA;Empresa com Segurança Orgânica;Revolver;76
+MA;Empresa com Segurança Orgânica;Rifle;6
+MA;Empresa Comercial;Pistola;1
+MA;Empresa de Segurança Privada;Carabina;13
+MA;Empresa de Segurança Privada;Espingarda;433
+MA;Empresa de Segurança Privada;Pistola;272
+MA;Empresa de Segurança Privada;Revolver;5916
+MA;Empresa de Segurança Privada;Rifle;17
+MA;Órgão público com taxa;Pistola;14
+MA;Órgão público sem taxa;Carabina;246
+MA;Órgão público sem taxa;Escopeta;1
+MA;Órgão público sem taxa;Espingarda;338
+MA;Órgão público sem taxa;Fuzil;12
+MA;Órgão público sem taxa;Pistola;2589
+MA;Órgão público sem taxa;Revolver;261
+MA;Órgão público sem taxa;Submetralhadora;40
+MA;Outras Categorias;Espingarda;1
+MA;Outras Categorias;Pistola;6
+MA;Outras Categorias;Revolver;5
+MA;Servidor Público(Porte por prerrogativa de função);Carabina;13
+MA;Servidor Público(Porte por prerrogativa de função);Escopeta;4
+MA;Servidor Público(Porte por prerrogativa de função);Espingarda;119
+MA;Servidor Público(Porte por prerrogativa de função);Garruchao;1
+MA;Servidor Público(Porte por prerrogativa de função);Pistola;1169
+MA;Servidor Público(Porte por prerrogativa de função);Revolver;312
+MA;Servidor Público(Porte por prerrogativa de função);Rifle;94
+MG;Caçador de Subsistência;Carabina;1
+MG;Caçador de Subsistência;Espingarda;1
+MG;Caçador de Subsistência;Pistola;6
+MG;Caçador de Subsistência;Revolver;2
+MG;Caçador de Subsistência;Rifle;4
+MG;Cidadão;Carabina;1956
+MG;Cidadão;Carabina/cartucheira;83
+MG;Cidadão;Carabina/espingarda;20
+MG;Cidadão;Carabina/Fuzil;3
+MG;Cidadão;Escopeta;18
+MG;Cidadão;Espingarda;7994
+MG;Cidadão;Garrucha;113
+MG;Cidadão;Garruchao;21
+MG;Cidadão;Mosquetao;1
+MG;Cidadão;Outras especies;1
+MG;Cidadão;Pistola;28101
+MG;Cidadão;Pistolao;24
+MG;Cidadão;Pistolete;34
+MG;Cidadão;Pistolete ou garruchao;2
+MG;Cidadão;Revolver;13171
+MG;Cidadão;Rifle;4787
+MG;Empresa com Segurança Orgânica;Carabina;15
+MG;Empresa com Segurança Orgânica;Espingarda;3
+MG;Empresa com Segurança Orgânica;Revolver;293
+MG;Empresa com Segurança Orgânica;Rifle;1
+MG;Empresa Comercial;Carabina;2
+MG;Empresa Comercial;Espingarda;2
+MG;Empresa Comercial;Pistola;47
+MG;Empresa Comercial;Revolver;120
+MG;Empresa de Segurança Privada;Carabina;37
+MG;Empresa de Segurança Privada;Espingarda;1936
+MG;Empresa de Segurança Privada;Pistola;1012
+MG;Empresa de Segurança Privada;Revolver;19420
+MG;Fabricante/Importador;Espingarda;3
+MG;Fabricante/Importador;Pistola;17
+MG;Órgão público sem taxa;Carabina;324
+MG;Órgão público sem taxa;Carabina/Fuzil;14
+MG;Órgão público sem taxa;Espingarda;2268
+MG;Órgão público sem taxa;Fuzil;73
+MG;Órgão público sem taxa;Metralhadora;1
+MG;Órgão público sem taxa;Pistola;10209
+MG;Órgão público sem taxa;Revolver;703
+MG;Órgão público sem taxa;Submetralhadora;644
+MG;Revendedor;Carabina;1
+MG;Revendedor;Espingarda;2
+MG;Revendedor;Pistola;28
+MG;Revendedor;Revolver;6
+MG;Servidor Público(Porte por prerrogativa de função);Carabina;243
+MG;Servidor Público(Porte por prerrogativa de função);Carabina/cartucheira;9
+MG;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;1
+MG;Servidor Público(Porte por prerrogativa de função);Carabina/Fuzil;2
+MG;Servidor Público(Porte por prerrogativa de função);Escopeta;1
+MG;Servidor Público(Porte por prerrogativa de função);Espingarda;575
+MG;Servidor Público(Porte por prerrogativa de função);Garrucha;11
+MG;Servidor Público(Porte por prerrogativa de função);Garruchao;1
+MG;Servidor Público(Porte por prerrogativa de função);Pistola;12544
+MG;Servidor Público(Porte por prerrogativa de função);Pistolao;6
+MG;Servidor Público(Porte por prerrogativa de função);Pistolete;4
+MG;Servidor Público(Porte por prerrogativa de função);Revolver;2608
+MG;Servidor Público(Porte por prerrogativa de função);Rifle;510
+MS;Caçador de Subsistência;Carabina;1
+MS;Caçador de Subsistência;Espingarda;2
+MS;Caçador de Subsistência;Pistola;4
+MS;Caçador de Subsistência;Revolver;5
+MS;Caçador de Subsistência;Rifle;1
+MS;Cidadão;Carabina;564
+MS;Cidadão;Carabina/cartucheira;12
+MS;Cidadão;Carabina/espingarda;8
+MS;Cidadão;Carabina/Fuzil;6
+MS;Cidadão;Escopeta;11
+MS;Cidadão;Espingarda;1107
+MS;Cidadão;Garrucha;8
+MS;Cidadão;Garruchao;2
+MS;Cidadão;Outras especies;1
+MS;Cidadão;Pistola;5134
+MS;Cidadão;Pistolao;1
+MS;Cidadão;Pistolete;3
+MS;Cidadão;Revolver;3944
+MS;Cidadão;Rifle;1275
+MS;Empresa com Segurança Orgânica;Revolver;8
+MS;Empresa Comercial;Pistola;1
+MS;Empresa Comercial;Revolver;11
+MS;Empresa de Segurança Privada;Carabina;7
+MS;Empresa de Segurança Privada;Espingarda;249
+MS;Empresa de Segurança Privada;Pistola;133
+MS;Empresa de Segurança Privada;Revolver;3000
+MS;Órgão público com taxa;Espingarda;2
+MS;Órgão público com taxa;Fuzil;3
+MS;Órgão público com taxa;Pistola;162
+MS;Órgão público com taxa;Revolver;123
+MS;Órgão público sem taxa;Carabina;222
+MS;Órgão público sem taxa;Espingarda;138
+MS;Órgão público sem taxa;Fuzil;33
+MS;Órgão público sem taxa;Metralhadora;2
+MS;Órgão público sem taxa;Pistola;1237
+MS;Órgão público sem taxa;Revolver;462
+MS;Órgão público sem taxa;Submetralhadora;96
+MS;Servidor Público(Porte por prerrogativa de função);Carabina;84
+MS;Servidor Público(Porte por prerrogativa de função);Carabina/cartucheira;2
+MS;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;1
+MS;Servidor Público(Porte por prerrogativa de função);Carabina/Fuzil;1
+MS;Servidor Público(Porte por prerrogativa de função);Escopeta;1
+MS;Servidor Público(Porte por prerrogativa de função);Espingarda;148
+MS;Servidor Público(Porte por prerrogativa de função);Garrucha;3
+MS;Servidor Público(Porte por prerrogativa de função);Garruchao;1
+MS;Servidor Público(Porte por prerrogativa de função);Pistola;1471
+MS;Servidor Público(Porte por prerrogativa de função);Pistolao;2
+MS;Servidor Público(Porte por prerrogativa de função);Revolver;673
+MS;Servidor Público(Porte por prerrogativa de função);Rifle;127
+MT;Caçador de Subsistência;Espingarda;22
+MT;Caçador de Subsistência;Rifle;9
+MT;Cidadão;Carabina;1156
+MT;Cidadão;Carabina/cartucheira;10
+MT;Cidadão;Carabina/espingarda;4
+MT;Cidadão;Derringer;1
+MT;Cidadão;Escopeta;6
+MT;Cidadão;Espingarda;5362
+MT;Cidadão;Garrucha;10
+MT;Cidadão;Garruchao;2
+MT;Cidadão;Outras especies;2
+MT;Cidadão;Pistola;7736
+MT;Cidadão;Pistolao;32
+MT;Cidadão;Pistolete;4
+MT;Cidadão;Pistolete ou garruchao;1
+MT;Cidadão;Revolver;4709
+MT;Cidadão;Rifle;6786
+MT;Empresa com Segurança Orgânica;Carabina;6
+MT;Empresa com Segurança Orgânica;Revolver;24
+MT;Empresa com Segurança Orgânica;Rifle;2
+MT;Empresa Comercial;Carabina;5
+MT;Empresa Comercial;Espingarda;8
+MT;Empresa Comercial;Pistola;64
+MT;Empresa Comercial;Revolver;35
+MT;Empresa Comercial;Submetralhadora;15
+MT;Empresa de Segurança Privada;Carabina;35
+MT;Empresa de Segurança Privada;Espingarda;470
+MT;Empresa de Segurança Privada;Pistola;248
+MT;Empresa de Segurança Privada;Revolver;4234
+MT;Órgão público com taxa;Pistola;2
+MT;Órgão público sem taxa;Carabina;328
+MT;Órgão público sem taxa;Espingarda;205
+MT;Órgão público sem taxa;Fuzil;21
+MT;Órgão público sem taxa;Pistola;3182
+MT;Órgão público sem taxa;Revolver;381
+MT;Órgão público sem taxa;Submetralhadora;108
+MT;Revendedor;Espingarda;178
+MT;Revendedor;Revolver;65
+MT;Servidor Público(Porte por prerrogativa de função);Carabina;63
+MT;Servidor Público(Porte por prerrogativa de função);Carabina/cartucheira;1
+MT;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;2
+MT;Servidor Público(Porte por prerrogativa de função);Espingarda;153
+MT;Servidor Público(Porte por prerrogativa de função);Pistola;1484
+MT;Servidor Público(Porte por prerrogativa de função);Revolver;534
+MT;Servidor Público(Porte por prerrogativa de função);Rifle;320
+PA;Caçador de Subsistência;Espingarda;891
+PA;Caçador de Subsistência;Pistola;4
+PA;Caçador de Subsistência;Revolver;1
+PA;Caçador de Subsistência;Rifle;3
+PA;Cidadão;Carabina;137
+PA;Cidadão;Carabina/Fuzil;1
+PA;Cidadão;Escopeta;3
+PA;Cidadão;Espingarda;1541
+PA;Cidadão;Garrucha;3
+PA;Cidadão;Mosquetao;1
+PA;Cidadão;Pistola;7415
+PA;Cidadão;Pistolao;2
+PA;Cidadão;Pistolete;1
+PA;Cidadão;Revolver;1524
+PA;Cidadão;Rifle;1743
+PA;Empresa com Segurança Orgânica;Carabina;7
+PA;Empresa com Segurança Orgânica;Revolver;144
+PA;Empresa com Segurança Orgânica;Rifle;1
+PA;Empresa Comercial;Revolver;14
+PA;Empresa de Segurança Privada;Carabina;99
+PA;Empresa de Segurança Privada;Espingarda;851
+PA;Empresa de Segurança Privada;Pistola;929
+PA;Empresa de Segurança Privada;Revolver;6333
+PA;Empresa de Segurança Privada;Rifle;9
+PA;Órgão público com taxa;Pistola;37
+PA;Órgão público com taxa;Revolver;26
+PA;Órgão público sem taxa;Carabina;133
+PA;Órgão público sem taxa;Espingarda;258
+PA;Órgão público sem taxa;Fuzil;19
+PA;Órgão público sem taxa;Pistola;2121
+PA;Órgão público sem taxa;Revolver;457
+PA;Órgão público sem taxa;Rifle;5
+PA;Órgão público sem taxa;Submetralhadora;65
+PA;Outras Categorias;Pistola;53
+PA;Revendedor;Pistola;1
+PA;Revendedor;Revolver;2
+PA;Servidor Público(Porte por prerrogativa de função);Carabina;14
+PA;Servidor Público(Porte por prerrogativa de função);Escopeta;2
+PA;Servidor Público(Porte por prerrogativa de função);Espingarda;83
+PA;Servidor Público(Porte por prerrogativa de função);Outras especies;1
+PA;Servidor Público(Porte por prerrogativa de função);Pistola;1756
+PA;Servidor Público(Porte por prerrogativa de função);Pistolao;1
+PA;Servidor Público(Porte por prerrogativa de função);Revolver;273
+PA;Servidor Público(Porte por prerrogativa de função);Rifle;60
+PB;Caçador de Subsistência;Pistola;8
+PB;Caçador de Subsistência;Revolver;2
+PB;Cidadão;Carabina;22
+PB;Cidadão;Escopeta;2
+PB;Cidadão;Espingarda;483
+PB;Cidadão;Garrucha;2
+PB;Cidadão;Pistola;4743
+PB;Cidadão;Revolver;1029
+PB;Cidadão;Rifle;125
+PB;Empresa com Segurança Orgânica;Carabina;7
+PB;Empresa com Segurança Orgânica;Espingarda;3
+PB;Empresa com Segurança Orgânica;Revolver;152
+PB;Empresa com Segurança Orgânica;Rifle;3
+PB;Empresa Comercial;Carabina;5
+PB;Empresa Comercial;Espingarda;19
+PB;Empresa Comercial;Pistola;37
+PB;Empresa Comercial;Revolver;177
+PB;Empresa de Segurança Privada;Carabina;4
+PB;Empresa de Segurança Privada;Espingarda;415
+PB;Empresa de Segurança Privada;Pistola;205
+PB;Empresa de Segurança Privada;Revolver;3468
+PB;Empresa de Segurança Privada;Rifle;4
+PB;Órgão público com taxa;Espingarda;3
+PB;Órgão público com taxa;Pistola;25
+PB;Órgão público com taxa;Revolver;24
+PB;Órgão público sem taxa;Carabina;101
+PB;Órgão público sem taxa;Espingarda;130
+PB;Órgão público sem taxa;Fuzil;30
+PB;Órgão público sem taxa;Metralhadora;10
+PB;Órgão público sem taxa;Pistola;4173
+PB;Órgão público sem taxa;Revolver;114
+PB;Órgão público sem taxa;Submetralhadora;95
+PB;Revendedor;Espingarda;3
+PB;Revendedor;Pistola;2
+PB;Revendedor;Revolver;45
+PB;Servidor Público(Porte por prerrogativa de função);Carabina;10
+PB;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;1
+PB;Servidor Público(Porte por prerrogativa de função);Espingarda;69
+PB;Servidor Público(Porte por prerrogativa de função);Pistola;982
+PB;Servidor Público(Porte por prerrogativa de função);Revolver;351
+PB;Servidor Público(Porte por prerrogativa de função);Rifle;48
+PE;Caçador de Subsistência;Pistola;1
+PE;Caçador de Subsistência;Rifle;1
+PE;Cidadão;Carabina;57
+PE;Cidadão;Carabina/cartucheira;1
+PE;Cidadão;Carabina/espingarda;1
+PE;Cidadão;Carabina/Fuzil;4
+PE;Cidadão;Escopeta;3
+PE;Cidadão;Espingarda;1474
+PE;Cidadão;Fuzil;1
+PE;Cidadão;Garrucha;1
+PE;Cidadão;Pistola;8880
+PE;Cidadão;Pistolao;1
+PE;Cidadão;Pistolete;3
+PE;Cidadão;Revolver;3666
+PE;Cidadão;Rifle;428
+PE;Empresa com Segurança Orgânica;Carabina;29
+PE;Empresa com Segurança Orgânica;Espingarda;17
+PE;Empresa com Segurança Orgânica;Revolver;406
+PE;Empresa com Segurança Orgânica;Rifle;12
+PE;Empresa Comercial;Espingarda;4
+PE;Empresa Comercial;Pistola;8
+PE;Empresa Comercial;Revolver;20
+PE;Empresa Comercial;Rifle;4
+PE;Empresa de Segurança Privada;Carabina;14
+PE;Empresa de Segurança Privada;Espingarda;850
+PE;Empresa de Segurança Privada;Pistola;356
+PE;Empresa de Segurança Privada;Revolver;8194
+PE;Empresa de Segurança Privada;Rifle;4
+PE;Fabricante/Importador;Revolver;4
+PE;Órgão público com taxa;Carabina;83
+PE;Órgão público com taxa;Espingarda;9
+PE;Órgão público com taxa;Pistola;563
+PE;Órgão público com taxa;Revolver;82
+PE;Órgão público sem taxa;Carabina;21
+PE;Órgão público sem taxa;Espingarda;4
+PE;Órgão público sem taxa;Fuzil;13
+PE;Órgão público sem taxa;Metralhadora;36
+PE;Órgão público sem taxa;Pistola;508
+PE;Órgão público sem taxa;Revolver;3
+PE;Órgão público sem taxa;Submetralhadora;1
+PE;Outras Categorias;Carabina;1
+PE;Outras Categorias;Pistola;100
+PE;Revendedor;Revolver;90
+PE;Servidor Público(Porte por prerrogativa de função);Carabina;18
+PE;Servidor Público(Porte por prerrogativa de função);Carabina/Fuzil;1
+PE;Servidor Público(Porte por prerrogativa de função);Escopeta;1
+PE;Servidor Público(Porte por prerrogativa de função);Espingarda;145
+PE;Servidor Público(Porte por prerrogativa de função);Pistola;2467
+PE;Servidor Público(Porte por prerrogativa de função);Pistolao;1
+PE;Servidor Público(Porte por prerrogativa de função);Revolver;903
+PE;Servidor Público(Porte por prerrogativa de função);Rifle;81
+PI;Caçador de Subsistência;Espingarda;2
+PI;Caçador de Subsistência;Pistola;4
+PI;Caçador de Subsistência;Revolver;1
+PI;Caçador de Subsistência;Rifle;1
+PI;Cidadão;Carabina;29
+PI;Cidadão;Carabina/espingarda;1
+PI;Cidadão;Escopeta;2
+PI;Cidadão;Espingarda;497
+PI;Cidadão;Pistola;2535
+PI;Cidadão;Pistolete;1
+PI;Cidadão;Revolver;622
+PI;Cidadão;Rifle;314
+PI;Empresa com Segurança Orgânica;Revolver;108
+PI;Empresa Comercial;Espingarda;7
+PI;Empresa Comercial;Pistola;10
+PI;Empresa Comercial;Revolver;125
+PI;Empresa de Segurança Privada;Carabina;54
+PI;Empresa de Segurança Privada;Espingarda;434
+PI;Empresa de Segurança Privada;Pistola;357
+PI;Empresa de Segurança Privada;Revolver;2756
+PI;Empresa de Segurança Privada;Rifle;16
+PI;Órgão público com taxa;Carabina;60
+PI;Órgão público com taxa;Espingarda;40
+PI;Órgão público com taxa;Pistola;516
+PI;Órgão público com taxa;Revolver;160
+PI;Órgão público com taxa;Submetralhadora;10
+PI;Órgão público sem taxa;Carabina;51
+PI;Órgão público sem taxa;Espingarda;3
+PI;Órgão público sem taxa;Pistola;2067
+PI;Órgão público sem taxa;Revolver;109
+PI;Órgão público sem taxa;Rifle;7
+PI;Órgão público sem taxa;Submetralhadora;73
+PI;Revendedor;Revolver;2
+PI;Servidor Público(Porte por prerrogativa de função);Carabina;10
+PI;Servidor Público(Porte por prerrogativa de função);Espingarda;71
+PI;Servidor Público(Porte por prerrogativa de função);Pistola;534
+PI;Servidor Público(Porte por prerrogativa de função);Pistolete;1
+PI;Servidor Público(Porte por prerrogativa de função);Revolver;174
+PI;Servidor Público(Porte por prerrogativa de função);Rifle;56
+PR;Caçador de Subsistência;Espingarda;10
+PR;Caçador de Subsistência;Pistola;9
+PR;Caçador de Subsistência;Revolver;4
+PR;Caçador de Subsistência;Rifle;2
+PR;Cidadão;Carabina;1622
+PR;Cidadão;Carabina/cartucheira;4
+PR;Cidadão;Carabina/espingarda;2
+PR;Cidadão;Carabina/Fuzil;1
+PR;Cidadão;Escopeta;5
+PR;Cidadão;Espingarda;8580
+PR;Cidadão;Garrucha;44
+PR;Cidadão;Mosquetao;2
+PR;Cidadão;Pistola;19946
+PR;Cidadão;Pistolao;44
+PR;Cidadão;Pistolete;25
+PR;Cidadão;Revolver;9813
+PR;Cidadão;Rifle;9162
+PR;Empresa com Segurança Orgânica;Carabina;27
+PR;Empresa com Segurança Orgânica;Espingarda;16
+PR;Empresa com Segurança Orgânica;Pistola;50
+PR;Empresa com Segurança Orgânica;Revolver;155
+PR;Empresa Comercial;Carabina;1
+PR;Empresa Comercial;Pistola;15
+PR;Empresa Comercial;Revolver;10
+PR;Empresa de Segurança Privada;Carabina;30
+PR;Empresa de Segurança Privada;Espingarda;1383
+PR;Empresa de Segurança Privada;Pistola;500
+PR;Empresa de Segurança Privada;Revolver;13599
+PR;Empresa de Segurança Privada;Rifle;2
+PR;Fabricante/Importador;Pistola;1
+PR;Fabricante/Importador;Revolver;1
+PR;Órgão público com taxa;Carabina;7
+PR;Órgão público com taxa;Espingarda;108
+PR;Órgão público com taxa;Pistola;525
+PR;Órgão público com taxa;Revolver;218
+PR;Órgão público sem taxa;Carabina;169
+PR;Órgão público sem taxa;Carabina/Fuzil;2
+PR;Órgão público sem taxa;Escopeta;1
+PR;Órgão público sem taxa;Espingarda;223
+PR;Órgão público sem taxa;Fuzil;67
+PR;Órgão público sem taxa;Pistola;3073
+PR;Órgão público sem taxa;Revolver;1889
+PR;Órgão público sem taxa;Rifle;3
+PR;Órgão público sem taxa;Submetralhadora;20
+PR;Outras Categorias;Revolver;1
+PR;Revendedor;Revolver;1
+PR;Servidor Público(Porte por prerrogativa de função);Carabina;140
+PR;Servidor Público(Porte por prerrogativa de função);Carabina/Fuzil;4
+PR;Servidor Público(Porte por prerrogativa de função);Escopeta;5
+PR;Servidor Público(Porte por prerrogativa de função);Espingarda;429
+PR;Servidor Público(Porte por prerrogativa de função);Fuzil;4
+PR;Servidor Público(Porte por prerrogativa de função);Garrucha;3
+PR;Servidor Público(Porte por prerrogativa de função);Pistola;3313
+PR;Servidor Público(Porte por prerrogativa de função);Pistolao;1
+PR;Servidor Público(Porte por prerrogativa de função);Pistolete;3
+PR;Servidor Público(Porte por prerrogativa de função);Revolver;1178
+PR;Servidor Público(Porte por prerrogativa de função);Rifle;249
+RJ;Caçador de Subsistência;Carabina;1
+RJ;Caçador de Subsistência;Espingarda;1
+RJ;Caçador de Subsistência;Pistola;6
+RJ;Caçador de Subsistência;Revolver;4
+RJ;Cidadão;Carabina;480
+RJ;Cidadão;Carabina/cartucheira;1
+RJ;Cidadão;Escopeta;2
+RJ;Cidadão;Espingarda;1545
+RJ;Cidadão;Garrucha;13
+RJ;Cidadão;Garruchao;2
+RJ;Cidadão;Pistola;13946
+RJ;Cidadão;Pistolao;5
+RJ;Cidadão;Pistolete;7
+RJ;Cidadão;Pistolete ou garruchao;1
+RJ;Cidadão;Revolver;4564
+RJ;Cidadão;Rifle;427
+RJ;Empresa com Segurança Orgânica;Espingarda;60
+RJ;Empresa com Segurança Orgânica;Pistola;62
+RJ;Empresa com Segurança Orgânica;Revolver;276
+RJ;Empresa Comercial;Espingarda;52
+RJ;Empresa Comercial;Pistola;70
+RJ;Empresa Comercial;Revolver;1201
+RJ;Empresa de Segurança Privada;Carabina;31
+RJ;Empresa de Segurança Privada;Espingarda;2011
+RJ;Empresa de Segurança Privada;Pistola;970
+RJ;Empresa de Segurança Privada;Revolver;18026
+RJ;Órgão público com taxa;Pistola;93
+RJ;Órgão público com taxa;Revolver;33
+RJ;Órgão público sem taxa;Carabina;232
+RJ;Órgão público sem taxa;Espingarda;15
+RJ;Órgão público sem taxa;Fuzil;580
+RJ;Órgão público sem taxa;Pistola;5985
+RJ;Órgão público sem taxa;Submetralhadora;2
+RJ;Outras Categorias;Carabina;1
+RJ;Outras Categorias;Espingarda;1
+RJ;Outras Categorias;Pistola;1
+RJ;Revendedor;Pistola;1
+RJ;Servidor Público(Porte por prerrogativa de função);Carabina;107
+RJ;Servidor Público(Porte por prerrogativa de função);Carabina/cartucheira;1
+RJ;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;1
+RJ;Servidor Público(Porte por prerrogativa de função);Escopeta;3
+RJ;Servidor Público(Porte por prerrogativa de função);Espingarda;263
+RJ;Servidor Público(Porte por prerrogativa de função);Garrucha;1
+RJ;Servidor Público(Porte por prerrogativa de função);Pistola;3553
+RJ;Servidor Público(Porte por prerrogativa de função);Pistolao;1
+RJ;Servidor Público(Porte por prerrogativa de função);Pistolete;1
+RJ;Servidor Público(Porte por prerrogativa de função);Revolver;1114
+RJ;Servidor Público(Porte por prerrogativa de função);Rifle;48
+RN;Caçador de Subsistência;Espingarda;1
+RN;Caçador de Subsistência;Revolver;1
+RN;Cidadão;Carabina;101
+RN;Cidadão;Escopeta;1
+RN;Cidadão;Espingarda;1037
+RN;Cidadão;Garrucha;5
+RN;Cidadão;Garruchao;1
+RN;Cidadão;Pistola;5888
+RN;Cidadão;Pistolao;1
+RN;Cidadão;Revolver;1279
+RN;Cidadão;Rifle;372
+RN;Empresa com Segurança Orgânica;Carabina;5
+RN;Empresa com Segurança Orgânica;Revolver;76
+RN;Empresa Comercial;Revolver;10
+RN;Empresa de Segurança Privada;Carabina;7
+RN;Empresa de Segurança Privada;Espingarda;288
+RN;Empresa de Segurança Privada;Pistola;222
+RN;Empresa de Segurança Privada;Revolver;3025
+RN;Empresa de Segurança Privada;Rifle;7
+RN;Fabricante/Importador;Espingarda;1
+RN;Fabricante/Importador;Pistola;2
+RN;Órgão público com taxa;Espingarda;60
+RN;Órgão público sem taxa;Carabina;82
+RN;Órgão público sem taxa;Espingarda;204
+RN;Órgão público sem taxa;Fuzil;50
+RN;Órgão público sem taxa;Pistola;1737
+RN;Órgão público sem taxa;Revolver;383
+RN;Órgão público sem taxa;Rifle;22
+RN;Órgão público sem taxa;Submetralhadora;30
+RN;Outras Categorias;Carabina;1
+RN;Outras Categorias;Espingarda;5
+RN;Outras Categorias;Pistola;33
+RN;Outras Categorias;Revolver;14
+RN;Revendedor;Pistola;1
+RN;Revendedor;Revolver;1
+RN;Servidor Público(Porte por prerrogativa de função);Carabina;15
+RN;Servidor Público(Porte por prerrogativa de função);Espingarda;103
+RN;Servidor Público(Porte por prerrogativa de função);Pistola;1275
+RN;Servidor Público(Porte por prerrogativa de função);Revolver;380
+RN;Servidor Público(Porte por prerrogativa de função);Rifle;65
+RO;Caçador de Subsistência;Espingarda;14
+RO;Caçador de Subsistência;Pistola;8
+RO;Caçador de Subsistência;Revolver;2
+RO;Caçador de Subsistência;Rifle;4
+RO;Cidadão;Carabina;330
+RO;Cidadão;Carabina/cartucheira;1
+RO;Cidadão;Escopeta;3
+RO;Cidadão;Espingarda;2994
+RO;Cidadão;Garrucha;10
+RO;Cidadão;Garruchao;1
+RO;Cidadão;Pistola;5314
+RO;Cidadão;Pistolao;40
+RO;Cidadão;Pistolete;1
+RO;Cidadão;Revolver;2123
+RO;Cidadão;Rifle;3964
+RO;Empresa com Segurança Orgânica;Revolver;74
+RO;Empresa Comercial;Pistola;1
+RO;Empresa de Segurança Privada;Espingarda;231
+RO;Empresa de Segurança Privada;Pistola;151
+RO;Empresa de Segurança Privada;Revolver;1714
+RO;Órgão público com taxa;Carabina;2
+RO;Órgão público com taxa;Espingarda;3
+RO;Órgão público com taxa;Fuzil;3
+RO;Órgão público com taxa;Pistola;589
+RO;Órgão público com taxa;Revolver;34
+RO;Órgão público sem taxa;Carabina;108
+RO;Órgão público sem taxa;Espingarda;346
+RO;Órgão público sem taxa;Fuzil;20
+RO;Órgão público sem taxa;Pistola;2061
+RO;Órgão público sem taxa;Revolver;308
+RO;Órgão público sem taxa;Submetralhadora;73
+RO;Outras Categorias;Espingarda;2
+RO;Outras Categorias;Pistola;4
+RO;Revendedor;Revolver;6
+RO;Servidor Público(Porte por prerrogativa de função);Carabina;36
+RO;Servidor Público(Porte por prerrogativa de função);Espingarda;171
+RO;Servidor Público(Porte por prerrogativa de função);Garrucha;2
+RO;Servidor Público(Porte por prerrogativa de função);Outras especies;1
+RO;Servidor Público(Porte por prerrogativa de função);Pistola;1416
+RO;Servidor Público(Porte por prerrogativa de função);Pistolao;3
+RO;Servidor Público(Porte por prerrogativa de função);Pistolete;1
+RO;Servidor Público(Porte por prerrogativa de função);Revolver;379
+RO;Servidor Público(Porte por prerrogativa de função);Rifle;242
+RR;Caçador de Subsistência;Carabina;1
+RR;Caçador de Subsistência;Espingarda;118
+RR;Caçador de Subsistência;Pistola;1
+RR;Caçador de Subsistência;Rifle;5
+RR;Cidadão;Carabina;34
+RR;Cidadão;Espingarda;697
+RR;Cidadão;Garrucha;2
+RR;Cidadão;Pistola;928
+RR;Cidadão;Pistolao;1
+RR;Cidadão;Pistolete;1
+RR;Cidadão;Revolver;303
+RR;Cidadão;Rifle;596
+RR;Empresa Comercial;Pistola;1
+RR;Empresa de Segurança Privada;Carabina;2
+RR;Empresa de Segurança Privada;Espingarda;53
+RR;Empresa de Segurança Privada;Pistola;40
+RR;Empresa de Segurança Privada;Revolver;426
+RR;Órgão público com taxa;Pistola;52
+RR;Órgão público com taxa;Revolver;1
+RR;Órgão público sem taxa;Carabina;27
+RR;Órgão público sem taxa;Carabina/Fuzil;4
+RR;Órgão público sem taxa;Espingarda;25
+RR;Órgão público sem taxa;Fuzil;1
+RR;Órgão público sem taxa;Metralhadora;1
+RR;Órgão público sem taxa;Pistola;817
+RR;Órgão público sem taxa;Revolver;3
+RR;Servidor Público(Porte por prerrogativa de função);Carabina;6
+RR;Servidor Público(Porte por prerrogativa de função);Espingarda;59
+RR;Servidor Público(Porte por prerrogativa de função);Garrucha;2
+RR;Servidor Público(Porte por prerrogativa de função);Pistola;330
+RR;Servidor Público(Porte por prerrogativa de função);Revolver;118
+RR;Servidor Público(Porte por prerrogativa de função);Rifle;72
+RS;Caçador de Subsistência;Carabina;3
+RS;Caçador de Subsistência;Espingarda;8
+RS;Caçador de Subsistência;Pistola;5
+RS;Caçador de Subsistência;Revolver;3
+RS;Caçador de Subsistência;Rifle;2
+RS;Cidadão;Carabina;1335
+RS;Cidadão;Carabina/cartucheira;1
+RS;Cidadão;Carabina/espingarda;11
+RS;Cidadão;Carabina/Fuzil;12
+RS;Cidadão;Escopeta;3
+RS;Cidadão;Espingarda;24580
+RS;Cidadão;Garrucha;34
+RS;Cidadão;Garruchao;9
+RS;Cidadão;Mosquetao;1
+RS;Cidadão;Outras especies;5
+RS;Cidadão;Pistola;31880
+RS;Cidadão;Pistolao;150
+RS;Cidadão;Pistolete;13
+RS;Cidadão;Revolver;18164
+RS;Cidadão;Rifle;13580
+RS;Empresa com Segurança Orgânica;Espingarda;3
+RS;Empresa com Segurança Orgânica;Pistola;3
+RS;Empresa com Segurança Orgânica;Revolver;201
+RS;Empresa com Segurança Orgânica;Rifle;2
+RS;Empresa Comercial;Espingarda;8
+RS;Empresa Comercial;Pistola;4
+RS;Empresa Comercial;Revolver;494
+RS;Empresa de Segurança Privada;Carabina;24
+RS;Empresa de Segurança Privada;Espingarda;1222
+RS;Empresa de Segurança Privada;Pistola;555
+RS;Empresa de Segurança Privada;Revolver;14755
+RS;Empresa de Segurança Privada;Rifle;11
+RS;Fabricante/Importador;Espingarda;3
+RS;Fabricante/Importador;Pistola;24
+RS;Fabricante/Importador;Revolver;4
+RS;Órgão público com taxa;Carabina;70
+RS;Órgão público com taxa;Espingarda;218
+RS;Órgão público com taxa;Metralhadora;10
+RS;Órgão público com taxa;Pistola;721
+RS;Órgão público com taxa;Revolver;720
+RS;Órgão público com taxa;Submetralhadora;2
+RS;Órgão público sem taxa;Carabina;365
+RS;Órgão público sem taxa;Espingarda;599
+RS;Órgão público sem taxa;Fuzil;148
+RS;Órgão público sem taxa;Metralhadora;1
+RS;Órgão público sem taxa;Pistola;3923
+RS;Órgão público sem taxa;Revolver;322
+RS;Órgão público sem taxa;Rifle;2
+RS;Órgão público sem taxa;Submetralhadora;129
+RS;Outras Categorias;Espingarda;1
+RS;Outras Categorias;Pistola;10
+RS;Outras Categorias;Revolver;33
+RS;Revendedor;Carabina;1
+RS;Revendedor;Pistola;7
+RS;Revendedor;Revolver;31
+RS;Servidor Público(Porte por prerrogativa de função);Carabina;181
+RS;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;1
+RS;Servidor Público(Porte por prerrogativa de função);Carabina/Fuzil;1
+RS;Servidor Público(Porte por prerrogativa de função);Espingarda;624
+RS;Servidor Público(Porte por prerrogativa de função);Fuzil;2
+RS;Servidor Público(Porte por prerrogativa de função);Garrucha;2
+RS;Servidor Público(Porte por prerrogativa de função);Pistola;4790
+RS;Servidor Público(Porte por prerrogativa de função);Pistolao;12
+RS;Servidor Público(Porte por prerrogativa de função);Pistolete;1
+RS;Servidor Público(Porte por prerrogativa de função);Revolver;2517
+RS;Servidor Público(Porte por prerrogativa de função);Rifle;359
+SC;Caçador de Subsistência;Carabina;1
+SC;Caçador de Subsistência;Espingarda;12
+SC;Caçador de Subsistência;Pistola;18
+SC;Caçador de Subsistência;Revolver;11
+SC;Caçador de Subsistência;Rifle;7
+SC;Cidadão;Carabina;1017
+SC;Cidadão;Carabina/espingarda;6
+SC;Cidadão;Carabina/Fuzil;4
+SC;Cidadão;Escopeta;3
+SC;Cidadão;Espingarda;15206
+SC;Cidadão;Garrucha;29
+SC;Cidadão;Garruchao;3
+SC;Cidadão;Outras especies;5
+SC;Cidadão;Pistola;17117
+SC;Cidadão;Pistolao;110
+SC;Cidadão;Pistolete;5
+SC;Cidadão;Revolver;12466
+SC;Cidadão;Rifle;15582
+SC;Empresa com Segurança Orgânica;Espingarda;2
+SC;Empresa com Segurança Orgânica;Revolver;74
+SC;Empresa Comercial;Revolver;6
+SC;Empresa de Segurança Privada;Carabina;113
+SC;Empresa de Segurança Privada;Espingarda;810
+SC;Empresa de Segurança Privada;Pistola;424
+SC;Empresa de Segurança Privada;Revolver;8890
+SC;Empresa de Segurança Privada;Rifle;9
+SC;Órgão público com taxa;Carabina;223
+SC;Órgão público com taxa;Espingarda;390
+SC;Órgão público com taxa;Fuzil;77
+SC;Órgão público com taxa;Lancador;35
+SC;Órgão público com taxa;Pistola;2939
+SC;Órgão público com taxa;Revolver;380
+SC;Órgão público com taxa;Submetralhadora;18
+SC;Órgão público sem taxa;Carabina;144
+SC;Órgão público sem taxa;Carabina/Fuzil;1
+SC;Órgão público sem taxa;Espingarda;221
+SC;Órgão público sem taxa;Fuzil;1
+SC;Órgão público sem taxa;Pistola;1468
+SC;Órgão público sem taxa;Revolver;18
+SC;Órgão público sem taxa;Submetralhadora;64
+SC;Outras Categorias;Pistola;49
+SC;Outras Categorias;Rifle;1
+SC;Revendedor;Revolver;10
+SC;Servidor Público(Porte por prerrogativa de função);Carabina;76
+SC;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;1
+SC;Servidor Público(Porte por prerrogativa de função);Espingarda;225
+SC;Servidor Público(Porte por prerrogativa de função);Garrucha;1
+SC;Servidor Público(Porte por prerrogativa de função);Pistola;1599
+SC;Servidor Público(Porte por prerrogativa de função);Pistolao;1
+SC;Servidor Público(Porte por prerrogativa de função);Revolver;716
+SC;Servidor Público(Porte por prerrogativa de função);Rifle;171
+SE;Caçador de Subsistência;Pistola;2
+SE;Cidadão;Carabina;23
+SE;Cidadão;Carabina/cartucheira;1
+SE;Cidadão;Escopeta;1
+SE;Cidadão;Espingarda;252
+SE;Cidadão;Garrucha;1
+SE;Cidadão;Pistola;3175
+SE;Cidadão;Pistolete;1
+SE;Cidadão;Revolver;465
+SE;Cidadão;Rifle;54
+SE;Empresa com Segurança Orgânica;Revolver;48
+SE;Empresa de Segurança Privada;Carabina;11
+SE;Empresa de Segurança Privada;Espingarda;221
+SE;Empresa de Segurança Privada;Pistola;134
+SE;Empresa de Segurança Privada;Revolver;2351
+SE;Órgão público com taxa;Carabina;60
+SE;Órgão público com taxa;Espingarda;109
+SE;Órgão público com taxa;Pistola;508
+SE;Órgão público com taxa;Revolver;410
+SE;Órgão público com taxa;Submetralhadora;50
+SE;Órgão público sem taxa;Carabina;51
+SE;Órgão público sem taxa;Espingarda;9
+SE;Órgão público sem taxa;Pistola;295
+SE;Órgão público sem taxa;Revolver;15
+SE;Órgão público sem taxa;Submetralhadora;18
+SE;Outras Categorias;Pistola;20
+SE;Outras Categorias;Revolver;2
+SE;Servidor Público(Porte por prerrogativa de função);Carabina;9
+SE;Servidor Público(Porte por prerrogativa de função);Escopeta;1
+SE;Servidor Público(Porte por prerrogativa de função);Espingarda;44
+SE;Servidor Público(Porte por prerrogativa de função);Garrucha;1
+SE;Servidor Público(Porte por prerrogativa de função);Pistola;612
+SE;Servidor Público(Porte por prerrogativa de função);Revolver;175
+SE;Servidor Público(Porte por prerrogativa de função);Rifle;18
+SP;Caçador de Subsistência;Carabina;2
+SP;Caçador de Subsistência;Espingarda;2
+SP;Caçador de Subsistência;Pistola;4
+SP;Caçador de Subsistência;Revolver;7
+SP;Caçador de Subsistência;Rifle;1
+SP;Cidadão;Carabina;1525
+SP;Cidadão;Carabina/cartucheira;29
+SP;Cidadão;Carabina/espingarda;8
+SP;Cidadão;Carabina/Fuzil;3
+SP;Cidadão;Escopeta;5
+SP;Cidadão;Espingarda;3812
+SP;Cidadão;Garrucha;54
+SP;Cidadão;Garruchao;21
+SP;Cidadão;Outras especies;1
+SP;Cidadão;Pistola;24627
+SP;Cidadão;Pistolao;17
+SP;Cidadão;Pistolete;6
+SP;Cidadão;Pistolete ou garruchao;1
+SP;Cidadão;Revolver;14768
+SP;Cidadão;Rifle;1473
+SP;Empresa com Segurança Orgânica;Carabina;52
+SP;Empresa com Segurança Orgânica;Espingarda;15
+SP;Empresa com Segurança Orgânica;Pistola;2
+SP;Empresa com Segurança Orgânica;Revolver;1404
+SP;Empresa com Segurança Orgânica;Rifle;4
+SP;Empresa Comercial;Carabina;27
+SP;Empresa Comercial;Espingarda;64
+SP;Empresa Comercial;Pistola;744
+SP;Empresa Comercial;Revolver;791
+SP;Empresa de Segurança Privada;Carabina;104
+SP;Empresa de Segurança Privada;Espingarda;6557
+SP;Empresa de Segurança Privada;Pistola;4679
+SP;Empresa de Segurança Privada;Revolver;55674
+SP;Empresa de Segurança Privada;Rifle;20
+SP;Fabricante/Importador;Carabina;1
+SP;Fabricante/Importador;Espingarda;13
+SP;Fabricante/Importador;Pistola;3
+SP;Órgão público com taxa;Carabina;51
+SP;Órgão público com taxa;Carabina/cartucheira;1
+SP;Órgão público com taxa;Espingarda;151
+SP;Órgão público com taxa;Pistola;3095
+SP;Órgão público com taxa;Revolver;2104
+SP;Órgão público com taxa;Rifle;1
+SP;Órgão público sem taxa;Carabina;635
+SP;Órgão público sem taxa;Carabina/espingarda;4
+SP;Órgão público sem taxa;Espingarda;994
+SP;Órgão público sem taxa;Fuzil;1
+SP;Órgão público sem taxa;Pistola;11483
+SP;Órgão público sem taxa;Revolver;8765
+SP;Órgão público sem taxa;Rifle;11
+SP;Órgão público sem taxa;Submetralhadora;23
+SP;Outras Categorias;Espingarda;3
+SP;Outras Categorias;Pistola;79
+SP;Revendedor;Pistola;9
+SP;Revendedor;Revolver;10
+SP;Servidor Público(Porte por prerrogativa de função);Carabina;592
+SP;Servidor Público(Porte por prerrogativa de função);Carabina/cartucheira;3
+SP;Servidor Público(Porte por prerrogativa de função);Carabina/espingarda;3
+SP;Servidor Público(Porte por prerrogativa de função);Carabina/Fuzil;4
+SP;Servidor Público(Porte por prerrogativa de função);Escopeta;7
+SP;Servidor Público(Porte por prerrogativa de função);Espingarda;1126
+SP;Servidor Público(Porte por prerrogativa de função);Fuzil;2
+SP;Servidor Público(Porte por prerrogativa de função);Garrucha;17
+SP;Servidor Público(Porte por prerrogativa de função);Garruchao;1
+SP;Servidor Público(Porte por prerrogativa de função);Pistola;17977
+SP;Servidor Público(Porte por prerrogativa de função);Pistolao;5
+SP;Servidor Público(Porte por prerrogativa de função);Pistolete;1
+SP;Servidor Público(Porte por prerrogativa de função);Pistolete ou garruchao;1
+SP;Servidor Público(Porte por prerrogativa de função);Revolver;8982
+SP;Servidor Público(Porte por prerrogativa de função);Rifle;400
+TO;Caçador de Subsistência;Espingarda;1
+TO;Caçador de Subsistência;Revolver;1
+TO;Cidadão;Carabina;166
+TO;Cidadão;Carabina/espingarda;1
+TO;Cidadão;Espingarda;549
+TO;Cidadão;Pistola;2086
+TO;Cidadão;Pistolete;3
+TO;Cidadão;Revolver;785
+TO;Cidadão;Rifle;1671
+TO;Empresa com Segurança Orgânica;Revolver;22
+TO;Empresa de Segurança Privada;Carabina;5
+TO;Empresa de Segurança Privada;Espingarda;161
+TO;Empresa de Segurança Privada;Pistola;51
+TO;Empresa de Segurança Privada;Revolver;1107
+TO;Empresa de Segurança Privada;Rifle;1
+TO;Órgão público sem taxa;Carabina;53
+TO;Órgão público sem taxa;Espingarda;254
+TO;Órgão público sem taxa;Fuzil;115
+TO;Órgão público sem taxa;Metralhadora;11
+TO;Órgão público sem taxa;Pistola;2057
+TO;Órgão público sem taxa;Revolver;123
+TO;Órgão público sem taxa;Submetralhadora;31
+TO;Revendedor;Pistola;5
+TO;Revendedor;Revolver;24
+TO;Servidor Público(Porte por prerrogativa de função);Carabina;16
+TO;Servidor Público(Porte por prerrogativa de função);Espingarda;79
+TO;Servidor Público(Porte por prerrogativa de função);Mosquetao;1
+TO;Servidor Público(Porte por prerrogativa de função);Pistola;663
+TO;Servidor Público(Porte por prerrogativa de função);Pistolao;2
+TO;Servidor Público(Porte por prerrogativa de função);Revolver;194
+TO;Servidor Público(Porte por prerrogativa de função);Rifle;190

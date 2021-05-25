@@ -1,0 +1,450 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+```{r}
+rm_corr = tibble(
+  rm = c(1, 1, 2, 3, 4, 5, 5, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 10, 10, 11, 11, 11, 12, 12, 12, 12),
+  state = c('RJ', 'ES', 'SP', 'RS', 'MG','PR', 'SC', 'BA', 'SE', 'AL', 'PE',
+            'PB', 'RN', 'PA', 'AP', 'MA', 'MS', 'MT', 'CE', 'PI', 'DF', 'GO',
+            'TO', 'AM', 'AC', 'RR', 'RO')
+)
+
+armas_novas_sigma = read_csv('final/armas_novas_cac_sigma.csv') %>%
+  mutate(RM = as.numeric(word(RM, 1))) %>%
+  pivot_longer(-RM, names_to = 'year', values_to = 'TOTAL')
+
+sheets = excel_sheets('final/armas_novas_sinarm.xlsx')[2:13]
+armas_novas_pre2020 = map_dfr(sheets, function(x) {
+  read_excel('final/armas_novas_sinarm.xlsx', sheet = x, skip = 1) %>%
+    mutate(year = word(x, 2, -1)) %>%
+    fill(UF) %>%
+    filter(!grepl('TOTAL', CATEGORIA)) %>%
+    select(UF, CATEGORIA, year, TOTAL)
+})
+
+armas_novas_2020 = read_csv2('final/armas_novas_sinarm_2020.csv', skip = 1,
+                             locale = locale(encoding = 'Latin1')) %>%
+  filter(!is.na(CATEGORIA)) %>%
+  fill(UF) %>%
+  filter(!grepl('TOTAL', CATEGORIA)) %>%
+  select(UF, CATEGORIA, TOTAL) %>%
+  mutate(year = '2020')
+
+armas_novas = bind_rows(armas_novas_pre2020, armas_novas_2020) %>%
+  filter(!grepl('Total', CATEGORIA))
+
+transferencias_1 = read_excel('final/ocorrencias_pf.xls')
+transferencias_2 = read_excel('final/ocorrencias_pj.xls')
+transferencias_pre20 = bind_rows(transferencias_1, transferencias_2) %>%
+  filter(TIPO_OCORRENCIA == 'Apostilada no Exercito') %>%
+  select(-TIPO_OCORRENCIA, -PAIS, -CALIBRE) %>%
+  pivot_longer(-UF, names_to = 'year') %>%
+  mutate(year = str_sub(year, 2, 5)) %>%
+  group_by(UF, year) %>%
+  summarize(value = sum(value)) %>%
+  ungroup() %>%
+  filter(year != '2020')
+
+transferencias_20 = read_csv2('final/ocorrencias_2020.csv', skip = 1,
+                              locale = locale(encoding = 'Latin1')) %>%
+  select(UF, X2, TOTAL) %>%
+  filter(!is.na(X2)) %>%
+  fill(UF) %>%
+  filter(X2 == 'Apostilamento no Exército') %>%
+  select(-X2) %>%
+  mutate(year = '2020') %>%
+  rename(value = TOTAL)
+
+transferencias = bind_rows(transferencias_pre20, transferencias_20) %>%
+  rename(transf = value)
+```
+
+No mês passado, grande parte dos decretos pró-armas editados pelo presidente
+Jair Bolsonaro (sem partido) foi
+[revogada](https://g1.globo.com/politica/noticia/2021/04/13/decretos-das-armas-saiba-o-que-esta-em-vigor-apos-rosa-weber-ter-suspendido-trechos.ghtml)
+pela ministra do STF Rosa Weber. Esse embate foi mais um desdobramento da
+empreitada armamentista do atual governo, que já enfrentou outros reveses
+similares no Congresso e na Justiça, como no caso dos
+[decretos](https://oglobo.globo.com/brasil/decreto-das-armas-saiba-que-esta-em-vigor-com-os-novos-decretos-editados-por-bolsonaro-23765087)
+de flexibilização do Estatuto do Desarmamento apresentados em 2019.
+
+Esse cabo de
+[guerra](https://g1.globo.com/jornal-nacional/noticia/2021/02/16/decretos-de-bolsonaro-para-facilitar-acesso-a-armas-encontram-resistencia-no-congresso.ghtml)
+nas esferas políticas tem tido impactos reais sobre o comércio brasileiro de
+armas. Em anos recentes, o mercado vem aumentando rapidamente, com
+[mais](https://g1.globo.com/sp/sao-paulo/noticia/2020/10/19/registros-de-armas-de-fogo-aumentam-120percent-em-2020-mas-apreensoes-estao-em-queda.ghtml)
+armas sendo compradas e mais clubes de tiro esportivo surgindo. Parte da mídia e
+[academia](https://periodicos.unb.br/index.php/les/article/download/12129/22452/50505)
+atribui essas mudanças à ascensão da extrema-direita e ao governo Bolsonaro.
+Afinal, o presidente e seus apoiadores têm o armamento como uma das suas
+principais pautas, visto como uma maneira de resolver os problemas de segurança
+pública no país. E, como é possível ver por decretos e projetos de lei, os
+políticos de extrema-direita vêm facilitando a aquisição de armas.
+
+O armamentismo, porém, antecede a posse de Bolsonaro em 2019. Dados levantados
+pelo _Pindograma_ indicam que **o mercado formal de armas começou a se expandir
+já no governo Dilma**. Durante o mandato da petista, o número de armas novas
+por ano cresceu 50\%, e durante o de Temer, 86\%. Entre a primeira posse de
+Dilma e a posse de Bolsonaro, o número anual de armas novas já havia crescido
+2,8 vezes. O governo Bolsonaro intensificou essa tendência, e em apenas dois anos
+de mandato, fez esse número em aumentar _mais_ 2,8 vezes:
+
+```{r fig.height=5, fig.width=7}
+relevant = c('Pessoa física', 'Segurança Privada', 'Loja de Arma',
+                          'Caçador de Subsistência', 'Cidadão', 'Servidor Público (Porte por prerrogativa de função)',
+                          'Empresa com Segurança Orgânica', 'Empresa de Segurança Privada',
+                          'Revendedor', 'Empresa Comercial')
+
+armas_novas_interest = armas_novas %>%
+  filter(CATEGORIA %in% relevant) %>%
+  mutate(year = str_sub(year, 1, 4)) %>%
+  group_by(UF, year) %>%
+  summarize(TOTAL = sum(TOTAL)) %>%
+  ungroup()
+
+armas_total = armas_novas_sigma %>%
+  left_join(rm_corr, c('RM' = 'rm')) %>%
+  inner_join(armas_novas_interest, c('state' = 'UF', 'year' = 'year')) %>%
+  group_by(RM, year) %>%
+  summarize(TOTAL = first(TOTAL.x) + sum(TOTAL.y)) %>%
+  ungroup()
+
+transferencias_national = transferencias %>%
+  group_by(year) %>%
+  summarize(transf = sum(transf))
+
+armas_national = armas_total %>%
+  group_by(year) %>%
+  summarize(TOTAL = sum(TOTAL)) %>%
+  left_join(transferencias_national, 'year') %>%
+  mutate(TOTAL = TOTAL - transf)
+
+ggplot(armas_national, aes(x = year, y = TOTAL, group = 1)) +
+  geom_line(size = 2, color = pg_blue) +
+  geom_point(size = 3.5, color = pg_orange) +
+  labs(title = 'Registros de Armas Novas no Brasil, em milhares',
+       subtitle = '(Cidadãos, caçadores, atiradores, colecionadores, segurança privada, policiais civis)',
+       caption = 'Fonte: Polícia Federal (Sinarm), Exército Brasileiro (Sigma).\nCompilados pelo Pindograma. Transferências do Sinarm para o Sigma subtraídas.') +
+  xlab('') + scale_y_continuous(name = '', labels = function(x) x/1000, limits = c(30000, 300000)) +
+  theme_pindograma()
+```
+
+Em entrevista ao _Pindograma_, a gerente de projetos do Instituto Sou da Paz,
+Natália Pollachi, explicou que 2015 "foi um ano em que [o movimento pró-armas],
+um tema que estava praticamente esquecido na política brasileira, voltou a um
+nível nacional". Naquele ano, um projeto de lei adormecido, que ditava o fim do
+Estatuto do Desarmamento, [voltou à
+Câmara](https://agenciabrasil.ebc.com.br/geral/noticia/2015-12/depois-de-12-anos-em-vigor-estatuto-do-desarmamento-pode-ser-revogado)
+com força e "chegou na boca de ser aprovado", como confirma Pollachi.
+
+Segundo ela, o movimento pró-armas "começou a proliferar e ganhar um volume que
+não tinha antes no debate público -- audiências públicas na Câmara, no Senado e
+apresentação de muitos projetos de lei nesse sentido e também nos fóruns
+online".
+
+Há poucos dados sobre o volume de atividade online pró-armas na última década,
+mas é notável a relevância que o movimento tem mostrado no Instagram nos últimos
+quatro anos. Um
+[levantamento](https://nucleo.jor.br/especiais/2021-04-15-influencers-armas-instagram)
+do Núcleo Jornalismo indica que as postagens armamentistas praticamente dobraram
+entre 2017 e 2021. Trata-se de um movimento diverso que mistura a questão
+armamentista com marcadores de identidade, como evidenciado pelas _hashtags_
+\#mulheresarmadas, \#tiroesportivo e \#eusoumilitar.
+
+A expansão desse mercado também foi distribuída de maneira diferente pelos
+estados brasileiros. No Distrito Federal, em Goiás e no Tocantins, por exemplo,
+o número anual de armas novas já havia aumentado **oito vezes** entre 2010 e
+2018, antes de aumentar mais ainda a partir de 2019:
+
+```{r}
+armas_sp = armas_total %>%
+  filter(RM == 11) %>%
+  left_join(transferencias %>% filter(UF %in% c('GO', 'DF', 'TO')), 'year') %>%
+  mutate(TOTAL = TOTAL - transf)
+
+ggplot(armas_sp, aes(x = year, y = TOTAL, group = 1)) +
+  geom_line(size = 2, color = pg_blue) +
+  geom_point(size = 3.5, color = pg_orange) +
+  labs(title = 'Registros de Armas Novas em GO, DF e TO, em milhares',
+       subtitle = '(Cidadãos, caçadores, atiradores, colecionadores, segurança privada, policiais civis)',
+       caption = 'Fonte: Polícia Federal (Sinarm), Exército Brasileiro (Sigma).\nCompilados pelo Pindograma. Transferências do Sinarm para o Sigma subtraídas.') +
+  xlab('') + scale_y_continuous(name = '', labels = function(x) x/1000) +
+  theme_pindograma()
+```
+
+Outras unidades da federação tiveram um aumento menos relevante entre 2011 e
+2018 e um crescimento visivelmente mais dramático após o início do governo
+Bolsonaro. É o caso dos estados do Amazonas, Acre, Rondônia e Roraima:
+
+```{r}
+armas_1rm = armas_total %>%
+  filter(RM == 12) %>%
+  left_join(transferencias %>% filter(UF %in% c('AC', 'AM', 'RO', 'RR')), 'year') %>%
+  group_by(year) %>%
+  summarize(TOTAL = first(TOTAL), transf = sum(transf)) %>%
+  ungroup() %>%
+  mutate(TOTAL = TOTAL - transf)
+
+ggplot(armas_1rm, aes(x = year, y = TOTAL, group = 1)) +
+  geom_line(size = 2, color = pg_blue) +
+  geom_point(size = 3.5, color = pg_orange) +
+  labs(title = 'Registros de Armas Novas no AC, AM, RO e RR, em milhares',
+       subtitle = '(Cidadãos, caçadores, atiradores, colecionadores, segurança privada, policiais civis)',
+       caption = 'Fonte: Polícia Federal (Sinarm), Exército Brasileiro (Sigma).\nCompilados pelo Pindograma. Transferências do Sinarm para o Sigma subtraídas.') +
+  xlab('') + scale_y_continuous(name = '', labels = function(x) x/1000, limits = c(800, 12000)) +
+  theme_pindograma()
+```
+
+Ao mesmo tempo, desde o início do governo Bolsonaro, **o número de armas
+destruídas vem caindo**. Em 2019, ele foi ultrapassado pelo número de armas
+novas adquiridas por não-militares no mercado legal. Ou seja: mesmo pelas
+estimativas mais conservadoras, o saldo numérico de armas no Brasil está cada
+vez mais positivo.
+
+```{r}
+destruidas = read_excel('final/armas_destruidas.xlsx') %>%
+  filter(row_number() != 1) %>%
+  filter(row_number() <= 34) %>%
+  fill(RM) %>%
+  select(-2) %>%
+  mutate(RM = word(RM, 1, sep = 'ª')) %>%
+  pivot_longer(-RM, names_to = 'year') %>%
+  mutate(value = as.numeric(ifelse(is.na(value), 0, value))) %>%
+  group_by(RM, year) %>%
+  summarize(value = sum(value)) %>%
+  ungroup()
+
+destruidas_national = destruidas %>%
+  group_by(year) %>%
+  summarize(value = sum(value))
+
+joined = armas_national %>%
+  filter(year %in% c('2016', '2017', '2018', '2019', '2020')) %>%
+  left_join(destruidas_national, 'year') %>%
+  select(-transf) %>%
+  pivot_longer(-year)
+
+ggplot(joined, aes(x = year, y = value, group = name, color = name)) +
+  geom_line(size = 2) +
+  geom_point(size = 3.5, color = pg_orange) +
+  scale_color_manual(values = c(pg_blue, pg_green), labels = c('Armas Novas', 'Armas Destruídas'), name = '') +
+  labs(title = 'Armas Novas e Armas Destruídas no Brasil, em milhares',
+       subtitle = '(Armas Novas incluem apenas os registros de cidadãos, caçadores, atiradores,\ncolecionadores, segurança privada e policiais civis)',
+       caption = 'Fonte: Polícia Federal (Sinarm), Exército Brasileiro (Sigma).\nCompilados pelo Pindograma. Transferências do Sinarm para o Sigma subtraídas.') +
+  xlab('') + scale_y_continuous(name = '', labels = function(x) x/1000, limits = c(30000, 300000)) +
+  theme_pindograma()
+```
+
+```{r}
+reg_cac = read_excel('final/armas_registradas_cac_jan2021.xlsx', skip = 2) %>%
+  filter(row_number() <= 12) %>%
+  mutate(total = ATIRADOR + CAÇADOR + COLECIONADOR) %>%
+  pull(total) %>%
+  sum()
+
+relevant2 = c('Caçador de Subsistência', 'Cidadão', 'Empresa com Segurança Orgânica',
+              'Empresa de Segurança Privada', 'Revendedor', 'Empresa Comercial')
+
+reg_sinarm = read_csv2('final/armas_registradas_sinarm_jan2021.csv', locale = locale(encoding = 'Latin1')) %>%
+  filter(CATEGORIA %in% relevant2) %>%
+  pull(TOTAL) %>%
+  sum()
+```
+
+Tudo isso resulta no seguinte quadro: em janeiro de 2021, empresas de segurança
+privada e pessoas físicas (exceto militares, policiais civis e policiais
+militares) tinham aproximadamente `r pn(reg_cac + reg_sinarm)` armas com
+registros ativos -- para não falar das armas fora do mercado legal.
+
+---
+
+Com o aumento generalizado no número de armas, seria razoável prever que haveria
+também um aumento no número de apreensões de armas irregulares e ilegais pela
+polícia.
+
+O que vem ocorrendo, no entanto, é o contrário. Desde 2016, esse número vem
+se tornando cada vez menor:
+
+```{r}
+apreensoes_data = tibble(
+  year = seq(2013, 2019),
+  number = c(111610, 108888, 117262, 120480, 118015, 108949, 105038)
+)
+
+ggplot(apreensoes_data, aes(x = factor(year), y = number, group = 1)) +
+  geom_line(size = 2, color = pg_blue) +
+  geom_point(size = 3.5, color = pg_orange) +
+  labs(title = 'Apreensões de armas no Brasil, em milhares',
+       caption = 'Fonte: Secretarias Estaduais de Segurança Pública,\nvia Fórum Brasileiro de Segurança Pública.') +
+  xlab('') + scale_y_continuous(name = '', labels = function(x) x/1000) +
+  theme_pindograma()
+```
+
+Forma-se então um cenário contra-intuitivo de expansão do mercado formal
+armamentista, acompanhado de diminuições nas apreensões e destruições de armas.
+
+Há algumas hipóteses para explicar o fenômeno, nem todas se revelando
+plausíveis.
+
+##### 1) A polícia estaria mais leniente
+
+A primeira hipótese seria a **leniência das polícias** com quem tem armas --
+inclusive com os que tenham posse irregular. Dada a
+[ligação](https://valor.globo.com/politica/noticia/2020/08/07/adesao-a-bolsonarismo-chega-a-41percent-na-pm-nas-redes-diz-estudo.ghtml)
+entre os policiais e o bolsonarismo, é plausível que tenha havido uma mudança de
+comportamento nas corporações com a ascensão da extrema-direita. Ivan Marques,
+presidente da campanha internacional Control Arms, sugere no [Anuário Brasileiro
+de Segurança
+Pública](https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/) de
+2020 que "a diminuição das apreensões é... sinal de redução de interesse neste
+tipo de operação".
+
+Os problemas na fiscalização também atingem o universo do tiro esportivo. Como
+afirmou o mesmo Ivan Marques em uma
+[entrevista](https://oglobo.globo.com/brasil/a-falta-de-fiscalizacao-agora-institucionalizada-diz-advogado-sobre-decretos-que-flexibilizam-armas-24884937)
+para O Globo, havia grandes dificuldades para fiscalizar os clubes de tiro
+esportivo, o que era feito apenas raramente. Segundo o especialista, a falta de
+fiscalização vem se tornando ainda mais grave nos últimos anos. Ele vê indícios
+de leniência frente a eventuais irregularidades praticadas pelos clubes de tiro.
+
+Entretanto, há um dado que vai contra essa hipótese. Em São Paulo, as apreensões
+de armas _entre profissionais de segurança pública_ não têm diminuído. Isso
+torna mais difícil afirmar que as polícias tenham se tornado mais lenientes com
+a posse ilegal de armas. Se houvesse leniência de fato, seria de se esperar que
+os profissionais da área da segurança tivessem tido uma queda de apreensões
+_maior_ do que outras profissões, dado o corporativismo.
+
+##### 2) Apreender armas ilegais está mais difícil
+
+Uma segunda hipótese está ligada a mudanças no mercado de armas ilegais no
+Brasil. Segundo Pollachi, “essas armas que tão aí na rua, nessa dinâmica mais
+simples, como se fosse o varejo da droga, que tão ali fáceis de serem abordadas,
+fáceis de serem pegas num flagrante, estão rareando”. Ela acredita que o mercado
+esteja migrando para dinâmicas mais complexas, o que indica uma crescente
+dificuldade em apreender armas ilegais.
+
+##### 3) A expansão do mercado formal não teria sido acompanhada pelo mercado ilegal
+
+Uma terceira hipótese para explicar esse problema nos dados seria a expansão
+do mercado formal de armas não ter sido acompanhada por um crescimento do
+mercado ilegal. Por alguma razão interna ao mundo do crime, a circulação de
+armas ilegais estaria diminuindo entre criminosos, embora o número geral de
+armas esteja aumentando.
+
+É difícil estimar o número de armas ilegais. No Brasil, a última
+[estimativa](https://www.unodc.org/lpo-brazil/pt/frontpage/2010/12/20-ministerio-da-justica-divulga-pesquisas-sobre-trafico-de-armas-no-brasil.html)
+relativamente confiável do número de armas ilegais foi feita em 2010 pelo
+Ministério da Justiça. O levantamento estimava cerca de 7,6
+milhões. Outro [estudo](https://www.gunpolicy.org/firearms/region/brazil), feito
+pela Universidade de Sydney, estima que o número de armas ilegais esteja entre 3
+e 9 milhões, seguindo a metodologia de um
+[relatório](https://www.unodc.org/documents/data-and-analysis/tocta/TOCTA_Report_2010_low_res.pdf)
+da UNODC, o Escritório das Nações Unidas sobre Drogas e Crime, de 2010.
+
+No entanto, a hipótese mais aceita pelos especialistas é de que o aumento do
+mercado legal de armas transborda no mercado ilegal. Natália Pollachi explica
+que "por a gente ter mais armas legais em circulação, fica muito mais fácil de
+ter armas indo da legalidade para o mercado ilegal".
+
+Se algumas categorias de compradores passam a ter que prestar contas apenas se
+comprarem 60 armas por vez, como permite um dos
+[decretos](https://oglobo.globo.com/brasil/entenda-as-regras-sobre-compra-de-armas-municoes-que-passam-valer-nesta-segunda-feira-24966803)
+recentes de Bolsonaro, isso pode abrir a possibilidade de revenda para o mercado
+ilegal, através de compradores aliciados por criminosos. Além disso, como alerta
+Pollachi, vem se tornando mais fácil para pessoas com antecedentes criminais
+comprarem armas com identidades falsas.
+
+Além de ser extremamente improvável num contexto de aumento no número geral de
+armas, uma redução no número de armas ilegais também tenderia a ser acompanhada
+por uma diminuição no número de crimes violentos. Mas entre 2019 e 2020, não foi
+isso que ocorreu. De acordo com o Anuário da Violência de 2020, o número de
+homicídios dolosos no país aumentou em 8,4%. Além disso, o mesmo Anuário indica
+que o número de policiais assassinados, um crime que geralmente ocorre por ação
+de arma ilegal, aumentou em 19,4%.
+
+##### 4) Armas ilegais teriam sido regularizadas, dada a flexibilização promovida pelo governo
+
+Uma última hipótese que poderia ser levantada é que mais flexibilizações
+permitiriam a regularização de armas ilegais. Mas isso é impossível. Uma arma
+adquirida sem registro no Brasil não pode ser registrada posteriormente. Como
+explica Pollachi: "Não existe mais a possibilidade de 'anistia' que existia de
+2004 a 2008".
+
+---
+
+Refletir sobre essas hipóteses só é possível porque há instituições que coletam
+e divulgam dados relativos às armas no Brasil. Porém, há indícios de que as
+escassas fontes de informação estão se tornando mais desorganizadas e menos
+cristalinas.
+
+Em um texto publicado no [Anuário Brasileiro de Segurança
+Pública](https://forumseguranca.org.br/wp-content/uploads/2021/02/anuario-2020-final-100221.pdf)
+de 2020, o pesquisador Ivan Marques explica que "a instabilidade jurídica
+promovida pelo sem-fim de decretos e alterações de portarias publicadas pelo
+Governo Federal a partir de janeiro de 2019" vem contribuindo para a baixa
+qualidade das estatísticas. Com as constantes mudanças, os registros tornaram-se
+desatualizados e não há esforços para conduzir atualizações dos bancos de dados.
+
+Assim, não é possível determinar o total de armas legais existentes no Brasil,
+mesmo que possamos observar, nos últimos anos, um crescimento agudo nos
+registros de armas novas. A tendência é de que muitos dados sigam inacessíveis,
+pois, de acordo com Marques, são tantos "os novos critérios e classificações que
+se perdeu a comparabilidade entre categorias daqueles que, por lei ou norma
+infralegal, devem registrar sua arma nos bancos de dados oficiais".
+
+Esse cipoal de informações também foi identificado em um
+[relatório](https://congressoemfoco.uol.com.br/upload/congresso/arquivo/mapa_das_armas_brasil.pdf)
+feito para a Comissão de Segurança Pública e Combate ao Crime Organizado
+(CSPCCO) da Câmara dos Deputados, segundo o qual "**em pleno século XXI, a
+segurança pública opera em muitos estados como funcionava a burocracia cartorial
+do século XVIII**".
+
+E isso é apenas em relação às armas legais. As deficiências nos registros de
+armas são um passeio no parque comparado ao mundo dos dados sobre armas ilegais.
+Há diversas metodologias para estimativas do número de armas ilegais no país
+feitas nos últimos anos, mas elas diferem-se bastante entre si e não é possível
+chegar em conclusões concretas. São geralmente superficiais, o que apenas serve
+para ressaltar como não há informações disponíveis sobre o número de armas
+ilícitas.
+
+Portanto, nos próximos anos, será complexo determinar se as armas legais estão
+de fato migrando para o crime. Esse problema é reforçado pelo fato de que as
+fontes de dados sobre armas legais estão se tornando cada vez mais escassas.
+Restará observar se os aumentos nos números de armas levarão a um aumento dos
+índices de violência, em um país que é um dos mais violentos do mundo. A
+literatura e os especialistas parecem indicar que sim. Mas sem dados confiáveis,
+não é possível compreender o problema para resolvê-lo.
+
+---
+
+**Dados utilizados na matéria**: Agregações do Sinarm (Polícia Federal);
+Agregações do Sigma (Exército Brasileiro); Apreensões de Armas (Fórum
+Brasileiro de Segurança Pública); Armas Destruídas (Exército Brasileiro). Todos
+os dados foram obtidos através da Lei de Acesso à Informação.
+
+Para reproduzir os gráficos e números citados na matéria, o código pode ser
+encontrado [aqui][1].
+
+**Créditos da imagem**: Mika Järvinen/Flickr, Stephen Z/Flickr, Brian
+Vasconcellos/Flickr, Confederação Nacional de Municípios.
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-05-25-armas/Armas.Rmd
