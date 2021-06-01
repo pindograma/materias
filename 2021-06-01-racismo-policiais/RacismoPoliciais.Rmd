@@ -1,0 +1,195 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+
+source('../theme.R')
+
+analysis = readRDS('analysis.rds')
+bpm_rio_c = c(2, 3, 4, 5, 6, 9, 14, 16, 17, 18, 19, 22, 23, 27, 31, 40, 41)
+bpm_rio = c(bpm_rio_c, 7, 12, 15, 20, 21, 24, 39)
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+No estado do Rio de Janeiro, negros correspondem a [80% dos
+mortos](https://g1.globo.com/rj/rio-de-janeiro/noticia/2020/02/08/80percent-dos-mortos-por-policiais-no-rj-no-1-semestre-de-2019-eram-negros-e-pardos-aponta-levantamento.ghtml)
+pela polícia. O número é 28,3 pontos percentuais maior que a proporção deste
+grupo racial na população do estado (51,7%). A taxa de negros mortos pela polícia
+também é X pontos percentuais maior do que a proporção morta em homicídios no
+geral (X%, segundo dados do Ministério da Saúde).
+
+Mesmo alto, o número de negros mortos pela polícia poderia ser explicado caso
+os policiais atuassem mais em regiões menos brancas, aumetando a chance de uma
+pessoa preta ou parda ser morta. No entanto, um levantamento feito pelo
+_Pindograma_ mostra que **a proporção de pretos e pardos mortos por policiais é
+maior do que a proporção de moradores negros em todos os Batalhões de Polícia
+Militar do estado**.
+
+Utilizando os dados do Censo de 2010, calculamos a proporção racial das áreas
+atendidas por cada Batalhão de Polícia Militar (BPM) do Rio. Estas proporções
+foram comparadas com as estatísticas de mortes cometidas por policiais nas
+mesmas áreas entre 2010 e 2020. Com isso, foi possível determinar se havia uma
+sobrerrepresentação de um grupo racial dentre as vítimas dos homicídios
+policiais, isto é, se algum grupo morria mais do que seria esperado dada a
+população local.
+
+Na região metropolitana do Rio, fica evidente que a proporção de negros mortos
+em cada BPM é praticamente constante, e não depende da população negra do
+local.
+
+```{r fig.height=6}
+aispname = read_csv2('de_para_aisp_cisp.csv', locale = locale(encoding = 'Latin1')) %>%
+  distinct(aisp, aisp_dscr)
+
+pl_rio = analysis %>%
+  filter(aisp %in% bpm_rio) %>%
+  left_join(aispname, 'aisp') %>%
+  mutate(propn = prop_pardo_isp + prop_preto_isp, propn_ibge = pardo_ibge + preto_ibge) %>%
+  arrange(desc(propn)) %>%
+  mutate(ord = row_number()) %>%
+  select(aisp_dscr, propn, propn_ibge, ord) %>%
+  pivot_longer(-c(aisp_dscr, ord)) %>%
+  mutate(name = ifelse(name == 'propn', 'Negros Mortos pela Polícia', 'População de Negros'))
+
+ggplot(pl_rio, aes(x = forcats::fct_reorder(aisp_dscr, ord), y = value, fill = name)) +
+  geom_col() +
+  labs(title = 'Letalidade Policial de Negros por BPM',
+        subtitle = 'Grande Rio, 2010-2020',
+        caption = 'Fonte: ISP/RJ, Censo 2010/IBGE.\nCompilados pelo Pindograma.') +
+  scale_fill_manual(values = c(pg_orange, pg_dark_gray), guide = F) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), name = '') +
+  coord_flip() +
+  facet_wrap(~name) +
+  theme_pindograma() +
+  theme(axis.text.y = element_text(size = 12)) +
+  xlab('')
+```
+
+As áreas com maior sobrerrepresentação de negros mortos são os BPM responsáveis
+por bairros nobres da capital fluminense, como o 2º BPM (Zona Sul), o 19º BPM
+(Copacabana) e o 6º BPM (Tijuca). Nos BPM da Zona Sul e de Copacabana, a fração
+de negros entre as vítimas da PM é 4,6 vezes maior do que sua proporção na
+população local.
+
+Essas sobrerrepresentações deixam claro que as mortes de negros não se devem à
+polícia atuar mais em bairros menos brancos. **Independentemente da composição
+racial do BPM, pretos e pardos são os alvos consistentes das ações policiais**.
+
+```{r}
+aisp_shapes = st_read('shapes/lm_aisp_2019.shp', quiet = T) %>%
+  st_transform(4674)
+
+pl = analysis %>%
+  filter(aisp %in% bpm_rio) %>%
+  left_join(aisp_shapes, 'aisp') %>%
+  st_as_sf()
+
+ggplot() +
+  geom_sf(data = pl, aes(fill = black_overrepresentation)) +
+  labs(title = 'Sobrerrepresentação de Negros Mortos pela Polícia, por BPM',
+       subtitle = 'Grande Rio, 2010-2020',
+       caption = 'Fonte: ISP/RJ, Censo 2010/IBGE.\nCompilados pelo Pindograma.') +
+  scale_fill_distiller(palette = 'Oranges', direction = 1, labels = function(x) paste0(round(x*100), 'pp')) +
+  guides(fill = guide_colorbar(barwidth = 20)) +
+  theme_pindograma_map()
+```
+
+```{r}
+med = analysis %>%
+  filter(!(aisp %in% bpm_rio)) %>%
+  pull(black_overrepresentation) %>%
+  mean()
+```
+
+No interior, há uma variação maior entre os BPMs no que tange à letalidade
+policial de negros. A sobrerrepresentação de mortes de pretos e pardos também
+tende a ser menor do que na região metropolitana. Mas ela ainda ocorre: **a
+sobrerrepresentação média de negros mortos por BPMs do interior é de
+`r pn(med*100)` pontos percentuais**.
+
+```{r}
+pl_nrio = analysis %>%
+  filter(!(aisp %in% bpm_rio)) %>%
+  left_join(aispname, 'aisp') %>%
+  mutate(propn = prop_pardo_isp + prop_preto_isp, propn_ibge = pardo_ibge + preto_ibge) %>%
+  arrange(desc(propn)) %>%
+  mutate(ord = row_number()) %>%
+  select(aisp_dscr, propn, propn_ibge, ord) %>%
+  pivot_longer(-c(aisp_dscr, ord)) %>%
+  mutate(name = ifelse(name == 'propn', 'Negros Mortos pela Polícia', 'População de Negros'))
+
+ggplot(pl_nrio, aes(x = forcats::fct_reorder(aisp_dscr, ord), y = value, fill = name)) +
+  geom_col() +
+  labs(title = 'Letalidade Policial de Negros, por BPM',
+       subtitle = 'Interior do RJ, 2010-2020',
+        caption = 'Fonte: ISP/RJ, Censo 2010/IBGE.\nCompilados pelo Pindograma.') +
+  scale_fill_manual(values = c(pg_orange, pg_dark_gray), guide = F) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), name = '') +
+  coord_flip() +
+  facet_wrap(~name) +
+  theme_pindograma() +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(axis.text.y = element_text(size = 12)) +
+  xlab('') 
+```
+
+No estado como um todo, a sobrerrepresentação de negros entre os mortos pela
+polícia é maior até mesmo que a sobrerrepresentação de negros nas taxas de
+homicídios em geral do estado. Dentre todos os homicídios cometidos entre 2010
+e 2018, o grupo representou 7 de cada 10 mortos, mas eram 8 a cada 10 dos
+mortos pela polícia. **Esse dado sugere que há um racismo intrínseco ao uso de
+força por parte das polícias fluminenses, que vai além dos fatores
+socioeconômicos que já tornam a população negra mais vulnerável à violência**.
+
+---
+
+O racismo na atuação das forças policiais não é novidade. Em sua [coluna na
+Folha de São
+Paulo](https://www1.folha.uol.com.br/colunas/silvio-almeida/2021/05/o-suspeito-de-ser-escravo-do-seculo-19-e-o-morador-das-favelas-e-periferias-do-seculo-21.shtml),
+o advogado e professor Silvio Almeida lembra como a presunção de culpa
+racializada de hoje — vide os policiais [falando de mortos como
+suspeitos](https://www1.folha.uol.com.br/cotidiano/2021/05/vitimas-do-jacarezinho-tinham-passagem-pela-policia-e-envolvimento-com-o-trafico-relatado-por-parentes.shtml)
+antes sequer de serem identificados os corpos — representa uma continuidade da
+maneira como negros eram tratados no século XIX, presumidos escravos fugidos
+até que se provasse o contrário. 
+
+Este fato voltou à tona nas redes sociais e veículos de mídia no Brasil após
+uma operação deflagrada pela Polícia Civil do Rio de Janeiro na favela do
+Jacarezinho deixar 28 moradores e um policial morto no início deste mês. Além
+de
+[chocar](https://www.metropoles.com/brasil/parem-de-nos-matar-pedem-moradores-do-jacarezinho-em-protesto)
+pela
+[extrema](https://ultimosegundo.ig.com.br/brasil/2021-05-08/morto-jacarezinho-sem-arma-sentado-cadeira-plastico.html)
+[violência](https://oglobo.globo.com/rio/mortes-no-jacarezinho-cenario-de-violencia-marcou-comunidade-apos-operacao-policial-1-25010264),
+a operação também escancarou a desigualdade racial intimamente ligada às
+questões de segurança pública no Brasil, já que a maioria dos mortos na chacina
+do Jacarezinho eram negros.
+
+Estas mortes somam-se às altas taxas de violência policial que há tempos são
+uma marca das polícias brasileiras. Em 2019, ao menos [5.804 pessoas foram
+mortas](https://g1.globo.com/monitor-da-violencia/noticia/2020/04/16/numero-de-pessoas-mortas-pela-policia-cresce-no-brasil-em-2019-assassinatos-de-policiais-caem-pela-metade.ghtml)
+pelas forças policiais no país, e o estado do Rio de Janeiro foi o estado com a
+segunda maior taxa de assassinados pela polícia — 10,5 mortes por 100 mil
+habitantes —, atrás apenas do Amapá.
+
+Em fevereiro deste ano, o _Pindograma_ publicou [uma
+matéria](https://pindograma.com.br/2021/02/19/incursoes.html) mostrando como a
+realização de operações policiais do tipo não reduziu o crime no Rio entre 2003
+e 2019. Em abril, publicamos [na revista piauí outro
+texto](https://piaui.folha.uol.com.br/quanto-menos-policia-mais-paz/) que
+demonstrava o mesmo: a proibição das operações no Rio de Janeiro durante a
+pandemia não afetou a ocorrência de crimes violentos no período. 
+
