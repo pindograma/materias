@@ -1,0 +1,294 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+library(lubridate)
+
+source('../theme.R')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+A fome e insegurança alimentar
+[voltaram](https://www1.folha.uol.com.br/equilibrioesaude/2021/04/fome-atinge-19-milhoes-de-brasileiros-durante-a-pandemia-em-2020.shtml)
+ao noticiário no contexto do avanço da pandemia de coronavírus no país. Nos
+últimos meses, a inflação aumentou, incidindo particularmente nos preços de
+alimentos da cesta básica, e o desemprego chegou ao maior patamar desde
+[2012](https://economia.uol.com.br/empregos-e-carreiras/noticias/redacao/2021/05/27/desemprego-pnad-continua-ibge.htm),
+ano em que o IBGE iniciou a série histórica sobre o tema. Apesar de todos esses
+fatores contribuírem para o aumento da precariedade alimentar nos lares
+brasileiros, especialistas já
+[alertavam](https://fianbrasil.org.br/discurso-de-encerramento-do-mandato-de-maria-emilia-l-pacheco-no-consea/)
+para a “volta” da fome desde 2016.
+
+##### Os números
+
+```{r}
+seg_vigisan_20 = .448
+seg_fuberlin_20 = .406
+
+inseg_alimentar_serie = tibble(
+    year = c(make_date(2004, 1, 1), make_date(2009, 1, 1), make_date(2013, 1, 1), make_date(2018, 1, 1), make_date(2020, 1, 1)),
+    prop = c(.648, .696, .771, .633, mean(c(seg_vigisan_20, seg_fuberlin_20)))
+)
+
+ggplot(inseg_alimentar_serie, aes(x = year, y = prop, group = 1)) +
+  labs(title = 'Fração de domicílios brasileiros com segurança alimentar',
+       caption = 'Fonte: IBGE, Vox Populi, IBPAD. Compilado pelo Pindograma.') +
+  geom_line(size = 2, color = pg_blue) +
+  geom_point(size = 4, color = pg_orange) +
+  xlab('Ano') + ylab('') +
+  scale_x_date(date_labels = '%Y', breaks = c(ymd('2004-01-01'), ymd('2009-01-01'), ymd('2013-01-01'), ymd('2018-01-01'), ymd('2020-01-01'))) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_pindograma() +
+  theme(axis.title.x = element_text(margin = margin(t=0)))
+```
+
+A Pesquisa Nacional por Amostra de Domicílios (PNAD), do IBGE, registrou dados
+sobre segurança alimentar em 2004, 2009 e 2013. Para 2017-8, os dados vieram da
+Pesquisa de Orçamentos Familiares.
+
+Já os dados mais recentes sobre a insegurança alimentar no Brasil vêm de duas
+fontes. O
+[Inquérito](http://olheparaafome.com.br/VIGISAN_Inseguranca_alimentar.pdf)
+Nacional sobre Insegurança Alimentar no Contexto da Pandemia da Covid-19,
+produzido pela Rede Brasileira de Pesquisa em Soberania e Segurança Alimentar e
+Nutricional (PENSSAN), parte do projeto VigiSAN, é a primeira. A segunda fonte
+é [um
+estudo](https://refubium.fu-berlin.de/bitstream/handle/fub188/29813/WP_%234_final_version.pdf?sequence=2&isAllowed=y)
+realizado pela Universidade Livre de Berlim (FU-Berlin) em parceria com a UFMG
+e UnB. **A pesquisa do VigiSAN foi presencial, enquanto a pesquisa das
+universidades foi telefônica**.
+
+Para determinar o nível de segurança alimentar, tanto o inquérito da PENSSAN
+quanto o estudo das universidades se baseiam em um questionário de 8 perguntas
+utilizadas na Escala Brasileira de Insegurança Alimentar, que avaliam a
+precariedade alimentar de um domicílio. As perguntas são respondidas com “sim”
+ou “não” e cada resposta positiva representa um ponto. A partir da soma de
+todas é determinada a segurança ou nível da insegurança alimentar.
+
+A **segurança alimentar** (0 pontos) significa o acesso regular e permanente a
+alimentos de qualidade, em quantidade suficiente; a **insegurança alimentar
+leve** (1 a 3 pontos), ocorre quando há preocupação ou incerteza quanto acesso
+aos alimentos no futuro ou qualidade inadequada dos alimentos; a **insegurança
+alimentar moderada** (4 a 5 pontos), se há redução quantitativa de alimentos
+e/ou ruptura nos padrões de alimentação resultante da falta de alimentos entre
+os adultos. Por último, a **insegurança alimentar grave (fome)** (6 a 8 pontos)
+é a redução quantitativa de alimentos também entre as crianças. Neste cenário,
+a fome passa a ser uma experiência vivida no domicílio.
+
+Uma análise agregando dados do inquérito VigiSAN e do estudo das universidades
+indica que, **em 2020, menos da metade da população estava em situação de
+segurança alimentar**. A média desses dois levantamentos indica que 57,3% dos
+domicílios brasileiros enfrentam algum nível de dificuldade para se alimentar.
+Esse número se compõe por 33,2% dos domicílios em estado de insegurança
+alimentar leve, 12,1% média, enquanto 12% conviviam com a fome.
+
+```{r}
+cat = tibble(
+    group = c('Segurança', 'Insegurança\nLeve',
+              'Insegurança\nModerada', 'Insegurança\nGrave'),
+    order = c(1, 2, 3, 4),
+    value = c(mean(c(.448, .406)), mean(c(.347, .317)), mean(c(.115, .127)), mean(c(.09, .15)))
+)
+
+ggplot(cat, aes(x = forcats::fct_reorder(group, order), y = value, fill = group)) +
+  labs(title = 'Situação de segurança alimentar dos brasileiros, 2020',
+       caption = 'Fonte: Vox Populi, IBPAD. Compilado pelo Pindograma.') +
+  geom_col() +
+  scale_fill_manual(values = c(pg_green, pg_blue, pg_yellow, pg_orange), name = '') +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), name = '') +
+  xlab('') +
+  theme_pindograma() +
+  theme(legend.position = 'none') +
+  theme(axis.text.x = element_text(size = 12))
+```
+
+Entre as 5 regiões do país, o Nordeste tem os piores índices, com 72,5% da
+população com algum nível de insegurança alimentar. A região é seguida pelo
+Norte, com 65,4% e Centro-Oeste, com 54%.
+
+Enquanto isso, as regiões com mais segurança alimentar são o Sul e o Sudeste.
+Segundo a pesquisa das universidades, o Sudeste tem 53,4% da população com
+insegurança alimentar e o Sul vem em seguida, com o menor nível de insegurança
+alimentar: 51,7%. Em paralelo, o inquérito da VigiSAN aponta que 46,9% dos
+domicílios no Sul e no Sudeste sofreram com a falta de alimentos em quantidade
+suficiente ou passavam fome.
+
+```{r}
+#sul_sudeste_ag_fuberlin = weighted.mean(c(.465, .484), c(853, 307))
+
+regions = tibble(
+  region = seq(1, 5),
+  value = c(mean(c(.632, .677)), mean(c(.719, .731)), mean(c(.469, .465)),
+            mean(c(.469, .484)), mean(c(.532, .545)))
+)
+
+regions_map = geobr::read_region(showProgress = F) %>%
+  left_join(regions, c('code_region' = 'region'))
+
+ggplot() +
+  geom_sf(data = regions_map, aes(fill = value)) +
+  labs(title = 'Insegurança alimentar nas regiões brasileiras, 2020',
+       caption = 'Fonte: Vox Populi, IBPAD. Compilado pelo Pindograma.') +
+  scale_fill_gradient(low = 'white', high = pg_orange, limits = c(.4, .75), labels = scales::percent_format(accuracy = 1)) +
+  theme_pindograma_map()
+```
+
+Além disso, há diferenças na prevalência da insegurança alimentar entre regiões
+urbanas e rurais. Agregando as pesquisas VigiSAN e das universidades, 44,9% dos
+domicílios em áreas urbanas viviam uma situação de segurança alimentar.
+Enquanto isso, 33% enfrentavam insegurança leve, outros 10,9% insegurança média
+e 10,8% passavam fome.
+
+Já nas áreas rurais ou com características rurais, **há uma divergência grande
+entre as duas pesquisas**: a VigiSAN aponta que 40% dos brasileiros no campo
+não tinham qualquer insegurança alimentar. Por outro lado, a pesquisa da
+FU-Berlin aponta que apenas 24,8% estavam nessa situação confortável.
+
+Além disso, raça e gênero estão fortemente associados com o problema da fome no
+Brasil. Na pesquisa das universidades, a insegurança alimentar era mais grave
+em lares onde a mulher é a única responsável pela renda (73,8%); e também em
+domicílios chefiados por pessoas de raça ou cor parda (67,8%) e preta (66,8%). 
+
+##### O desmonte de políticas públicas
+
+A lista de fatores agravantes da fome é extensa e antiga. A cadeia de produção
+de alimentos enfrenta problemas há séculos. No [Brasil
+colonial](https://www.scielo.br/j/spp/a/nWXBS3LYccnQHjCbTgq6HHB/?lang=pt), por
+exemplo, o incentivo à monocultura de exportação já contribuía para o
+negligenciamento da produção de alimentos para comunidades locais. Esse é um
+problema que persiste: um [dossiê de
+2021](https://fase.org.br/pt/acervo/biblioteca/dossie-critico-da-logistica-da-soja/),
+produzido pela Federação de Órgãos para Assistência Social e Educacional (FASE)
+mostra que o cultivo da soja, por exemplo, vem tomando áreas de plantio de
+arroz e feijão.
+
+Somente nos anos 90, depois da redemocratização, que a pauta da fome ganha mais
+força, num cenário de desemprego alto e crise econômica. O Conselho Nacional de
+Segurança Alimentar (Consea) é criado em 1993. Apenas dois anos depois, ele é
+extinto por Fernando Henrique Cardoso
+([PSDB](https://pindograma.com.br/2020/11/02/psdb.html)), mas é reavivado em
+2003 durante o governo Lula
+([PT](https://pindograma.com.br/2020/10/27/pt.html)), mesmo ano de criação do
+Fome Zero, a vitrine do primeiro mandato do ex-presidente.
+
+O Fome Zero englobava iniciativas de reforma agrária, o Bolsa Família e
+restaurantes populares, com o objetivo de combater a fome e suas causas
+estruturais. Juntos, o Fome Zero e o Consea viriam a ser as peças mais
+importantes no aparato federal do combate a fome. Mas em janeiro de 2019, o
+Consea é extinto novamente, desta vez pelo presidente Jair Bolsonaro (sem
+partido)
+
+Em um [relatório](http://www.fao.org/3/i4030e/i4030e.pdf) de 2014, a FAO
+destacou que o combate à fome foi acelerado quando “eliminar a fome foi
+colocado no centro da agenda política brasileira”. A agência enfatizou a
+importância de um arcabouço de programas e estruturas: Fome Zero, o Consea,
+Brasil sem Miséria, o Bolsa Família e uma série de outras iniciativas que
+fortalecem a alimentação escolar e a agricultura familiar.
+
+Esse arcabouço passou por uma expansão durante a década de 2000, com mais
+fundos direcionados aos programas e iniciativas. Contudo, ao longo da década
+seguinte, esse ritmo diminuiu. “Alguns programas e políticas, ou foram
+esvaziados porque não há recurso, ou foram destruídos”, comenta a antropóloga
+Maria Emília Pacheco, assessora da ONG FASE e presidente do Consea entre 2012 e 2016.
+
+Um dos exemplos mais emblemáticos da desidratação do arcabouço de luta contra a
+fome foi justamente a
+[extinção](https://ojoioeotrigo.com.br/2019/05/o-consea-no-fio-da-navalha/) do
+Consea no primeiro dia do mandato de Bolsonaro, através de uma medida
+provisória. Essa medida [diminuiu a
+participação](https://diplomatique.org.br/a-extincao-do-consea-nacional-e-seu-impacto-nos-conselhos-estaduais-e-municipais/)
+da sociedade civil nas políticas nacionais de combate à fome e, segundo
+especialistas, representou um retrocesso na articulação entre União, estados e
+municípios na política de segurança alimentar.
+
+Além disso, o Programa de Aquisição de Alimentos da Agricultura Familiar (PAA),
+através do qual o governo [compra alimentos de pequenos
+produtores](https://www.gov.br/pt-br/noticias/agricultura-e-pecuaria/2020/01/entenda-como-funciona-o-programa-de-aquisicao-de-alimentos)
+e os distribui para brasileiros necessitados, também sofreu com um esvaziamento
+de verbas empregadas: houve redução de 88,9% entre 2016 e 2020. Um
+[estudo](https://www.scielo.br/j/rap/a/vhSmZVxSzr8LZVbFMLbJNMR/?lang=pt#:~:text=Identificou%2Dse%20que%20o%20PAA,de%20fam%C3%ADlias%20que%20vivem%20em)
+de pesquisadores do Ipea demonstra que o programa tinha potencial para mitigar
+os efeitos da pandemia na cadeia produtiva — tanto por **continuar apoiando a
+produção de alimentos** por pequenos agricultores, quanto por **escoar
+alimentos saudáveis para pessoas carentes**. Ao que tudo indica, o PAA também
+aqueceria a economia de pequenos municípios, mitigando as dificuldades
+econômicas da pandemia. Porém, apenas R$ 28,3 milhões foram efetivamente pagos
+pelo programa em 2020, um valor ínfimo para o governo federal.
+
+<hr style="width: 100%;">
+
+Para muito além da pandemia, a antropóloga lista uma série de fatores que
+explicam a volta da fome a patamares de décadas atrás: a concentração agrária,
+a falta de estoques de alimentos, a expansão do agronegócio de exportação e os
+conflitos socioambientais. “O Brasil não enfrentou questões estruturais da
+desigualdade”, complementa, “não podemos dissociar a fome de questões raciais,
+de gênero e da população indígena”.
+
+Para Pacheco, a pandemia de COVID-19 apenas agudizou uma situação que poderia
+ter sido mitigada. “Não precisávamos, não deveríamos ter chegado a esse quadro,
+se tivesse havido um compromisso ético com a proteção da população”, disse a
+especialista.
+
+A antropóloga lembra que o direito ao alimento é garantia da Constituição, e
+diz que os programas de prevenção à fome são essenciais para a garantia da
+dignidade humana. Pacheco também diz que é necessário um duplo compromisso, da
+população e do Estado, para que a pauta siga em debate. “É uma pactuação
+necessária e permanente… falar de alimentação é falar do direito a vida”,
+comenta.
+
+<hr style="width: 100%;">
+
+##### O questionário da insegurança alimentar
+
+Para cada resposta afirmativa, é computado um "ponto". O número de "pontos" de
+cada respondente indica o grau de insegurança alimentar.
+
+1. Os(as) moradores(as) deste domicílio tiveram a preocupação de que os
+   alimentos acabassem antes de poderem comprar ou receber mais comida?
+2. Os alimentos acabaram antes que tivessem dinheiro para comprar mais comida?
+3. Os(as) moradores(as) deste domicílio ficaram sem dinheiro para ter uma
+   alimentação saudável e variada?
+4. Os(as) moradores(as) deste domicílio comeram apenas alguns poucos tipos de
+   alimentos que ainda tinham, porque o dinheiro acabou?
+5. Algum(a) morador(a) de 18 anos ou mais de idade deixou de fazer alguma
+   refeição, porque não havia dinheiro para comprar comida?
+6. Algum(a) morador(a) de 18 anos ou mais de idade, alguma vez, comeu menos do
+   que achou que devia, porque não havia dinheiro para comprar comida?
+7. Algum(a) morador(a) de 18 anos ou mais de idade, alguma vez, sentiu fome,
+   mas não comeu, porque não havia dinheiro para comprar comida?
+8. Algum morador de 18 anos ou mais de idade, alguma vez, fez apenas uma
+   refeição ao dia ou ficou um dia inteiro sem comer porque não havia dinheiro
+   para comprar comida?
+
+<hr style="width: 100%;">
+
+**Dados utilizados na matéria**: "VIGISAN: Inquérito Nacional sobre Insegurança
+Alimentar no Contexto da Pandemia da Covid-19 no Brasil" (Rede PENSSAN/Vox
+Populi); "Efeitos da pandemia na alimentação e na situação da segurança
+alimentar no Brasil" (Eryka Galindo, Marco Antonio Teixeira, Melissa de Araújo,
+Renata Motta, Milene Pessoa, Larissa Mendes e Lúcio Rennó/IBPAD); Pesquisa
+Nacional de Amostra de Domicílios Contínua (IBGE); Pesquisa de Orçamentos
+Familiares (IBGE).
+
+**Contribuiu com dados** Daniel Ferreira.
+
+Para reproduzir os números e os gráficos desta reportagem, o código
+pode ser encontrado [aqui][1].
+
+**Créditos da imagem**: Altemar Alcântara/Prefeitura de Manaus.
+
+[1]: https://github.com/pindograma/materias/2021-06-18-fome/Fome.Rmd
