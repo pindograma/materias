@@ -1,0 +1,243 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+library(gt)
+
+source('../theme.R')
+load('policiais.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+A distribuição de agentes policiais nas cidades brasileiras é um tema pouco
+discutido na agenda de segurança pública. Debate-se a falta de recursos, o
+excesso de violência, a taxa de criminalidade, mas pouco se fala de como as
+polícias alocam seus soldados e agentes no espaço urbano. Dados obtidos pelo
+_Pindograma_ mostram que, tanto no Rio de Janeiro como em São Paulo, **a
+tendência é que haja mais policiais em bairros de alta renda**, mesmo que essas
+regiões tenham menos criminalidade.
+
+---
+
+No Rio de Janeiro, a reportagem teve acesso ao efetivo de policiais militares
+na área de atuação de cada Batalhão de Polícia Militar (BPM) durante o ano de 2016.
+A defasagem dos dados deve-se ao sigilo de 5 anos imposto a informações deste
+tipo pela PM do Rio. No entanto, especialistas ouvidos pelo _Pindograma_ asseguram que
+pouco mudou nos últimos cinco anos. Cruzando estes números com dados
+populacionais do Censo de 2010, foi possível calcular a proporção de policiais
+militares _per capita_ em cada região da cidade.
+
+Duas das áreas com o maior número de policiais por habitante são o 19º BPM, que
+cobre o bairro de Copacabana, e o 31º BPM, responsável pela Barra da Tijuca
+e Recreio dos Bandeirantes. 
+
+```{r}
+cop_ratio_40 = pm_analysis %>%
+  filter(aisp == 40) %>%
+  pull(habitantes_por_pm)
+
+cop_ratio_19 = pm_analysis %>%
+  filter(aisp == 19) %>%
+  pull(habitantes_por_pm)
+
+cop_100k_40 = pm_analysis %>%
+  filter(aisp == 40) %>%
+  pull(pm_100k)
+
+cop_100k_19 = pm_analysis %>%
+  filter(aisp == 19) %>%
+  pull(pm_100k)
+```
+
+Em Copacabana havia `r pn(cop_100k_19)` policiais para
+cada 100 mil habitantes em 2016. Em comparação, no 40º BPM, que cobre Campo Grande,
+Santíssimo e outros bairros da Zona Oeste, havia apenas `r pn(cop_100k_40)` policiais para cada
+100 mil habitantes. **Cada policial em Campo Grande é
+responsável por proteger `r pn(cop_ratio_40/cop_ratio_19)` vezes mais
+moradores que um policial em Copacabana**.
+
+Essa distribuição de policiais vai na contramão dos dados de criminalidade da
+cidade. Em 2016, Campo Grande e seus arredores tiveram 95 homicídios dolosos e
+6.726 roubos, contrastando com apenas 14 homicídios e 1.858 roubos em Copacabana
+no mesmo período. O que se vê, na verdade, é que o número de policiais por
+habitante está mais ligado à renda que à criminalidade de um dado local.
+
+```{r}
+ggplot(pm_analysis %>% filter(capital & aisp != 4 & aisp != 5), aes(x = renda, y = pm_100k)) +
+  geom_point(color = pg_blue) +
+  geom_smooth(method = 'lm', color = pg_orange, se = F) +
+  labs(title = 'Efetivo de policiais militares e renda no Rio de Janeiro',
+       subtitle = '(cada ponto é um batalhão de polícia militar; regiões do Centro excluídas)',
+       caption = 'Fonte: PMERJ, Censo 2010/IBGE, compilado pelo Pindograma.') +
+  xlab('Renda média do entorno do BPM') + ylab('PMs por 100 mil habitantes') +
+  theme_pindograma()
+```
+
+Os BPMs do Centro foram excluídos do gráfico por conta de sua baixa densidade
+populacional e de seus altos índices de criminalidade, dado o alto fluxo de
+pessoas na região. Isso faz com que o número de policiais militares _per
+capita_ não seja informativo.
+
+Em entrevista ao _Pindograma_, a economista da FGV Joana Monteiro, ex-diretora
+do Instituto de Segurança Pública do Rio de Janeiro, afirmou que a má
+distribuição dos agentes **“é um problema sério que ninguém quer discutir, mas
+quem trabalha no sistema sabe que existe”**.
+
+A reportagem buscou também analisar a distribuição dos policiais civis no Rio.
+O _Pindograma_ entrou com um pedido de acesso à informação, e depois de três
+recursos, a Controladoria-Geral do Estado ordenou que a Polícia Civil do Rio
+divulgasse os dados de efetivo. No entanto, o órgão ignorou a determinação
+legal e, até a publicação deste texto, ainda não enviou a informação
+requisitada.
+
+---
+
+No estado de São Paulo, a reportagem não teve acesso a dados acerca da
+distribuição de policiais militares — informação posta em sigilo pelo governo
+por 15 anos. No entanto, foi possível obter informações sobre a distribuição de
+agentes da Polícia Civil na capital paulista por delegacia seccional, área que
+compreende diversos distritos policiais. Diferente da Polícia Militar, a
+Polícia Civil é responsável pela investigação e, portanto, não faz patrulhas
+nas ruas.
+
+```{r}
+del_2 = pcsp_analysis %>%
+  filter(DELEGACIA == 2) %>%
+  pull(DELEGADO)
+
+del_6 = pcsp_analysis %>%
+  filter(DELEGACIA == 6) %>%
+  pull(DELEGADO)
+
+del_100k_2 = pcsp_analysis %>%
+  filter(DELEGACIA == 2) %>%
+  pull(del_100k)
+
+del_100k_6 = pcsp_analysis %>%
+  filter(DELEGACIA == 6) %>%
+  pull(del_100k)
+
+del_100k_5 = pcsp_analysis %>%
+  filter(DELEGACIA == 5) %>%
+  pull(del_100k)
+
+del_100k_7 = pcsp_analysis %>%
+  filter(DELEGACIA == 7) %>%
+  pull(del_100k)
+
+del_100k_8 = pcsp_analysis %>%
+  filter(DELEGACIA == 8) %>%
+  pull(del_100k)
+```
+
+Apesar da diferença de funções, a distribuição dos delegados, escrivães e
+investigadores na capital paulista segue um padrão similar ao dos soldados
+cariocas. A 2ª Delegacia Seccional, que inclui bairros de alta renda como a
+Vila Mariana e o Campo Belo, tem cerca de `r pn(del_100k_2)` delegados para cada 100.000 habitantes.
+Enquanto isso, a 6ª Seccional, que cobre o extremo Sul da cidade, em geral mais
+pobre, tem apenas `r pn(del_100k_6)` delegados por 100 mil habitantes. Já o
+número de escrivães e investigadores tem correlação altíssima com o número de
+delegados.
+
+```{r}
+mapf = sp_dps %>%
+  left_join(pcsp_analysis, c('SECCIONAL' = 'DELEGACIA')) %>%
+  mutate(delegado_100k = DELEGADO / pop * 100000)
+
+ggplot() +
+  geom_sf(data = mapf, aes(fill = delegado_100k)) +
+  scale_fill_gradient(low = 'white', high = pg_green, limits = c(1, 12)) +
+  labs(title = 'Delegados por 100 mil habitantes em São Paulo',
+       subtitle = 'por delegacia seccional, 2020',
+       caption = 'Fonte: SSP-SP, compilado pelo Pindograma.') +
+  theme_pindograma_map()
+```
+
+Nas seccionais da Zona Leste, a história se repete. Bairros mais próximos do
+centro como a Mooca ficam sob a jurisdição da 5ª Seccional, que dispõem de
+`r pn(del_100k_5)` delegados a cada 100.000 habitantes. Já as 7ª e 8ª Seccionais, que cobrem os bairros
+mais afastados e mais pobres da Zona Leste, têm apenas `r pn(del_100k_7)`
+e `r pn(del_100k_8)` delegados por habitante, respectivamente. 
+
+A distribuição dos policiais civis em São Paulo tampouco está de acordo com a
+demanda por investigações policiais. Usando homicídios como exemplo (já que são
+um dos poucos crimes realmente investigados pela polícia), o problema fica
+evidente. 
+
+A Seccional da Zona Sul teve 23 homicídios em 2020, a menor taxa da cidade. No
+mesmo período, a Seccional de Santo Amaro teve 183, a maior taxa da cidade.
+**Mesmo tendo 8 vezes mais homicídios que a 2ª Seccional, a 6ª Seccional tem
+apenas `r pn(del_6 / del_2)` vezes mais delegados** — a 2ª Seccional tem `r pn(del_2)`, e
+a 6ª, `r pn(del_6)`.
+
+Assim como no Rio, esse problema é pouco discutido em São Paulo, até mesmo por especialistas
+na área. Em 2010, Renato Sérgio de Lima, professor da FGV e diretor-presidente
+do Fórum Brasileiro de Segurança Pública, publicou um
+[estudo](https://dspace.mj.gov.br/handle/1/3840) sobre a distribuição das
+delegacias da Polícia Civil na capital paulista. O texto relata como a
+distribuição dos DPs pela cidade “nunca se baseou em um estudo preliminar” e
+que, frequentemente, a decisão de abrir um novo DP era resultado de favores
+políticos. A falta de planejamento resultou em grandes discrepâncias de
+recursos policiais investigativos pela cidade.
+
+O texto também relata como as tentativas de alterar esse sistema foram esparsas
+e tiveram pouco êxito. O principal obstáculo para isso não foram entraves
+administrativos, mas a reação da opinião pública. Houve, por exemplo, uma
+proposta para que delegacias em regiões de pouca atividade criminal fossem
+fechadas durante a noite para que os agentes parados pudessem ser realocados
+para DPs que necessitassem de mais força de trabalho. Isso não afetaria em nada
+o policiamento do local, já que este serviço recai sobre a PM, e não sobre a
+Polícia Civil. No entanto, moradores do bairro onde a medida foi testada
+rechaçaram o plano, alegando que a medida promoveria a insegurança.
+
+A pesquisa de Lima é de 2010, mas parece ser o trabalho mais atual sobre o
+assunto. A assessoria de imprensa do Fórum Brasileiro de Segurança Pública
+disse desconhecer qualquer trabalho do tipo mais recente. Apesar disso, os
+dados levantados pelo _Pindograma_ mostram que o quadro continua parecido. No
+Rio, quando perguntada se havia esperança de alguma mudança positiva ter
+acontecido desde 2016, Joana Monteiro respondeu simplesmente que “não
+melhorou”.
+
+```{r}
+pm_analysis %>%
+  filter(capital) %>%
+  select(aisp_dscr, renda, pm_100k) %>%
+  arrange(desc(pm_100k)) %>%
+  rename(`BPM` = aisp_dscr, `Renda Média` = renda, `PMs por 100 mil habitantes` = pm_100k) %>%
+  mutate(`Renda Média` = paste0('R$ ', round(`Renda Média`, 2)),
+         `PMs por 100 mil habitantes` = round(`PMs por 100 mil habitantes`, 2)) %>%
+  gt() %>%
+  tab_header(title = 'Efetivo policial por BPM no Rio de Janeiro, 2016') %>%
+  tab_source_note('Fonte: PMERJ, Censo 2010/IBGE. Compilados pelo Pindograma.') %>%
+  theme_pindograma_table()
+```
+
+---
+
+**Dados utilizados na matéria**: Estatísticas Criminais do Rio de Janeiro
+(ISP-RJ); Estatísticas Criminais de São Paulo (SSP-SP); Distribuição de
+Policiais Militares (PMERJ); Distribuição de Policiais Civis (SSP-SP);
+Censo 2010 (IBGE).
+
+**Contribuiu com dados** Daniel Ferreira.
+
+Para reproduzir os números e os gráficos citados na matéria, o código
+pode ser encontrado [aqui][1].
+
+**Créditos da imagem**: Rômulo Vidal/PMERJ/Divulgação, Observing Eye/Flickr.
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-06-23-distribuicao-policiais/DistPoliciais.Rmd
+
