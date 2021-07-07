@@ -1,0 +1,253 @@
+---
+title: "bens-sp"
+author: "Fernanda Nunes"
+date: "05/07/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+library(gt)
+
+source('../theme.R')
+load('sp.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+---
+
+Como é o acesso dos paulistanos aos bens que a cidade tem para oferecer? O _Pindograma _compilou dados da prefeitura sobre os mais diversos temas para entender a presença do Estado e o acesso aos serviços públicos nos distritos de São Paulo — e onde estão as maiores desigualdades.
+
+Para cada bem público, calculamos uma correlação entre a presença do bem e a renda da área onde ele se encontra. A correlação é **positiva** se a oferta de um determinado serviço aumenta conforme a renda de uma área, e **negativa** se a oferta diminui conforme a renda aumenta. Se o valor é **próximo de zero**, quer dizer que o bem está distribuído equitativamente entre diferentes áreas da cidade.
+
+De árvores a escolas e praças com Wi-Fi, cada assunto explorado tem particularidades. As agências dos Correios, por exemplo, são mais acessíveis nas áreas mais ricas que nas áreas de menor renda. Já os TeleCentros, unidades que oferecem acesso gratuito à internet, estão localizados com maior frequência na periferia. A seguir, mostramos onde cada bem público se encontra nesse espectro.
+
+---
+
+#### Educação
+```{r}
+gt(edu_table) %>% theme_pindograma_table()
+```
+
+A **educação infantil paulistana** é composta pelos centros de educação infantil (CEIs), para crianças de zero a três anos; e pelas escolas municipais de educação infantil (EMEIs), para alunos entre quatro e cinco anos. Essas instituições aparecem em maior número em distritos longe do centro, mas não em quantidade suficiente para atender a população.
+
+```{r, fig.height=7, fig.width=9}
+educacao
+```
+
+O projeto [Acesso a Oportunidades](https://www.ipea.gov.br/acessooportunidades/), do Ipea, mostra que, em geral, as pessoas demoram mais tempo para chegar a escolas infantis do que a escolas de ensino fundamental. Durante a pandemia, houve um [aumento na demanda](https://agenciabrasil.ebc.com.br/radioagencia-nacional/educacao/audio/2020-10/cresce-demanda-por-vagas-na-educacao-infantil-da-rede-publica-de-sp) de vagas na educação infantil e a rede está em expansão, mas ainda há lista de espera.
+
+Já o padrão de distribuição das **escolas de ensino fundamental e médio é semelhante**: em todas as regiões, há mais escolas públicas nas periferias — uma distribuição justificável, uma vez que lá há maior maior demanda pela educação pública.
+
+Já as unidades do Senai, Sesi e Senac, assim como de outras escolas técnicas, são mais centrais.
+
+---
+
+#### Saúde
+
+
+Os dados do projeto Acesso a Oportunidades mostram que, para a saúde, o tempo mínimo para se chegar à unidade de saúde mais próxima de transporte público está entre zero e 15 minutos na vasta maioria da cidade. As exceções são algumas áreas em Cidade Tiradentes, no extremo Sul, ao redor da represa Guarapiranga e também no extremo Norte.
+
+Ainda assim, as áreas centrais e ao longo das linhas de metrô concentram a maior parte dos serviços de saúde. Com uma hora de trajeto de transporte público, uma pessoa que mora em Rio Pequeno tem acesso a menos de 5% do total de serviços de saúde da cidade. Já um morador do Paraíso ou Liberdade tem acesso a aproximadamente 30%.
+
+---
+
+#### Segurança
+
+```{r}
+gt(seg_table) %>% theme_pindograma_table()
+```
+
+A polícia civil tem 187 delegacias em São Paulo, distribuídas de maneira relativamente uniforme. Apenas Sé e República destoam muito da média, com 25 e 11 delegacias respectivamente.
+
+```{r, fig.height=7, fig.width=9}
+seguranca
+```
+
+No entanto, a capacidade investigativa é menor nas áreas mais pobres, como mostra [outra matéria](https://pindograma.com.br/2021/06/24/distpol.html) do _Pindograma_.
+
+Em geral, áreas com renda mais alta e menos populosas registram maior número de furtos. Já quando analisamos o crime de roubo, o padrão é bastante diferente: a correlação com renda se inverte: quanto menor a renda, mais roubos.
+
+---
+
+#### Direitos Humanos
+
+```{r}
+gt(dh_table) %>% theme_pindograma_table()
+```
+
+Há quase 3.000 instituições de apoio à criança e ao adolescente listadas pela prefeitura.
+
+Em relação à população, elas são mais frequentes no centro expandido. Lá, elas têm que atender uma demanda menor, e ficam menos sobrecarregadas. Já o Conselho Tutelar tem apenas 51 endereços espalhados por São Paulo, a maioria deles em regiões mais periféricas — situação alinhada com a demanda por esse serviço. 
+
+São apenas 18 centros da Rede de Proteção à Mulher, dispersos de maneira bem desigual pela cidade. 80 dos 96 distritos não têm nenhum centro, e quando eles existem, costuma ser em bairros periféricos. Apenas Sé e Itaquera têm dois centros.
+
+```{r, fig.height=7, fig.width=9}
+direitos_humanos
+```
+
+---
+
+#### Inclusão Digital
+
+```{r}
+gt(digi_table) %>% theme_pindograma_table()
+```
+
+A prefeitura oferece acesso livre e gratuito à internet através dos chamados Telecentros, com 130 unidades pela cidade. Segundo um [levantamento](https://www.prefeitura.sp.gov.br/cidade/secretarias/inovacao/inclusao_digital/index.php?p=246630) da Secretaria Municipal de Inovação e Tecnologia, eles são utilizados com frequência por crianças, adolescentes e imigrantes. Além disso, mais de 50% do público dos telecentros se autodeclarou preto ou pardo.
+
+```{r, fig.height=7, fig.width=9}
+inclusao_digital
+```
+
+Dado o seu público-alvo, eles são mais frequentes na periferia da cidade: os distritos de Jardim Ângela, Sacomã, Jardim São Luís e Cidade Dutra têm o maior número de telecentros — os dois primeiros têm oito unidades cada um, seguidos de sete no Jardim São Luis e seis na Cidade Dutra. Todos estes são distritos de renda mais baixa. Além disso, a correlação entre distritos e a presença de Telecentros mostra que eles são mais comuns em distritos com maior população negra.
+
+Já a distribuição de praças públicas com Wi-Fi é bem mais uniforme. A vasta maioria dos distritos têm apenas uma ou duas. As exceções são os distritos do Centro Histórico: o distrito da República, com sete, e a Sé, com oito praças com Wi-Fi.
+
+---
+
+#### Esporte e Lazer
+
+```{r}
+gt(esp_table) %>% theme_pindograma_table()
+```
+
+Os 41 centros esportivos municipais catalogados são espaços administrados pela prefeitura e diferem entre si, mas contam com estruturas como playgrounds, salas de ginástica, salão de jogos, piscinas, e oferecem aulas programadas. Eles estão irregularmente distribuídos por 34 distritos. Há poucos na Zona Sul, e mais nas periferias da Zona Norte e Leste.
+
+Os Clubes da Comunidade — espaços esportivos construídos em terrenos municipais geridos pela comunidade local, através de associações ou eleições — são muito mais numerosos em distritos periféricos. Já os clubes municipais, que oferecem aulas e outras atividades e têm um maior envolvimento da prefeitura no seu funcionamento, são mais comuns em distritos mais centrais e na Zona Sul. A Zona Leste é a região com menos clubes.
+
+```{r, fig.height=7, fig.width=9}
+esportes
+```
+
+Um [levantamento](https://www.nossasaopaulo.org.br/wp-content/uploads/2020/10/Mapa-da-Desigualdade-2020-MAPAS-site-1.pdf) da Rede Nossa São Paulo mostra que de maneira agregada (combinando Centros Educacionais Unificados (CEUs) e todos os equipamentos sob administração da Secretaria Municipal de Esportes e Lazer), a oferta de lazer na cidade é mal distribuída.
+
+---
+
+#### Áreas Verdes
+
+```{r}
+gt(vd_table) %>% theme_pindograma_table()
+```
+
+Aqui, são consideradas árvores em vias públicas — ruas, avenidas, calçadas e seus entornos. Bairros de renda alta como Morumbi, Itaim Bibi e Alto de Pinheiros têm muito mais árvores _per capita_ do que a média da cidade. Já o centro (Sé, República e Brás) da cidade não tem muitas árvores ao longo de vias públicas.
+
+Na Zona Leste, quanto mais próximo das fronteiras da cidade, menos árvores. Guaianases, Cidade Tiradentes e José Bonifácio estão entre as menos arborizadas da região. Além disso, há uma correlação relevante entre raça e a presença de árvores — quanto mais branca a população de uma área, mais árvores.
+
+```{r, fig.height=7, fig.width=9}
+verde
+```
+
+A distribuição dos parques municipais também é desigual. De maneira geral, há pouca área verde por habitante, mas a situação é mais grave em parte do centro expandido (Lapa, Barra Funda, Saúde) e em alguns distritos da Zona Norte como Freguesia do Ó, Limão e Santana.
+
+Já Perus e Anhanguera, menos povoados, abrigam o Parque Anhanguera, e por isso aparecem em cores mais escuras no mapa. Também merece destaque o distrito de Moema, que abriga o Parque Ibirapuera. O Parque Ecológico do Tietê, maior da cidade e localizado na Zona Leste, é estadual e por isso não aparece no mapa.
+
+---
+
+#### Bombeiros
+
+```{r}
+gt(bombeiro_table) %>% theme_pindograma_table()
+```
+
+São 97 estações do corpo de bombeiros na cidade. Há uma maior presença em áreas do centro expandido, como Água Rasa, Santa Cecília, Vila Maria e na Zona Sul, em Socorro. Enquanto isso, 55 distritos não tem nenhuma estação.
+
+```{r, fig.height=5, fig.width=8}
+sg_bomb
+```
+---
+
+#### Cultura
+
+```{r}
+gt(cult_table) %>% theme_pindograma_table()
+```
+
+De maneira geral, quanto mais central um distrito, mais perto de ofertas culturais ele está.
+
+Os museus de São Paulo ficam, em sua maioria, no centro expandido da cidade. O distrito do Butantã aparece como o campeão de museus, pois a USP mantém diversos museus dentro do seu campus da Cidade Universitária.
+
+A concentração de teatros, cinemas e casas de show é parecida. Quanto mais perto do centro, mais presentes estãos essas ofertas culturais. Pinheiros, Consolação e Barra Funda têm algumas das maiores concentrações, — com mais de um espaço para cada mil habitantes — enquanto Jardim Helena, Grajaú e Jardim Ângela tem as menores, com menos de um espaço cada cem mil habitantes.
+
+```{r, fig.height=7, fig.width=9}
+cultura
+```
+
+As 106 bibliotecas públicas são catalogadas junto com 15 dos chamados Pontos de Leitura, espaços menores do que uma biblioteca em regiões que carecem de equipamentos culturais. Estes dois espaços estão distribuídos mais uniformemente: a maioria dos distritos tem entre um e quatro espaços de leitura. Apenas os distritos do Centro Histórico (Sé, Liberdade e República) e a Cidade Tiradentes, no extremo da Zona Leste, têm cinco ou mais — nesse último, três são pontos de leitura.
+
+As regiões centrais costumam ser mais brancas e de renda mais alta que a média da cidade. Enquanto isso, a Zona Leste, região mais populosa da cidade, é a que tem menos equipamentos culturais. A desigualdade de acesso não é exclusiva a São Paulo: uma [pesquisa do IBGE](https://g1.globo.com/jornal-nacional/noticia/2019/12/10/pesquisa-do-ibge-mostra-como-e-desigual-o-acesso-a-cultura-e-ao-lazer.ghtml) mostrou que pelo país todo, pessoas pretas e pardas têm menos acesso à cultura, assim como [moradores da periferia](https://www.estadao.com.br/infograficos/politica,falta-de-equipamento-de-lazer-prejudica-morador-da-periferia-de-sao-paulo,1123436).
+
+---
+
+#### Correios
+
+```{r}
+gt(correios_table) %>% theme_pindograma_table()
+```
+
+As 233 agências dos Correios estão localizadas com mais frequência no centro expandido, e quanto mais nos aproximamos dos extremos da cidade, principalmente nas direções Leste e Sul, menos comuns elas se tornam.
+
+```{r, fig.height=7, fig.width=9}
+correios
+```
+
+---
+
+#### Transporte
+
+```{r}
+gt(transp_table) %>% theme_pindograma_table()
+```
+
+A malha metroviária de São Paulo não atende a todas as regiões da cidade igualmente. Um [levantamento](https://www.nossasaopaulo.org.br/2020/10/29/mapa-da-desigualdade-2020-revela-diferencas-entre-os-distritos-da-capital-paulista/) da Rede Nossa São Paulo mostrou que apenas 18,1% da população mora a 1 km ou menos de uma estação de trem, metrô ou monotrilho. Além disso, 44 distritos não tem nenhuma estação de metrô ou de trem. Uma análise do _Pindograma_ mostra que há uma leve correlação de transporte com renda: quanto mais rica uma área, mais chances de ela ter uma estação de metrô.
+
+Já os pontos de ônibus são mais comuns em áreas mais periféricas. Proporcionalmente à população, a distribuição é bastante uniforme, com a exceção da Barra Funda, Marsilac, Sé e Santo Amaro, que tem mais paradas.
+
+```{r, fig.height=7, fig.width=9}
+transporte
+```
+
+Oportunidades de trabalho são mais fartas em áreas próximas a linhas metroviárias. Segundo dados do Acesso a Oportunidades, em uma hora de viagem de transporte público, um morador da Vila Mariana, Brás ou Cerqueira César, por exemplo, tem acesso a mais de 40% das vagas de trabalho na cidade. Nesse mesmo tempo, residentes do Capão Redondo, Ermelino Matarazzo e Brasilândia tem acesso a menos de 5% das oportunidades.
+
+Num tempo de viagem de 90 minutos, os números passam para aproximadamente 80% nas regiões centrais e 20% para os distritos periféricos.
+
+---
+
+#### Habitação
+
+```{r}
+gt(habit_table) %>% theme_pindograma_table()
+```
+
+Os dados mais recentes do portal GeoSampa incluem a área ocupada por favelas em cada subdistrito. Locais no extremo da Zona Sul (Jardim Ângela, Capão Redondo, Grajaú, Pedreira, Cidade Ademar) têm as maiores extensões. Aqui, a correlação entre a fração é mais significativa do que renda.
+
+Em números absolutos, a Zona Sul tem o maior número de moradias em favelas, seguido da Zona Leste, Norte e Oeste. O Centro é a região com a menor área ocupada por favelas — Cambuci, Consolação, Jardim Paulista, Moema, Perdizes,
+
+```{r, fig.height=7, fig.width=9}
+cfln_fv
+```
+
+República e Sé não têm nenhuma área de favela registrada.
+
+Dados da Secretaria Municipal de Habitação mostram que o [número de moradias em favelas cresceu](https://g1.globo.com/sp/sao-paulo/noticia/2021/06/24/pandemia-empurrou-cerca-de-55-mil-familias-para-habitacoes-precarias-e-cidade-de-sp-ganhou-150-novas-favelas-diz-secretaria.ghtml) 15% desde 2019.
+
+---
+
+**Dados utilizados na matéria**: Geosampa (Prefeitura de São Paulo); Renda e 
+demografia dos distritos de São Paulo (IBGE); Projeto Acesso a Oportunidades (IPEA)
+
+Para reproduzir os números e os gráficos citados na matéria, o código
+pode ser encontrado [aqui][1].
+
+**Créditos da imagem**: Marco Estrella/Flickr.
+
+[1]: https://github.com/pindograma/materias/blob/master/2021-07-05-benssp/sp.Rmd
+
