@@ -1,0 +1,423 @@
+---
+title: "joao-drogas"
+author: "Daniel Ferreira"
+date: "3/2/2021"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(fastDummies)
+library(gt)
+
+source('../theme.R')
+load('pesquisas.Rdata')
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+pn = function(x) format(round(x, 2), big.mark = '.', decimal.mark = ',', nsmall = 0, digits = 2)
+```
+
+Há poucos dias, passamos por mais uma eleição em que o erro das pesquisas
+chamou a atenção do público. Aliados do presidente Jair Bolsonaro
+([PL](https://pindograma.com.br/2020/12/08/plpp.html)) comemoraram a
+["derrota"](https://g1.globo.com/politica/noticia/2022/10/03/derrota-dos-institutos-de-pesquisa-como-aliados-de-bolsonaro-reagiram-ao-resultado-do-1o-turno.ghtml)
+das empresas de pesquisa, e comentaristas políticos de todas as estirpes
+ideológicas também levantaram a necessidade dos institutos ["se
+reinventarem"](https://twitter.com/GCasaroes/status/1576728068957253632) e
+["fazerem uma
+autocrítica"](https://www.estadao.com.br/politica/pesquisas-falham-ao-nao-captar-intencao-de-voto-bolsonarista-e-erram-resultados/).
+
+No entanto, nenhum desses comentaristas fez uma investigação objetiva do
+desempenho das pesquisas eleitorais nesta eleição — e é isto que o _Pindograma_
+traz para você. A partir de uma análise de dezenas de pesquisas publicadas à
+véspera da eleição, tiramos algumas lições que ficam para o segundo turno de
+2022 e para as eleições por vir:
+
+1. O desempenho das pesquisas eleitorais em 2022 não diverge radicalmente do
+   padrão histórico. Isso mostra que está na hora da imprensa começar a
+   comunicar melhor a incerteza que as pesquisas eleitorais carregam.
+2. Ipec e Datafolha não devem ser mais tratados como padrão ouro das pesquisas
+   eleitorais no Brasil.
+3. Agregadores de pesquisa geralmente produzem prognósticos melhores do que
+   institutos de pesquisa individualmente e, por isso, devem ser mais
+   valorizados na cobertura eleitoral.
+4. O desempenho passado dos institutos não está correlacionado com desempenho
+   futuro, mas [Rankings de
+   Institutos](https://pindograma.com.br/ranking.html), como o do _Pindograma_,
+   ainda são recursos importantes para interpretar o cenário eleitoral.
+
+A seguir, mostramos com dados por que tiramos cada uma dessas conclusões. Mas,
+antes disso, fica um aviso: neste artigo, não investigamos as _causas_ dos
+erros das pesquisas em 2022. Nos próximos dias, o _Pindograma_ voltará ao
+assunto. Por ora, apenas assumimos que os erros existem e discutimos como
+devemos lidar melhor com eles.
+
+#### I.
+
+Para começar, vale comparar o desempenho das pesquisas em 2022 com o desempenho
+em anos anteriores. Nosso principal indicador de desempenho é o _erro
+percentual médio_ de cada pesquisa — a média simples das diferenças absolutas,
+para cada candidato, entre intenção de voto estimada e votos válidos oficiais
+—, que vamos chamar apenas de "erro da pesquisa" daqui em diante.
+
+```{r}
+e1 = lp_old_last %>%
+  rename(Ano = year) %>%
+  group_by(Ano, election_type) %>%
+  summarize(Erro = mean(mm3)) %>%
+  mutate(Pleito = case_when(
+    election_type == 1 ~ 'Presidente Nacional',
+    election_type == 2 ~ 'Presidente Estadual',
+    election_type == 3 ~ 'Governadores'
+  )) %>%
+  select(-election_type) %>%
+  pivot_wider(names_from = Pleito, values_from = Erro)
+
+e2 = model_polls_last %>%
+  rename(Ano = year) %>%
+  group_by(Ano, election_type) %>%
+  summarize(Erro = mean(mm3)) %>%
+  mutate(Pleito = case_when(
+    election_type == 1 ~ 'Presidente Nacional',
+    election_type == 2 ~ 'Presidente Estadual',
+    election_type == 3 ~ 'Governadores'
+  )) %>%
+  select(-election_type) %>%
+  pivot_wider(names_from = Pleito, values_from = Erro)
+
+bind_rows(e1, e2) %>%
+  ungroup() %>%
+  gt(rowname_col = 'Ano') %>%
+  tab_header(title = 'Média de erro das últimas pesquisas, em pontos percentuais') %>%
+  tab_source_note('Fonte: Pindograma. Foram incluídas na análise as últimas pesquisas de cada instituto em cada pleito desde que tenham sido publicadas a uma semana ou menos da eleição.') %>%
+  fmt_number(everything(), dec_mark = ',') %>%
+  cols_align('center') %>%
+  theme_pindograma_table()
+```
+
+Em primeiro lugar, a tabela mostra que **as pesquisas para presidente de 2022
+não foram particularmente piores do que as de anos anteriores**. Mesmo as
+pesquisas que recebem mais atenção da imprensa — Ipec/Ibope e Datafolha — foram
+mais precisas em 2022 que em 2014, embora tenham sido levemente piores que em
+2018.
+
+**Já o desempenho das pesquisas para governador em 2022 reproduziu o mau
+desempenho de 2018**, quando as vitórias de Wilson Witzel no Rio de Janeiro e
+de Romeu Zema em Minas Gerais surpreenderam o país. Para quem achava que 2018
+tinha sido apenas um deslize anormal no desempenho das pesquisas, 2022 foi um
+balde de água fria. **Ao que tudo indica, erros médios maiores vieram para
+ficar nas eleições estaduais brasileiras.**
+
+Em geral, o desempenho das pesquisas em 2022 foi _ruim_, mas não foi
+_excepcionalmente pior do que era no passado_. Infelizmente, os índices
+históricos de erro das pesquisas — que permitiriam ao eleitor saber melhor o
+que esperar das pesquisas — são pouco divulgados na cobertura das eleições. A
+imprensa insiste nas margens de erro dos institutos que, [como já descrevemos
+em 2020](https://pindograma.com.br/2020/12/11/pesquisas-analise.html), não
+capturam a incerteza das pesquisas de maneira adequada.
+
+Por isso, repetimos a lição que [já havíamos
+tirado](https://pindograma.com.br/2020/12/11/pesquisas-analise.html) dos erros
+das pesquisas na eleição de 2020: "**A imprensa precisa aceitar as incertezas
+[das pesquisas], transmitindo de forma mais realista e honesta o grau de
+precisão que podemos realmente esperar das pesquisas eleitorais.** Em 2024, se
+virmos uma pesquisa na última semana do pleito dando 53% dos votos para uma
+candidata e 47% para outra, uma virada deveria ser tratada como um evento quase
+tão provável quanto uma vitória da líder — não como uma possibilidade remota
+'no limite', ou fora, da 'margem de erro'."
+
+Em outras palavras, o _Pindograma_ acredita que deveria ser praxe da imprensa
+divulgar, junto com as pesquisas presidenciais, que erros em torno de 2,5
+pontos percentuais por candidato são **resultados esperados** e não anomalias.
+Nas pesquisas para governador, esse índice está mais próximo de 3,5pp. Erros
+ainda maiores também são relativamente frequentes, e a chance deles ocorrerem
+deveria ser comunicada de forma mais clara para o eleitor.
+
+#### II.
+
+O _Pindograma_ [sempre
+insistiu](https://pindograma.com.br/2021/05/14/datafolha.html) em analisar os
+resultados de todos os institutos de pesquisa em vez de dar ênfase excessiva às
+empresas mais antigas como Ipec/Ibope e Datafolha. Os dois eram e continuam
+sendo bons institutos, mas, com base no histórico de acertos entre 2012 e 2020,
+**não havia razão para acreditar que eles eram _muito_ melhores do que outros
+institutos [com bom histórico](https://pindograma.com.br/ranking.html)**, como
+Quaest, Futura, MDA, entre outros.
+
+Este ano, está claro que, nas corridas mais recentes, Ipec/Ibope e Datafolha se
+diferenciaram muito pouco da concorrência:
+
+```{r}
+e1 = lp_old_last %>%
+  filter(election_type %in% c(1, 3)) %>%
+  mutate(golden = (pretty_name == 'Datafolha' | company_id == 'IPECIBOPE')) %>%
+  mutate(Pleito = case_when(
+    year == 2014 & election_type == 1 ~ 'Presidente Nac. 2014',
+    year == 2014 & election_type == 3 ~ 'Governadores 2014',
+    year == 2018 & election_type == 1 ~ 'Presidente Nac. 2018',
+    year == 2018 & election_type == 3 ~ 'Governadores 2018',
+  )) %>%
+  mutate(order = case_when(
+    year == 2014 & election_type == 1 ~ 1,
+    year == 2014 & election_type == 3 ~ 2,
+    year == 2018 & election_type == 1 ~ 3,
+    year == 2018 & election_type == 3 ~ 4,
+  )) %>%
+  mutate(Instituto = ifelse(golden, 'Ipec/Ibope/Datafolha', 'Concorrência')) %>%
+  group_by(Pleito, Instituto, order) %>%
+  summarize(Erro = mean(mm3)) %>%
+  pivot_wider(names_from = Instituto, values_from = Erro) %>%
+  mutate(`Vantagem Ipec/Ibope/Datafolha` = `Concorrência` - `Ipec/Ibope/Datafolha`) %>%
+  arrange(order) %>%
+  select(-order)
+
+e2 = model_polls_last %>%
+  filter(election_type %in% c(1, 3)) %>%
+  mutate(golden = (pretty_name == 'Datafolha' | company_id == 'IPECIBOPE')) %>%
+  filter(!is.na(golden)) %>%
+  mutate(Pleito = case_when(
+    year == 2022 & election_type == 1 ~ 'Presidente Nac. 2022',
+    year == 2022 & election_type == 3 ~ 'Governadores 2022'
+  )) %>%
+  mutate(order = case_when(
+    year == 2022 & election_type == 1 ~ 1,
+    year == 2022 & election_type == 3 ~ 2
+  )) %>%
+  mutate(Instituto = ifelse(golden, 'Ipec/Ibope/Datafolha', 'Concorrência')) %>%
+  group_by(Pleito, Instituto, order) %>%
+  summarize(Erro = mean(mm3)) %>%
+  pivot_wider(names_from = Instituto, values_from = Erro) %>%
+  mutate(`Vantagem Ipec/Ibope/Datafolha` = `Concorrência` - `Ipec/Ibope/Datafolha`) %>%
+  arrange(order) %>%
+  select(-order)
+
+bind_rows(e1, e2) %>%
+  ungroup() %>%
+  gt(rowname_col = 'Pleito') %>%
+  tab_header(title = 'Média de erro das últimas pesquisas, em pontos percentuais') %>%
+  tab_source_note('Fonte: Pindograma. Foram incluídas na análise as últimas pesquisas de cada instituto em cada pleito desde que tenham sido publicadas a uma semana ou menos da eleição.') %>%
+  fmt_number(everything(), dec_mark = ',') %>%
+  cols_align('center') %>%
+  theme_pindograma_table()
+```
+
+Novamente, não se trata de defender que veículos de imprensa deixem de
+contratar e divulgar pesquisas desses dois institutos. Mas não há razão, além
+de conservadorismo, para que esses dois institutos continuem recebendo o
+[grau](https://www.uol.com.br/eleicoes/2022/05/31/uol-lanca-selo-de-confiabilidade-de-pesquisas.htm=/)
+[excepcional](https://www.estadao.com.br/politica/eleicoes/agregador-pesquisa-eleitoral-2022/?turno=&cargo=presidencial&modalidade=todas&regiao=todas)
+de destaque e deferência que têm nos grandes meios de comunicação brasileiros.
+
+#### III.
+
+A defesa que o _Pindograma_ faz de analisar todos os institutos de pesquisa
+implica na criação de um **agregador de pesquisas** que permita aos leitores
+visualizar simultaneamente vários levantamentos. Em 2020, o _Pindograma_ criou
+[um agregador de pesquisas
+próprio](https://pindograma.shinyapps.io/agregador/). Já em 2022, fechamos uma
+parceria com a AtlasIntel para desenvolvermos juntos o
+[PollsterGraph](https://pollstergraph.com/), um agregador de pesquisas muito
+mais versátil que o anterior.
+
+Em 2022, **acompanhar as eleições por este agregador de pesquisa se provou mais
+certeiro, no geral, do que acompanhar apenas pesquisas de institutos
+selecionados**. Comparemos, por exemplo, o desempenho do agregador com o
+desempenho do Ipec, AtlasIntel, Paraná Pesquisas e Real Time Big Data — os
+institutos que fizeram pesquisas eleitorais em 8 estados ou mais na semana
+anterior à eleição.
+
+```{r}
+votes_pollstergraph_merge = read_csv('resultados_2022.csv') %>%
+  rename(SIGLA_UE = ue, NUMERO_CANDIDATO = numero, QTDE_VOTOS = votos_validos, CODIGO_CARGO = cargo) %>%
+  mutate(ANO_ELEICAO = 2022, NUM_TURNO = 1) %>%
+  select(ANO_ELEICAO, SIGLA_UE, CODIGO_CARGO, NUMERO_CANDIDATO, NUM_TURNO, QTDE_VOTOS, nome) %>%
+  filter(NUMERO_CANDIDATO != 95 & NUMERO_CANDIDATO != 96) %>%
+  group_by(ANO_ELEICAO, NUM_TURNO, SIGLA_UE, CODIGO_CARGO) %>%
+  mutate(qtde_all_valid = sum(QTDE_VOTOS)) %>%
+  arrange(desc(QTDE_VOTOS), .by_group = T) %>%
+  ungroup()
+joao = read_csv('desempenho_pollstergraph.csv')
+
+pollstergraph_errors = joao %>%
+  mutate(percentage = as.double(str_replace_all(percentage, ',', '.')),
+         CANDIDATO = toupper(CANDIDATO),
+         cargo = ifelse(cargo == 'PR', 1, 3)) %>%
+  group_by(polled_UE, cargo) %>%
+  mutate(validos_total = sum(percentage[CANDIDATO != 'BRANCOS/NULOS'])) %>%
+  filter(CANDIDATO != 'BRANCOS/NULOS' & CANDIDATO != 'OUTROS') %>%
+  mutate(valid_result = percentage/validos_total * 100) %>%
+  inner_join(votes_pollstergraph_merge, c('CANDIDATO' = 'nome', 'cargo' = 'CODIGO_CARGO', 'polled_UE' = 'SIGLA_UE')) %>%
+  group_by(polled_UE, cargo) %>%
+  mutate(pct = QTDE_VOTOS / sum(QTDE_VOTOS) * 100) %>%
+  summarize(mm3 = mean(abs(valid_result - pct)))
+
+ipec_errors = model_polls_last %>%
+  filter(company_id == 'IPECIBOPE') %>%
+  filter(election_type %in% c(1, 3)) %>%
+  group_by(polled_UE) %>%
+  summarize(mm3_ipec = mean(mm3))
+
+realtime_errors = model_polls_last %>%
+  filter(pretty_name == 'Real Time Big Data') %>%
+  filter(election_type %in% c(1, 3)) %>%
+  group_by(polled_UE) %>%
+  summarize(mm3_realtime = mean(mm3))
+
+pp_errors = model_polls_last %>%
+  filter(pretty_name == 'Paraná Pesquisas') %>%
+  filter(election_type %in% c(1, 3)) %>%
+  group_by(polled_UE) %>%
+  summarize(mm3_pp = mean(mm3))
+
+atlas_errors = model_polls_last %>%
+  filter(pretty_name == 'AtlasIntel') %>%
+  filter(election_type %in% c(1, 3)) %>%
+  group_by(polled_UE) %>%
+  summarize(mm3_atlas = mean(mm3))
+
+average_analysis = pollstergraph_errors %>%
+  left_join(ipec_errors) %>%
+  left_join(realtime_errors) %>%
+  left_join(pp_errors) %>%
+  left_join(atlas_errors) %>%
+  filter(polled_UE != 'SE') %>%
+  mutate(worse_than_ipec = mm3 > mm3_ipec,
+         worse_than_atlas = mm3 > mm3_atlas,
+         worse_than_pp = mm3 > mm3_pp,
+         worse_than_realtime = mm3 > mm3_realtime)
+
+ipec_melhor = average_analysis %>%
+  filter(worse_than_ipec) %>%
+  nrow()
+
+ipec_total = average_analysis %>%
+  filter(!is.na(mm3_ipec)) %>%
+  nrow()
+
+atlas_melhor = average_analysis %>%
+  filter(worse_than_atlas) %>%
+  nrow()
+
+atlas_total = average_analysis %>%
+  filter(!is.na(mm3_atlas)) %>%
+  nrow()
+```
+
+Em termos do _erro percentual médio_, o agregador chegou mais perto do
+resultado da eleição que todas as pesquisas do Real Time Big Data na base do
+_Pindograma_. O Paraná Pesquisas só superou o desempenho do agregador no
+próprio Paraná. Já o Ipec superou o agregador em apenas `r pn(ipec_melhor)` de
+`r pn(ipec_total)` estados: Rio de
+Janeiro, Rio Grande do Norte e Maranhão. (Em todas essas análises, o Sergipe
+foi excluído, devido à [situação
+excepcional](https://g1.globo.com/se/sergipe/eleicoes/2022/noticia/2022/10/04/valmir-de-francisquinho-teve-457922-votos-durante-eleicao-para-governo-de-sergipe-diz-documento-do-tre.ghtml)
+do candidato Valmir de Francisquinho.)
+
+As pesquisas AtlasIntel competem melhor com o agregador: foram mais precisas
+que a agregação em `r pn(atlas_melhor)` dos `r pn(atlas_total)` estados que
+cobriram. No entanto, o agregador superou as pesquisas Atlas no Paraná, no Rio
+de Janeiro e no pleito mais importante: a eleição presidencial. Ou seja, mesmo
+em casos como o do Atlas, o _Pindograma_ continua acreditando que acompanhar as
+tendências em um agregador de pesquisas, em vez de um único instituto, é o
+método mais seguro para apurar as tendências da opinião pública antes de uma
+eleição.
+
+##### IV.
+
+O Ranking do _Pindograma_ sofreu várias críticas durante esta eleição,
+principalmente por colocar institutos "tradicionais" como Datafolha no mesmo
+nível de institutos [tidos pela grande
+imprensa](https://www.uol.com.br/eleicoes/2022/05/31/uol-lanca-selo-de-confiabilidade-de-pesquisas.htm=/)
+como menos rigorosos, [como o Paraná
+Pesquisas](https://www1.folha.uol.com.br/poder/2022/09/parana-pesquisas-recebeu-r-27-milhoes-de-partido-de-bolsonaro-na-pre-campanha.shtml).
+Naturalmente, nossa resposta era sempre apontar para os [critérios
+objetivos](https://pindograma.com.br/2020/09/07/ranking.html) que usamos para
+dar notas aos institutos. Também sempre deixamos claro que qualquer instituto
+que venha a errar mais no futuro cairá no ranking.
+
+A seguir, no entanto, o _Pindograma_ dá de bandeja aos nossos críticos a
+munição mais poderosa contra o nosso Ranking:
+
+```{r}
+rating_published = read_csv('pollster_rating_2020_final.csv')
+
+basic_error = model_polls_last %>%
+  group_by(company_id, pretty_name) %>%
+  summarize(mm3 = mean(mm3), n = n())
+
+cmp = rating_published %>%
+  left_join(basic_error, 'company_id')
+
+ggplot(cmp, aes(x = pred_pm, y = mm3)) +
+  labs(
+    title = 'Ranking de Institutos do Pindograma e\nDesempenho das Pesquisas em 2022',
+    caption = 'Fonte: Pindograma. No eixo Y, foram incluídas na análise as últimas pesquisas de
+    cada instituto em cada pleito desde que tenham sido publicadas a uma semana
+    ou menos da eleição.'
+  ) +
+  xlab('Índice de Desempenho Final (Ranking Pindograma)') + ylab('Erro Médio em 2022') +
+  geom_point() +
+  xlim(-1.1, 1.5) +
+  ylim(0, 6) +
+  geom_smooth(se = F, color = pg_orange) +
+  theme_pindograma()
+```
+
+Como mostra o gráfico, a nota dos institutos com base em dados de 2012-2020 não
+foi um indicador muito bom do desempenho dos institutos em 2022
+(correlação `r pn(cor(cmp$pred_pm, cmp$mm3, use = 'complete.obs'))`).
+Isto não é novidade — desde a criação do Ranking antes da eleição de 2020,
+fomos [transparentes](https://pindograma.com.br/2020/09/07/ranking.html) sobre
+este fato.
+
+À época, levantamos três hipóteses de por que isso poderia ocorrer. A primeira
+era que o número de eleições incluídas no Ranking era muito pequeno. Duas
+eleições depois, o problema continua acontecendo na mesma escala, indicando que
+a causa dele provavelmente está em outro lugar.
+
+A segunda hipótese era de que o Ranking do _Pindograma_ fosse simplesmente mal
+feito. Neste caso, convidávamos nossos leitores a fazerem seus próprios
+rankings para tentar obter um desempenho melhor. Pois bem: logo antes da
+eleição de 2022, a AtlasIntel fez exatamente isso. Contudo, a despeito de usar
+critérios de classificação diferentes dos nossos, o [Ranking
+AtlasIntel](https://pollstergraph.com/ranking/institutes) também não conseguiu
+prever muito bem o desempenho dos institutos em 2022. (O _Pindograma_
+compartilhará mais detalhes desta análise em texto futuro, que acompanhará a
+atualização do nosso Ranking de Institutos.)
+
+Resta a hipótese de que, no Brasil, **o desempenho passado de um dado instituto
+simplesmente não prevê seu desempenho futuro**. Mas se este for o caso, qual é
+a utilidade de um ranking de institutos? No _Pindograma_, vemos três funções
+importantes neste produto:
+
+1. O Ranking ainda nos ajuda a **identificar institutos que erram
+   _significativamente_ mais que a média nacional** (notas C ou D) e que,
+   portanto, merecem ser vistos com alguma desconfiança pelos nossos leitores.
+2. Acreditamos que, contra [notícias falsas sobre
+   pesquisas](https://nucleo.jor.br/reportagem/2022-09-15-grupos-bolsonaristas-dominam-redes-com-mentiras-e-criticas-a-pesquisas-eleitorais/)
+   e tentativas de [criminalizar as pesquisas
+   eleitorais](https://www.poder360.com.br/eleicoes/barros-quer-punir-pesquisas-eleitorais-que-divergem-das-urnas/),
+   **o melhor jeito de defender a credibilidade dos institutos de pesquisa é
+   com informação, e não com argumentos de autoridade**. O Ranking revela que,
+   embora errem mais do que as "margens de erro" oficiais, as pesquisas dos
+   principais institutos ainda trazem informações importantes para o eleitor e
+   para analistas políticos.
+3. O Ranking de Institutos qualifica o debate sobre o desempenho das pesquisas
+   eleitorais. Ele nos obriga, por exemplo, a enfrentar o fato de que certos
+   institutos [tidos como
+   "controversos"](https://www.uol.com.br/eleicoes/2022/05/31/uol-lanca-selo-de-confiabilidade-de-pesquisas.htm=/)
+   têm um bom histórico de acertos. Passa a ser inviável argumentar, sem dados,
+   que "Instituto X é ruim porque errou muito no passado". **A crítica a essas
+   empresas passa a depender de inferências mais concretas e menos
+   impressionistas**.
+
+Por essas razões, o _Pindograma_ irá atualizar o Ranking de Institutos nos
+próximos dias com dados de 2022, e pretende continuar mantendo-o nos próximos
+anos.
+
