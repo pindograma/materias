@@ -156,7 +156,7 @@ diferenciaram muito pouco da concorrência:
 ```{r}
 e1 = lp_old_last %>%
   filter(election_type %in% c(1, 3)) %>%
-  mutate(golden = (pretty_name == 'Datafolha' | company_id == 'IPECIBOPE')) %>%
+  mutate(golden = (pretty_name == 'Datafolha' | pretty_name == 'Ibope')) %>%
   mutate(Pleito = case_when(
     year == 2014 & election_type == 1 ~ 'Presidente Nac. 2014',
     year == 2014 & election_type == 3 ~ 'Governadores 2014',
